@@ -1,0 +1,175 @@
+* {
+  margin: 0px;
+  padding: 0px;
+  box-sizing: border-box;
+}
+
+@font-face {
+  font-family: 'Product Sans Black';
+  src: url('../fonts/Product Sans Black.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Product Sans Bold';
+  src: url('../fonts/Product Sans Bold.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Product Sans Regular';
+  src: url('../fonts/Product Sans Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Product Sans Light';
+  src: url('../fonts/Product Sans Light.ttf') format('truetype');
+}
+
+div {
+  display: block;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  vertical-align: middle;
+  border-style: none;
+}
+
+.bg-white {
+  background-color: #ffffff;
+}
+
+.bg-lgray {
+  background-color: #f1f1f1;
+}
+
+.bg-color {
+
+}
+
+.bg-ldgray {
+  background-color: #1a1a1a;
+}
+
+.bg-dgray {
+  background-color: #111111;
+}
+
+.tx-white {
+  color: #ffffff;
+}
+
+.tx-lgray {
+  color: #f1f1f1;
+}
+
+.tx-color {
+
+}
+
+.tx-ldgray {
+  color: #1a1a1a;
+}
+
+.tx-dgray {
+  color: #111111;
+}
+
+.center {
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+
+.justify-center {
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+
+.container {
+  width: 100%;
+  padding-right: calc(25vw);
+  padding-left: calc(25vw);
+  padding-top: calc(25vh);
+  padding-bottom: calc(25vh);
+  height: calc(100vh);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.row {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+.col {
+  position: relative;
+  width: 100%;
+  min-height: 1px;
+  padding-right: 15px;
+  padding-left: 15px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.tmar-small {
+  margin-top: 20px;
+}
+
+.tmar-med {
+  margin-top: 40px;
+}
+
+.tmar-big {
+  margin-top: 60px;
+}
+
+.bmar-small {
+  margin-bottom: 20px;
+}
+
+.bmar-med {
+  margin-bottom: 40px;
+}
+
+.bmar-big {
+  margin-bottom: 60px;
+}
+
+.fillheight {
+  height: 100%;
+}
+
+.screenbox {
+  height: calc(100vh);
+  position: relative;
+}
+
+.landingbox {
+  padding-left: calc(5vw);
+  padding-right: calc(5vw);
+  padding-top: calc(5vh);
+  padding-bottom: calc(5vh);
+  border-radius: 25px;
+}
+
+.landingbox h1 {
+  font-size: 50px;
+  font-family: 'Product Sans Black';
+  font-weight: 400;
+}
+
+.landingbox p {
+  font-size: 24px;
+  font-family: 'Product Sans Light';
+  font-weight: 400;
+}
