@@ -62,6 +62,10 @@ img {
   color: #ffffff;
 }
 
+.tx-black {
+  color: #000000;
+}
+
 .tx-lgray {
   color: #f1f1f1;
 }
@@ -99,6 +103,13 @@ img {
   height: calc(100vh);
   margin-right: auto;
   margin-left: auto;
+  background: linear-gradient( rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.25) ), url('https://source.unsplash.com/random/1920x1080');
+  /* background-image: url(https://source.unsplash.com/random/1920x1080); */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: scroll;
+  position: relative;
 }
 
 .row {
@@ -149,9 +160,10 @@ img {
   height: 100%;
 }
 
-.screenbox {
+.app {
   height: calc(100vh);
   position: relative;
+  background-color: #000000;
 }
 
 .landingbox {
@@ -159,7 +171,9 @@ img {
   padding-right: calc(5vw);
   padding-top: calc(5vh);
   padding-bottom: calc(5vh);
-  border-radius: 25px;
+  -webkit-box-shadow: 0px 0px 50px 0px rgba(0,0,0,0.25);
+  -moz-box-shadow: 0px 0px 50px 0px rgba(0,0,0,0.25);
+  box-shadow: 0px 0px 50px 0px rgba(0,0,0,0.25);
 }
 
 .landingbox h1 {
