@@ -1,9 +1,6 @@
 * {
   margin: 0px;
   padding: 0px;
-  box-sizing: border-box;
-  top: 0;
-  left: 0;
 }
 
 @font-face {
@@ -96,24 +93,6 @@ img {
   justify-content: center;
 }
 
-.container {
-  width: calc(100vw);
-  padding-right: calc(20vw);
-  padding-left: calc(20vw);
-  padding-top: calc(25vh);
-  padding-bottom: calc(25vh);
-  height: calc(100vh);
-  margin-right: auto;
-  margin-left: auto;
-  background: linear-gradient( rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.25) ), url('https://source.unsplash.com/random/3840x2160');
-  /* background-image: url(https://source.unsplash.com/random/1920x1080); */
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-attachment: scroll;
-  position: relative;
-}
-
 .tmar-small {
   margin-top: 20px;
 }
@@ -140,19 +119,29 @@ img {
 
 .app {
   height: calc(100vh);
-  width: calc(100vw);
-  position: relative;
   background-color: #000000;
+  background-image: url('https://source.unsplash.com/random/3840x2160');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: scroll;
+}
+
+.container {
+  height: 100%;
+  padding-left: calc(15vw);
+  padding-right: calc(15vw);
+  padding-top: calc(15vh);
+  padding-bottom: calc(15vh);
+  background: rgba(0, 0, 0, 0.25);
 }
 
 .landingbox {
-  padding-left: calc(10vw);
-  padding-right: calc(10vw);
-  padding-top: calc(10vh);
-  padding-bottom: calc(10vh);
+  padding: 100px;
   -webkit-box-shadow: 0px 0px 50px 0px rgba(0,0,0,0.25);
   -moz-box-shadow: 0px 0px 50px 0px rgba(0,0,0,0.25);
   box-shadow: 0px 0px 50px 0px rgba(0,0,0,0.25);
+  margin: auto;
 }
 
 .landingbox h1 {
