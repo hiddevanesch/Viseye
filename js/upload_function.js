@@ -46,7 +46,7 @@ function openfileDrop(evt) {
       };
       reader.readAsText(input.files[0]);
     }
-  };
+  }
 
   function storetext(text) {
     console.log(text.substring(0,200));
