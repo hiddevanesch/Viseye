@@ -14,10 +14,8 @@
     <div class="screenbox bg-ldgray">
       <p id="upload_box">
         <div id="drop_zone">Drop files here</div>
-        <input type="file" name="filein" value="open file explorer">
-        <output id="list"></output>
-        <script src="javascripts/fileOverlay.js" type="text/javascript"></script>
-      </p>
+        <input id="filebutton" type="file" onchange=openfileBrowse(event) name="filein" value="open file explorer">
+        <script src="javascript/upload_function.js" type="text/javascript"></script>
       <div class="container">
         <div class="row center justify-center fillheight">
           <div class="landingbox col bg-white">
