@@ -49,5 +49,6 @@ function openfileDrop(evt) {
   }
 
   function storetext(text) {
+    console.log(text.split(/\r\n|\n/).length);
     console.log(text.substring(0,200));
   }
