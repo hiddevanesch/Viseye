@@ -9,20 +9,21 @@
     <link rel="stylesheet" type="text/css" href="css/master.css">
     <link rel="stylesheet" type="text/css" href="css/upload_function.css">
     <meta name="author" content="TU/e 2IOA0 Group 25BD 2020">
+    <script src="https://d3js.org/d3.v5.min.js"></script>
   </head>
   <body>
-    <div class="screenbox bg-ldgray">
+    <div id="app" class="app">
       <div class="container">
-        <p id="upload_box">
-          <div id="drop_zone">Drop files here</div>
-          <output id="list"></output>
-          <script src="javascripts/fileOverlay.js" type="text/javascript"></script>
-        </p>
-        <div class="row center justify-center fillheight">
-          <div class="landingbox col bg-white">
-            <h1 class="bmar-small tx-viseyeblue">Viseye.</h1>
-            <p class="tx-ldgray">Welcome to Viseye, a tool that visualizes eye movement data. The tool has been created for a DBL project by TU/e students.</p>
-          </div>
+        <div class="landingbox bg-white">
+          <h1 class="bmar-med tx-dgray">Viseye.</h1>
+          <p class="p bmar-small tx-dgray">Welcome to Viseye, a tool that visualizes eye movement data. The tool has been created for a DBL project by TU/e students.</p>
+          <p class="p bmar-small tx-dgray">To start the visualization, please upload a .csv file in the correct format.</p>
+          <p id="upload_box">
+            <div id="drop_zone" class="bmar-small">Drop files here</div>
+            <output id="list"></output>
+            <script src="js/upload_function.js" type="text/javascript"></script>
+          </p>
+          <p class="ps tx-gray">Background image is randomly chosen from Unsplash on load.</p>
         </div>
       </div>
     </div>
