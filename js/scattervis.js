@@ -1,38 +1,3 @@
-<!DOCTYPE html>
-<html>
-<meta charset="utf-8">
-
-<!-- Example based on http://bl.ocks.org/mbostock/3887118 -->
-<!-- Tooltip example from http://www.d3noob.org/2013/01/adding-tooltips-to-d3js-graph.html -->
-<!-- Coding style based on http://gist.github.com/mbostock/5977197 -->
-
-<style>
-body {
-  font: 11px sans-serif;
-}
-
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
-
-.dot {
-  stroke: #000;
-}
-
-.tooltip {
-  position: absolute;
-  width: 200px;
-  height: 28px;
-  pointer-events: none;
-}
-</style>
-<body>
-<script src="https://d3js.org/d3.v3.js"></script>
-<input id="filebutton" type="file" accept="application/vnd.ms-excel" onchange="openfileBrowse(event)" name="filein" value="open file explorer">
-<script>
 var openfileBrowse = function(event){
   var input = event.target;
   if (input.files[0].type != "application/vnd.ms-excel"){
@@ -46,6 +11,7 @@ var openfileBrowse = function(event){
     };
     reader.onloadend = function(){
       console.log("done loading");
+      document.getElementsById("visualization").style.display = "block";
     };
     reader.readAsText(input.files[0]);
   }
@@ -82,7 +48,7 @@ function storetext(text) {
       color = d3.scale.category10();
 
   // add the graph canvas to the body of the webpage
-  var svg = d3.select("body").append("svg")
+  var svg = d3.select("#visualization").append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
     .append("g")
@@ -97,7 +63,6 @@ function storetext(text) {
     data.forEach(function(d) {
       d.MappedFixationPointX = +d.MappedFixationPointX;
       d["MappedFixationPointY"] = +d["MappedFixationPointY"];
-      console.log(d);
     });
 
     // don't want dots overlapping axis, so add in buffer to data domain
@@ -204,7 +169,3 @@ for(var i=1;i<lines.length;i++){
 //return result; //JavaScript object
 return JSON.parse(JSON.stringify(result)); //JSON
 }
-
-</script>
-</body>
-</html>

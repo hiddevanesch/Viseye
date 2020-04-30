@@ -116,6 +116,8 @@ img {
   background-repeat: no-repeat;
   background-size: cover;
   background-attachment: scroll;
+  height: calc(100vh);
+  width: calc(100vw);
 }
 
 .container {

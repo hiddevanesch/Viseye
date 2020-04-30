@@ -1,8 +1,6 @@
 #drop_zone{
   font-family: "Verdana", "Arial", serif;
   text-align: center;
-  width: 140px;
-  height: 24px;
   padding: 10px;
   border-style: dotted;
   border-color: black;
@@ -11,4 +9,12 @@
 
 #upload_box{
   background-color: white;
+  display: none;
+  width: 26%;
+  box-sizing: border-box;
+}
+
+#visualization{
+  background-color: white;
+  display: none;
 }
