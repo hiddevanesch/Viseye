@@ -18,7 +18,13 @@ var openfileBrowse = function(event){
 }
 
 function storetext(text) {
-  var data = tsvJSON(text);
+  var indata = tsvJSON(text);
+  var data = [];
+  for(var i=0; i<indata.length;i++){
+    if(indata[i].StimuliName === "01_Antwerpen_S1.jpg"){
+      data.push(indata[i]);
+    }
+  }
 
   var margin = {top: 20, right: 20, bottom: 30, left: 40},
       width = 960 - margin.left - margin.right,
