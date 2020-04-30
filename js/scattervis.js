@@ -11,7 +11,7 @@ var openfileBrowse = function(event){
     };
     reader.onloadend = function(){
       console.log("done loading");
-      document.getElementsById("visualization").style.display = "block";
+      document.getElementById("visualization").style.display = "block";
     };
     reader.readAsText(input.files[0]);
   }
