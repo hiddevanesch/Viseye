@@ -66,8 +66,8 @@ function storetext(text) {
     });
 
     // don't want dots overlapping axis, so add in buffer to data domain
-    xScale.domain([0, 1600]);
-    yScale.domain([0, 1600]);
+    xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
+    yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
 
     // x-axis
     svg.append("g")
