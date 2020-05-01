@@ -1,0 +1,32 @@
+{
+  "name": "viseye",
+  "version": "0.1.0",
+  "description": "Eye data visualization tool",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hiddevanesch/Viseye.git"
+  },
+  "keywords": [
+    "eye",
+    "data",
+    "visualization",
+    "tool",
+    "viseye"
+  ],
+  "author": "2IOA0 group 25BD",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hiddevanesch/Viseye/issues"
+  },
+  "homepage": "https://github.com/hiddevanesch/Viseye#readme",
+  "dependencies": {
+    "babel-loader": "^8.1.0",
+    "d3": "^5.16.0",
+    "vue": "^2.6.11"
+  },
+  "devDependencies": {}
+}
