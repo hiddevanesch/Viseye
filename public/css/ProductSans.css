@@ -5,7 +5,7 @@
 
   @font-face {
     font-family: 'Product Sans Bold';
-    src: url('.../fonts/Product Sans Bold.ttf') format('truetype');
+    src: url('../fonts/Product Sans Bold.ttf') format('truetype');
   }
 
   @font-face {

@@ -8,7 +8,7 @@
         <p class="ps tx-gray">Background image is randomly chosen from Unsplash on load.
           <br>Website is optimized for use with Google Chrome.</p>
         <div class="footer bg-ldgray tmar-med">
-          <p class="pps tx-gray">&copy; 2IOA0 group 25BD 2020</p>
+          <p class="pps tx-gray">&copy; 2IOA0 GROUP 25BD 2020</p>
         </div>
       </div>
     </div>
@@ -163,20 +163,41 @@ export default {
     font-weight: 400;
   }
 
-  .landingbox p {
-    font-family: 'Product Sans Light';
+  .button {
+    padding: 10px;
+    color: #ffffff;
+    background-color: #498fff;
+    border: 0px;
+    font-size: 18px;
+    font-family: 'Product Sans Bold';
     font-weight: 400;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+
+  .button:hover {
+    background-color: #3978dd;
+  }
+
+  .button:active {
+    background-color: #2b67c7;
   }
 
   .p {
+    font-family: 'Product Sans Light';
+    font-weight: 400;
     font-size: 24px;
   }
 
   .ps {
+    font-family: 'Product Sans Light';
+    font-weight: 400;
     font-size: 18px;
   }
 
   .pps {
+    font-family: 'Product Sans Bold';
+    font-weight: 400;
     font-size: 12px;
     text-align: center;
   }
