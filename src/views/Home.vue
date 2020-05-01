@@ -32,6 +32,9 @@ export default {
   methods: {
     enableUploadMode() {
       this.uploadMode = true;
+    },
+    disableUploadMode() {
+      this.uploadMode = false;
     }
   }
 }
