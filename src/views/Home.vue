@@ -3,8 +3,8 @@
     <div class="container">
       <div class="landingbox bg-white">
         <h1 class="bmar-med tx-dgray">Viseye.</h1>
-        <home-page />
-        <upload-tool class="bmar-small" />
+        <upload-tool v-if="uploadMode" class="bmar-small" />
+        <home-page @enable-upload-mode="enableUploadMode" v-else class="bmar-small"/>
         <p class="ps tx-gray">Background image is randomly chosen from Unsplash on load.
           <br>Website is optimized for use with Google Chrome.</p>
         <div class="footer bg-ldgray tmar-med">
@@ -23,6 +23,16 @@ export default {
   components: {
     HomePage,
     UploadTool
+  },
+  data: function() {
+    return {
+      uploadMode: false
+    }
+  },
+  methods: {
+    enableUploadMode() {
+      this.uploadMode = true;
+    }
   }
 }
 </script>
@@ -53,10 +63,6 @@ export default {
 
   .bg-lgray {
     background-color: #f1f1f1;
-  }
-
-  .bg-color {
-
   }
 
   .bg-ldgray {
