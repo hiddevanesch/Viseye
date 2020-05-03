@@ -2,7 +2,9 @@ import Vue from "vue";
 import App from "./App.vue";
 import router from './router';
 import store from './store';
-import * from 'firebase';
+import firebase from 'firebase';
+import "firebase/firestore";
+import "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBgDQ4YNTxPICT0IV6cKqg-qStmsG0qgiY",

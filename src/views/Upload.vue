@@ -3,7 +3,7 @@
     <div class="container">
       <div class="landingbox bg-white">
         <h1 class="bmar-med tx-dgray">Viseye.</h1>
-        <home-page class="bmar-small"/>
+        <upload-tool class="bmar-small" />
         <p class="ps tx-gray">Background image is randomly chosen from Unsplash on load.
           <br>Website is optimized for use with Google Chrome.</p>
         <div class="footer bg-ldgray tmar-med">
@@ -15,11 +15,11 @@
 </template>
 
 <script>
-import HomePage from "../components/HomePage.vue";
+import UploadTool from "../components/UploadTool.vue";
 
 export default {
   components: {
-    HomePage
+    UploadTool
   }
 }
 </script>
@@ -166,6 +166,7 @@ export default {
     font-weight: 400;
     border-radius: 3px;
     text-transform: uppercase;
+    display: inline-block;
   }
 
   .button:hover {
@@ -174,6 +175,10 @@ export default {
 
   .button:active {
     background-color: #2b67c7;
+  }
+
+  .uploadbutton {
+      display: none;
   }
 
   .p {
