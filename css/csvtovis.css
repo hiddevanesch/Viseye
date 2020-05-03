@@ -1,0 +1,47 @@
+body {
+  margin: 0px;
+  overflow: hidden;
+}
+
+circle {
+  fill: blue;
+  opacity: 0.4;
+}
+
+text {
+  font-family: sans-serif;
+}
+
+.tick text {
+  font-size: 1.6em;
+  fill: #635F5D;
+}
+
+.tick line {
+  stroke: #C0C0BB;
+  opacity: 0.4;
+}
+
+.title{
+  font-size: 2em;
+  text-align: center;
+}
+
+#menus {
+  font-size: 1em;
+  border: 100px;
+  border-style: solid black;
+}
+
+#menus select {
+  font-size: 1rem;
+}
+
+#menus select option {
+  font-size: 1rem;
+}
+
+#scatterPlot {
+  border: 100px;
+  border-style: solid black;
+}
