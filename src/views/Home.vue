@@ -2,7 +2,7 @@
   <div class="backdrop">
     <div class="container">
       <div class="landingbox bg-white">
-        <h1 class="bmar-med tx-dgray">Viseye.</h1>
+        <router-link to="/"><h1 class="bmar-med tx-dgray">Viseye.</h1></router-link>
         <home-page class="bmar-small"/>
         <p class="ps tx-gray">Background image is randomly chosen from Unsplash on load.
           <br>Website is optimized for use with Google Chrome.</p>
