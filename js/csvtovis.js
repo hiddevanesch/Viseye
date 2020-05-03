@@ -31,11 +31,13 @@ const dropdownMenu = (selection, props) => {
 			.attr("value", d => d);
 	}
 
+//Store the selected option
 const onStimulusNameClicked = option => {
 	stimulusName = option;
 	render();
 }
 
+//plot a scatterplot
 const scatterPlot = (selection, props) => {
 	const {
 		title,
@@ -48,18 +50,22 @@ const scatterPlot = (selection, props) => {
 	const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
 
+//Filter the data
 	dataSelected = data.filter(d => d.StimuliName == stimulusName);
+
+//Select the image according to the selected option
 	let imageSelected = allVersions.filter(d => d == stimulusName);
 
-	let background = 'stimuli\\' + imageSelected;
+//Update image and set background
+	let background = 'stimuli/' + imageSelected;
 
-	console.log(background);
 	const img = selection.selectAll('image').data([null]);
 	const imgEnter = img.enter().append('image')
-		.attr("xlink:href", background);
+
 	imgEnter
 		.merge(img)
-		.transition().duration(2000)
+			.attr('xlink:href', background)
+			.attr('preserveAspectRatio', 'none')
 			.attr('width', innerWidth)
 			.attr('height', innerHeight)
 			.attr('transform',
@@ -94,6 +100,7 @@ const scatterPlot = (selection, props) => {
 				`translate(${margin.left},${margin.top})`
 			);
 
+	//Customizing the axis
 	const xAxis = d3.axisBottom(xScale)
 		.tickSize(-innerHeight)
 		.tickPadding(10);
@@ -161,7 +168,7 @@ const render = () => {
 		);
 
 
-
+	//Invoke function to generate the scatterplot
 	svg.call(scatterPlot, {
 		title: 'Scatterplot: Eye tracking data per city',
 		xValue: d => d.MappedFixationPointX,
@@ -172,7 +179,6 @@ const render = () => {
 }
 
 //(RE-)Render the data according to the selection by filter
-
 d3.csv('data.csv')
   .then(loadedData => {
 		data = loadedData;
