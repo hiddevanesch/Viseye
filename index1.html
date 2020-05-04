@@ -31,27 +31,50 @@ body {
 </style>
 <body>
 <script src="https://d3js.org/d3.v3.js"></script>
-<input id="filebutton" type="file" accept="application/vnd.ms-excel" onchange="openfileBrowse(event)" name="filein" value="open file explorer">
+<input id="filebutton" type="file" onchange="openfileBrowse(event)"
+       name="filein" value="open file explorer">
 <script>
+//simon
+//opens the file the filebutton gives
 var openfileBrowse = function(event){
+  //input is the filebutton
   var input = event.target;
+
+  //check for right file type
   if (input.files[0].type != "application/vnd.ms-excel"){
-    alert("wrong file type. We require a .csv file not a " + input.files[0].type + " file");
+    alert("wrong file type. We require a .csv file not a " + input.files[0].type
+     + " file");
   } else {
+    //reader to read out the file
     var reader = new FileReader();
+
+    //aftertext will store the result of the reader
     var aftertext = "";
     reader.onload = function(){
+      //the reader.result will only be available when loading not after
+      //or before
       aftertext = reader.result;
+
+      //storetext is he function that will do something with the file,
+      //like making a visualization
       storetext(aftertext);
     };
+
+    //debug operation to check if the loading and processing of the file went
+    //correct
     reader.onloadend = function(){
       console.log("done loading");
     };
+
+    //the line that will activate the reading of the file and the
+    //reader.onload and the reader.onloadend
     reader.readAsText(input.files[0]);
   }
 }
 
+//the function that will display the visualization with the (.csv) .tsv as input
 function storetext(text) {
+  //turns the tsv into json format
   var data = tsvJSON(text);
 
   var margin = {top: 20, right: 20, bottom: 30, left: 40},
@@ -157,7 +180,8 @@ function storetext(text) {
         .data(color.domain())
       .enter().append("g")
         .attr("class", "legend")
-        .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+        .attr("transform", function(d, i) { return "translate(0," + i * 20
+                                                    + ")"; });
 
     // draw legend colored rectangles
     legend.append("rect")
