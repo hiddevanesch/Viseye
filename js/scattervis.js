@@ -1,30 +1,45 @@
+//simon
+//opens the file the filebutton gives
 var openfileBrowse = function(event){
+  //input is the filebutton
   var input = event.target;
+
+  //check for right file type
   if (input.files[0].type != "application/vnd.ms-excel"){
-    alert("wrong file type. We require a .csv file not a " + input.files[0].type + " file");
+    alert("wrong file type. We require a .csv file not a " + input.files[0].type
+     + " file");
   } else {
+    //reader to read out the file
     var reader = new FileReader();
+
+    //aftertext will store the result of the reader
     var aftertext = "";
     reader.onload = function(){
+      //the reader.result will only be available when loading not after
+      //or before
       aftertext = reader.result;
+
+      //storetext is he function that will do something with the file,
+      //like making a visualization
       storetext(aftertext);
     };
+
+    //debug operation to check if the loading and processing of the file went
+    //correct
     reader.onloadend = function(){
       console.log("done loading");
-      document.getElementById("visualization").style.display = "block";
     };
+
+    //the line that will activate the reading of the file and the
+    //reader.onload and the reader.onloadend
     reader.readAsText(input.files[0]);
   }
 }
 
+//the function that will display the visualization with the (.csv) .tsv as input
 function storetext(text) {
-  var indata = tsvJSON(text);
-  var data = [];
-  for(var i=0; i<indata.length;i++){
-    if(indata[i].StimuliName === "01_Antwerpen_S1.jpg"){
-      data.push(indata[i]);
-    }
-  }
+  //turns the tsv into json format
+  var data = tsvJSON(text);
 
   var margin = {top: 20, right: 20, bottom: 30, left: 40},
       width = 960 - margin.left - margin.right,
@@ -54,7 +69,7 @@ function storetext(text) {
       color = d3.scale.category10();
 
   // add the graph canvas to the body of the webpage
-  var svg = d3.select("#visualization").append("svg")
+  var svg = d3.select("body").append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
     .append("g")
@@ -69,11 +84,12 @@ function storetext(text) {
     data.forEach(function(d) {
       d.MappedFixationPointX = +d.MappedFixationPointX;
       d["MappedFixationPointY"] = +d["MappedFixationPointY"];
+      console.log(d);
     });
 
     // don't want dots overlapping axis, so add in buffer to data domain
-    xScale.domain([0, 1600]);
-    yScale.domain([0, 1600]);
+    xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
+    yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
 
     // x-axis
     svg.append("g")
@@ -128,7 +144,8 @@ function storetext(text) {
         .data(color.domain())
       .enter().append("g")
         .attr("class", "legend")
-        .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+        .attr("transform", function(d, i) { return "translate(0," + i * 20
+                                                    + ")"; });
 
     // draw legend colored rectangles
     legend.append("rect")
