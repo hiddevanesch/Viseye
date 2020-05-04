@@ -114,7 +114,7 @@ export default {
 
   .backdrop {
     background-color: #000000;
-    background-image: url('https://source.unsplash.com/random/3840x2160');
+    background-image: url('https://source.unsplash.com/random/3840x2160/?data');
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -159,7 +159,6 @@ export default {
   .button {
     padding: 10px;
     color: #ffffff;
-    background-color: #498fff;
     border: 0px;
     font-size: 18px;
     font-family: 'Product Sans Bold';
@@ -168,12 +167,36 @@ export default {
     text-transform: uppercase;
   }
 
-  .button:hover {
+  .button-blue {
+    background-color: #498fff;
+  }
+
+  .button-blue:hover {
     background-color: #3978dd;
   }
 
-  .button:active {
+  .button-blue:active {
     background-color: #2b67c7;
+  }
+
+  .button-green {
+    background-color: #3dc431;
+  }
+
+  .button-green:hover {
+    background-color: #2fa724;
+  }
+
+  .button-green:active {
+    background-color: #27921d;
+  }
+
+  .uploadbutton {
+      display: none;
+  }
+
+  .inline-block {
+    display: inline-block;
   }
 
   .p {
