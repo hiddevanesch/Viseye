@@ -4,7 +4,6 @@
 
 <script>
 export default {
-  name: 'Viseye app',
   data() {
     return {
       prevHeight: 0
