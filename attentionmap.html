@@ -47,14 +47,14 @@
       // Prepare a color palette
       var color = d3.scaleLinear()
           .domain([0, 1]) // Points per square pixel.
-          .range(["white", "#69b3a2"])
+          .range(["green", "red"])
     
       // compute the density data
       var densityData = d3.contourDensity()
         .x(function(d) { return x(d.MappedFixationPointX); })
         .y(function(d) { return y(d.MappedFixationPointY); })
         .size([width, height])
-        .bandwidth(20)
+        .bandwidth(3)
         (data)
     
       // show the shape!
