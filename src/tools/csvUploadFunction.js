@@ -32,23 +32,24 @@
 //   dropZone.addEventListener('dragover', handleDragOver, false);
 //   dropZone.addEventListener('drop', openfileDrop, false);
 
-  export function openFileBrowse() {
-    var input = document.getElementById("filebutton");
-    if (input.files[0].type != "application/vnd.ms-excel"){
-      alert("You have uploaded a wrong file type. We require a .csv file not a " + input.files[0].type + " file.");
-    } else {
-      var reader = new FileReader();
-      var aftertext = "";
-      reader.onload = function(){
-        aftertext = reader.result;
-        aftertext = tsvJSON(aftertext);
-      };
-      reader.onloadend = function(){
-        console.log("loading finished");
-      };
-      reader.readAsText(input.files[0]);
-    }
+export function openFileBrowse() {
+  var input = document.getElementById("filebutton");
+  if (input.files[0].type != "application/vnd.ms-excel"){
+    alert("You have uploaded a wrong file type. We require a .csv file not a " + input.files[0].type + " file.");
+  } else {
+    var reader = new FileReader();
+    var aftertext = "";
+    reader.onload = function(){
+      aftertext = reader.result;
+      return tsvJSON(aftertext);
+    };
+    reader.onloadend = function(){
+      console.log("loading finished");
+    };
+    reader.readAsText(input.files[0]);
   }
+  return input.files[0];
+}
 
   //from http://techslides.com/convert-csv-to-json-in-javascript
   //var tsv is the TSV file with headers
