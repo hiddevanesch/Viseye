@@ -147,20 +147,27 @@ const scatterPlot = (selection, props) => {
         (dataSelected)
     
       // show the shape!
+      /*
       svg.insert("g", "g")
         .selectAll("path")
         .data(densityData)
         .enter().append("path")
           .attr("d", d3.geoPath())
           .attr("fill", function(d) { return color(d.value); })
+          */
+
+
     //
-    /*
+    
     //Draw circles for each row of the selected data
-	const circles = g.merge(gEnter)
-		.selectAll('circle').data(dataSelected);
-	circles
-		.enter().append('circle')
-			.merge(circles)
+	const attention = g.merge(gEnter)
+		.selectAll('path').data(dataSelected);
+	attention
+		.enter().append('path')
+            .merge(attention)
+                .attr("d", d3.geoPath())
+          .      attr("fill", function(d) { return color(d.value); })
+                /*
 				.attr('cx', innerWidth/2)
 				.attr('cy', innerHeight/2)
 				.attr('r', 0)
@@ -168,7 +175,8 @@ const scatterPlot = (selection, props) => {
 			.delay((d, i) => i)
 				.attr('r', circleRadius)
 				.attr('cx', d => xScale(xValue(d)))
-				.attr('cy', d => yScale(yValue(d)));
+                .attr('cy', d => yScale(yValue(d)));
+                */
 	circles
 		.exit()
 			.transition().duration(2000)
@@ -181,7 +189,7 @@ const scatterPlot = (selection, props) => {
 		.attr('class', 'title')
   	.attr('y', -15)
         .text(title);
-        */
+        
 }
 
 //Function render
