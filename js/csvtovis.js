@@ -129,35 +129,20 @@ const scatterPlot = (selection, props) => {
 			.call(xAxis)
 			.selectAll('.domain').remove();
 
-	const tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
-	+ '<br/>' + 'Description: ' + d['description']
-
 	//Draw circles for each row of the selected data
 	const circles = g.merge(gEnter)
 		.selectAll('circle').data(dataSelected);
 	circles
 		.enter().append('circle')
-			.on('mouseover', d => {
-				d3.select('#tooltip').transition()
-					.duration(200)
-						.style('opacity', .9)
-			d3.select('#tooltip').html(tooltipformat(d));
-			})
-			.on('mouseout', d => {
-				d3.select('#tooltip')
-					.transition().duration(500)
-					.style('opacity', 0);
-			})
-		.merge(circles)
-			.attr('cx', innerWidth/2)
-			.attr('cy', innerHeight/2)
-			.attr('r', 0)
-		.transition().duration(2000)
-		.delay((d, i) => i)
-			.attr('r', circleRadius)
-			.attr('cx', d => xScale(xValue(d)))
-			.attr('cy', d => yScale(yValue(d)));
-		
+			.merge(circles)
+				.attr('cx', innerWidth/2)
+				.attr('cy', innerHeight/2)
+				.attr('r', 0)
+			.transition().duration(2000)
+			.delay((d, i) => i)
+				.attr('r', circleRadius)
+				.attr('cx', d => xScale(xValue(d)))
+				.attr('cy', d => yScale(yValue(d)));
 	circles
 		.exit()
 			.transition().duration(2000)
