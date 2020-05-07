@@ -8,6 +8,10 @@ circle {
   opacity: 0.4;
 }
 
+circle:hover {
+  fill: red;
+}
+
 text {
   font-family: sans-serif;
 }
@@ -44,4 +48,9 @@ text {
 #scatterPlot {
   border: 100px;
   border-style: solid black;
+}
+
+#tooltip {
+  opacity:0;
+  position: absolute;
 }
