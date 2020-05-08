@@ -1,6 +1,3 @@
-// Code template from csvtovis.js (Jiapeng Fan)
-// Adapted to fit contourDensity for attentionmap (Floris Pex)
-
 const svg = d3.select('svg');
 
 const width = +svg.attr('width');
@@ -132,42 +129,12 @@ const scatterPlot = (selection, props) => {
 			.call(xAxis)
 			.selectAll('.domain').remove();
 
-    
-    //
-    var color = d3.scaleLinear()
-          .domain([0, 1]) // Points per square pixel.
-          .range(["green", "red"])
-    
-      // compute the density data
-      var densityData = d3.contourDensity()
-        .x(function(d) { return x(d.MappedFixationPointX); })
-        .y(function(d) { return y(d.MappedFixationPointY); })
-        .size([width, height])
-        .bandwidth(3)
-        (dataSelected)
-    
-      // show the shape!
-      /*
-      svg.insert("g", "g")
-        .selectAll("path")
-        .data(densityData)
-        .enter().append("path")
-          .attr("d", d3.geoPath())
-          .attr("fill", function(d) { return color(d.value); })
-          */
-
-
-    //
-    
-    //Draw circles for each row of the selected data
-	const attention = g.merge(gEnter)
-		.selectAll('path').data(dataSelected);
-	attention
-		.enter().append('path')
-            .merge(attention)
-                .attr("d", d3.geoPath())
-          .      attr("fill", function(d) { return color(d.value); })
-                /*
+	//Draw circles for each row of the selected data
+	const circles = g.merge(gEnter)
+		.selectAll('circle').data(dataSelected);
+	circles
+		.enter().append('circle')
+			.merge(circles)
 				.attr('cx', innerWidth/2)
 				.attr('cy', innerHeight/2)
 				.attr('r', 0)
@@ -175,9 +142,8 @@ const scatterPlot = (selection, props) => {
 			.delay((d, i) => i)
 				.attr('r', circleRadius)
 				.attr('cx', d => xScale(xValue(d)))
-                .attr('cy', d => yScale(yValue(d)));
-                */
-	attention
+				.attr('cy', d => yScale(yValue(d)));
+	circles
 		.exit()
 			.transition().duration(2000)
 				.attr('r', 0)
@@ -188,8 +154,7 @@ const scatterPlot = (selection, props) => {
 	g.append('text')
 		.attr('class', 'title')
   	.attr('y', -15)
-        .text(title);
-        
+		.text(title);
 }
 
 //Function render
