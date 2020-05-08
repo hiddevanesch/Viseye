@@ -142,8 +142,9 @@ const scatterPlot = (selection, props) => {
 				d3.select('#tooltip').transition()
 						.duration(200)
 							.style('opacity', .9)
-							.style("left", (d3.event.pageX) + "px")
-							.style("top", (d3.event.pageY) + "px");
+							.style('left', (d3.event.pageX + 5) + 'px')
+							.style('top', (d3.event.pageY + 5) + 'px')
+							.style('display', 'block');
 				d3.select('#tooltip').html(tooltipformat(d));
 			})
 			.on('mouseout', d => {
@@ -191,7 +192,7 @@ const render = () => {
 		title: 'Scatterplot: Eye tracking data per city',
 		xValue: d => d.MappedFixationPointX,
 	  yValue: d => d.MappedFixationPointY,
-	  circleRadius: 5,
+	  circleRadius: 4,
 	  margin: { top: 50, right: 20, bottom: 50, left: 60 },
 	})
 }

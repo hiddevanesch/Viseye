@@ -122,7 +122,7 @@ d3.csv("data.csv", function(error, data) {
       .on("mouseover", function(d) {
           tooltip.transition()
                .duration(200)
-               .style("opacity", .9);
+               .style("opacity", .9)
           tooltip.html(d["StimuliName"] + "<br/> (" + xValue(d)
 	        + ", " + yValue(d) + ")")
                .style("left", (d3.event.pageX + 5) + "px")
