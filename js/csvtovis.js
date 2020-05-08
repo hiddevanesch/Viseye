@@ -129,20 +129,39 @@ const scatterPlot = (selection, props) => {
 			.call(xAxis)
 			.selectAll('.domain').remove();
 
+	const tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
+	+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
+	+ '<br/>' + 'Description: ' + d['description'];
+
 	//Draw circles for each row of the selected data
 	const circles = g.merge(gEnter)
 		.selectAll('circle').data(dataSelected);
 	circles
 		.enter().append('circle')
-			.merge(circles)
-				.attr('cx', innerWidth/2)
-				.attr('cy', innerHeight/2)
-				.attr('r', 0)
-			.transition().duration(2000)
-			.delay((d, i) => i)
-				.attr('r', circleRadius)
-				.attr('cx', d => xScale(xValue(d)))
-				.attr('cy', d => yScale(yValue(d)));
+			.on('mouseover', d => {
+				d3.select('#tooltip').transition()
+						.duration(200)
+							.style('opacity', .9)
+							.style('left', (d3.event.pageX + 5) + 'px')
+							.style('top', (d3.event.pageY + 5) + 'px')
+							.style('display', 'block');
+				d3.select('#tooltip').html(tooltipformat(d));
+			})
+			.on('mouseout', d => {
+				d3.select('#tooltip')
+					.transition().duration(400)
+					.style('opacity', 0);
+			})
+		.merge(circles)
+			.attr('cx', innerWidth/2)
+			.attr('cy', innerHeight/2)
+			.attr('r', 0)
+		.transition().duration(2000)
+		.delay((d, i) => i)
+			.attr('r', circleRadius)
+			.attr('cx', d => xScale(xValue(d)))
+			.attr('cy', d => yScale(yValue(d)));
+		
 	circles
 		.exit()
 			.transition().duration(2000)
@@ -173,7 +192,7 @@ const render = () => {
 		title: 'Scatterplot: Eye tracking data per city',
 		xValue: d => d.MappedFixationPointX,
 	  yValue: d => d.MappedFixationPointY,
-	  circleRadius: 2,
+	  circleRadius: 4,
 	  margin: { top: 50, right: 20, bottom: 50, left: 60 },
 	})
 }
