@@ -3,14 +3,18 @@
 <head>
   <title>Scatter Plot</title>
   <link rel="stylesheet" href="css/csvtovis.css">
-  <script src="https://unpkg.com/d3@5.6.0/dist/d3.min.js"></script>
+  <script src="https://d3js.org/d3.v5.min.js"></script>    
 </head>
   <body>
     <div id="menus"></div>
+      <input type="checkbox" id='checkBox_id' class="checkbox" checked='checked'/>
+      <label id='labelCheckBox'> Cumulative </label>
+      <button id="play-button">Play</button>
+      <svg id='svgSlider' height='50', width='500'></svg>
     <!-- Color Scale -->
     <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
-    <div id ="scatterPlot">>
-      <svg viewBox="0 0 960 500" width = "960" height = "500"></svg>
+    <div id ="scatterPlot">
+      <svg id='svgScatter' viewBox="0 0 960 500" width = "960" height = "500"></svg>
     </div>
     <script src="js/csvtovis.js" type="text/javascript"></script>
   </body>
