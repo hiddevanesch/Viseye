@@ -6,7 +6,6 @@
 export default {
   data() {
     return {
-      prevHeight: 0
     };
   }
 }

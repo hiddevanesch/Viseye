@@ -1,5 +1,7 @@
 <template>
-  <scatter-plot />
+  <div>
+    <scatter-plot />
+  </div>
 </template>
 
 <script>

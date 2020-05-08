@@ -1,17 +1,305 @@
 <template>
   <div>
-    <p>kak</p>
+    <div id="menus"></div>
+    <!-- Color Scale -->
+    <div id="tooltip"></div>
+    <div id="scatterPlot">
+      <svg id="scatterPlotSVG" viewBox="0 0 960 500" width="960" height="500"></svg>
+    </div>
   </div>
 </template>
 
 <script>
 import { mapState } from "vuex";
+import * as d3 from "d3";
 
 export default {
   computed: {
     ...mapState([
       'files'
     ])
+  },
+  mounted: function() {
+    this.visualize();
+  },
+  methods: {
+    visualize() {
+      const svg = d3.select('#scatterPlotSVG');
+
+      const width = +svg.attr('width');
+      const height = +svg.attr('height');
+
+      let data;
+      let stimulusName;
+      let allVersions = [];
+      let dataSelected;
+
+      //function dropdown menu
+      const dropdownMenu = (selection, props) => {
+        const {
+          options,
+          onOptionClicked
+        } = props;
+
+        //Create select keyword with click event listener
+        let select = selection.selectAll('select').data([null]);
+        select = select.enter().append('select')
+          .merge(select)
+            .on('change', function() {
+              onOptionClicked(this.value);
+            });
+
+        //Create options inside the dropdown menu with the corresponding value for the displayed text
+        const option = select.selectAll('option').data(options);
+        option.enter().append('option')
+          .merge(option)
+            .text(d => d)
+            .attr("value", d => d);
+        }
+
+      //Store the selected option
+      const onStimulusNameClicked = option => {
+        stimulusName = option;
+        render();
+      }
+
+      //plot a scatterplot
+      const scatterPlot = (selection, props) => {
+        const {
+          title,
+          xValue,
+          yValue,
+          circleRadius,
+          margin,
+        } = props;
+
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+      //Filter the data
+        dataSelected = data.filter(d => d.StimuliName == stimulusName);
+
+      //Select the image according to the selected option
+        let imageSelected = allVersions.filter(d => d == stimulusName);
+
+      //Update image and set background
+        let background = `../assets/${imageSelected}`;
+
+        const img = selection.selectAll('image').data([null]);
+        const imgEnter = img.enter().append('image')
+
+        imgEnter
+          .merge(img)
+            .attr(':src', background)
+            .attr('preserveAspectRatio', 'none')
+            .attr('width', innerWidth)
+            .attr('height', innerHeight)
+            .attr('transform',
+              `translate(${margin.left},${margin.top})`
+            );
+
+        //Transform the data values into positions
+        const xScale = d3.scaleLinear()
+          .domain([d3.min(dataSelected, xValue), d3.max(dataSelected, xValue)])
+          .range([0, innerWidth])
+          .nice();
+
+        const yScale = d3.scaleLinear()
+          .domain([d3.min(dataSelected, yValue), d3.max(dataSelected, yValue)])
+          .range([innerHeight, 0])
+          .nice();
+
+        //Create container for scatterplot
+        const g = selection.selectAll('.container').data([null]);
+        const gEnter = g
+          .enter().append('g')
+            .attr('class', 'container');
+        //Translating the visualisation to innerposition with the updated data
+        gEnter
+          .merge(g)
+            .attr('transform',
+              `translate(${margin.left},${margin.top})`
+            );
+
+        //Customizing the axis
+        const xAxis = d3.axisBottom(xScale)
+          .tickSize(-innerHeight)
+          .tickPadding(10);
+
+        const yAxis = d3.axisLeft(yScale)
+          .tickSize(-innerWidth)
+          .tickPadding(10);
+
+        //Creating the axes
+        const yAxisG = g.select('.y-axis');
+        const yAxisGEnter = gEnter
+          .append('g')
+            .attr('class', 'y-axis');
+        yAxisG
+          .merge(yAxisGEnter)
+            .call(yAxis)
+            .selectAll('.domain').remove();
+
+        const xAxisG = g.select('.x-axis');
+        const xAxisGEnter = gEnter
+          .append('g')
+              .attr('class', 'x-axis');
+        xAxisG
+          .merge(xAxisGEnter)
+            .attr('transform', `translate(0,${innerHeight})`)
+            .call(xAxis)
+            .selectAll('.domain').remove();
+
+        const tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
+        + ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
+        + '<br/>' + 'Description: ' + d['description'];
+
+        //Draw circles for each row of the selected data
+        const circles = g.merge(gEnter)
+          .selectAll('circle').data(dataSelected);
+        circles
+          .enter().append('circle')
+            .on('mouseover', d => {
+              d3.select('#tooltip').transition()
+                  .duration(200)
+                    .style('opacity', .9)
+                    .style('left', (d3.event.pageX + 5) + 'px')
+                    .style('top', (d3.event.pageY + 5) + 'px')
+                    .style('display', 'block');
+              d3.select('#tooltip').html(tooltipformat(d));
+            })
+            .on('mouseout', () => {
+              d3.select('#tooltip')
+                .transition().duration(400)
+                .style('opacity', 0);
+            })
+          .merge(circles)
+            .attr('cx', innerWidth/2)
+            .attr('cy', innerHeight/2)
+            .attr('r', 0)
+          .transition().duration(2000)
+          .delay((d, i) => i)
+            .attr('r', circleRadius)
+            .attr('cx', d => xScale(xValue(d)))
+            .attr('cy', d => yScale(yValue(d)));
+          
+        circles
+          .exit()
+            .transition().duration(2000)
+              .attr('r', 0)
+              .attr('cx', innerWidth/2)
+              .attr('cy', innerHeight/2)
+            .remove();
+
+        g.append('text')
+          .attr('class', 'title')
+          .attr('y', -15)
+          .text(title);
+      }
+
+      //Function render
+      const render = () => {
+      //Invoke function dropdownMenu to generate menu
+        d3.select('#menus')
+          .call(dropdownMenu, {
+            options: allVersions,
+            onOptionClicked: onStimulusNameClicked
+            }
+          );
+
+
+        //Invoke function to generate the scatterplot
+        svg.call(scatterPlot, {
+          title: 'Scatterplot: Eye tracking data per city',
+          xValue: d => d.MappedFixationPointX,
+          yValue: d => d.MappedFixationPointY,
+          circleRadius: 4,
+          margin: { top: 50, right: 20, bottom: 50, left: 60 },
+        })
+      }
+
+      //(RE-)Render the data according to the selection by filter
+      d3.csv('data.csv')
+        .then(() => {
+          data = this.files;
+          data.forEach(d => {
+            d.MappedFixationPointX = +d.MappedFixationPointX;
+            d.MappedFixationPointY = +d.MappedFixationPointY;
+            if (!allVersions.includes(d.StimuliName)) {
+              allVersions.push(d.StimuliName);
+            }
+          });
+          render()
+      });
+    }
   }
 }
 </script>
+
+<style>
+body {
+  margin: 0px;
+  overflow: hidden;
+}
+
+circle {
+  fill: blue;
+  opacity: 0.4;
+}
+
+circle:hover {
+  fill: red;
+}
+
+text {
+  font-family: sans-serif;
+}
+
+.tick text {
+  font-size: 1.6em;
+  fill: #635F5D;
+}
+
+.tick line {
+  stroke: #C0C0BB;
+  opacity: 0.4;
+}
+
+.title{
+  font-size: 2em;
+  text-align: center;
+}
+
+#menus {
+  font-size: 1em;
+  border: 100px;
+  border-style: solid black;
+}
+
+#menus select {
+  font-size: 1rem;
+}
+
+#menus select option {
+  font-size: 1rem;
+}
+
+#scatterPlot {
+  border: 100px;
+  border-style: solid black;
+}
+
+#tooltip {
+  opacity:0;
+  position: absolute;
+  padding: 5px;
+  pointer-events: none;
+  color: black;
+  font-family: sans-serif;
+  font-size: 0.6em;
+  font-weight: bold;
+  box-shadow: 5px -5px 5px rgba(0, 0, 0, 0.5);
+  background-color: white;
+  border-radius: 4px;
+}
+</style>

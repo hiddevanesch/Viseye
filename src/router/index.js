@@ -18,7 +18,7 @@ Vue.use(VueRouter)
     component: Upload
   },
   {
-    path: '/visulization',
+    path: '/visualization',
     name: 'Visualization',
     component: Visualization
   }
