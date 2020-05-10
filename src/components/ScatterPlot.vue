@@ -502,12 +502,12 @@ body {
   overflow: hidden;
   font-family:"avenir next", Arial, sans-serif;
   font-size: 12px;
-  color: #696969;
+  color: #ffffff;
 }
 
 circle {
-  fill: blue;
-  opacity: 0.4;
+  fill: #498fff;
+  opacity: 0.5;
 }
 
 div.tooltip {
@@ -517,9 +517,9 @@ div.tooltip {
   height: 28px;
   padding: 2px 5px;
   font: 12px sans-serif;
-  background: lightsteelblue;
+  background: #498fff;
   border: 0px;
-  border-radius: 8px;
+  border-radius: 3px;
   pointer-events: none;
 }
 
