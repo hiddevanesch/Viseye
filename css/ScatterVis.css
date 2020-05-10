@@ -4,8 +4,8 @@ body {
 }
 
 circle {
-  fill: blue;
-  opacity: 0.4;
+  fill: #333;
+  opacity: 0.7;
 }
 
 circle:hover {
@@ -55,12 +55,17 @@ text {
   position: absolute;
   padding: 5px;
   pointer-events: none;
-  color: black;
+  color: white;
   font-family: sans-serif;
   font-size: 0.6em;
   font-weight: bold;
   box-shadow: 5px -5px 5px rgba(0, 0, 0, 0.5);
-  background-color: white;
+  background-color: #333;
   border-radius: 4px;
+}
+
+.axis-label {
+  font-size: 3em;
+  fill: #8E8883;
 }
 

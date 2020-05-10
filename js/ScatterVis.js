@@ -7,8 +7,9 @@ let data;
 let stimulusName;
 let allVersions = [];
 let dataSelected;
+let resData;
 
-//function dropdown menu
+//Create dropdown menu
 const dropdownMenu = (selection, props) => {
 	const {
 		options,
@@ -29,7 +30,7 @@ const dropdownMenu = (selection, props) => {
 		.merge(option)
 			.text(d => d)
 			.attr("value", d => d);
-	}
+}
 
 //Store the selected option
 const onStimulusNameClicked = option => {
@@ -48,13 +49,21 @@ const scatterPlot = (selection, props) => {
 	} = props;
 
 	const innerWidth = width - margin.left - margin.right;
-  const innerHeight = height - margin.top - margin.bottom;
-
+	const innerHeight = height - margin.top - margin.bottom;
+	
+	const yAxisLabel = 'Mapped fixation point y';
+	const xAxisLabel = 'Mapped fixation point x';
 //Filter the data
 	dataSelected = data.filter(d => d.StimuliName == stimulusName);
 
-//Select the image according to the selected option
+//Select the image according to the selected map(version)
 	let imageSelected = allVersions.filter(d => d == stimulusName);
+
+//Select the image resolution according to the selected map
+	let citySelected = resData.filter(d => stimulusName.includes(d.city));
+
+	let imgWidth = citySelected[0].width;
+	let imgHeight = citySelected[0].height;
 
 //Update image and set background
 	let background = 'stimuli/' + imageSelected;
@@ -77,14 +86,13 @@ const scatterPlot = (selection, props) => {
 		.domain(allVersions)
 		.range(d3.schemeSet2);
 
-	//Transform the data values into positions
+	//Transform the image resolution into range and domain of the axes
 	const xScale = d3.scaleLinear()
-		.domain([d3.min(dataSelected, xValue), d3.max(dataSelected, xValue)])
+		.domain([0, imgWidth])
 		.range([0, innerWidth])
-		.nice();
 
 	const yScale = d3.scaleLinear()
-		.domain([d3.min(dataSelected, yValue), d3.max(dataSelected, yValue)])
+		.domain([0, imgHeight])
 		.range([innerHeight, 0])
 		.nice();
 
@@ -119,6 +127,17 @@ const scatterPlot = (selection, props) => {
 			.call(yAxis)
 			.selectAll('.domain').remove();
 
+	//Y-axis label
+	yAxisGEnter
+    	.append('text')
+			.attr('class', 'axis-label')
+			.attr('y', -60)
+			.attr('transform', `rotate(-90)`)
+			.attr('text-anchor', 'middle')
+    	.merge(yAxisG.select('.axis-label'))
+      		.attr('x', -innerHeight / 2)
+      		.text(yAxisLabel);
+
 	const xAxisG = g.select('.x-axis');
 	const xAxisGEnter = gEnter
 		.append('g')
@@ -128,6 +147,16 @@ const scatterPlot = (selection, props) => {
 			.attr('transform', `translate(0,${innerHeight})`)
 			.call(xAxis)
 			.selectAll('.domain').remove();
+
+	//X-axis label
+	xAxisGEnter
+		.append('text')
+			.attr('class', 'axis-label')
+			.attr('y', 60)
+			.attr('text-anchor', 'middle')
+		.merge(xAxisG.select('.axis-label'))
+			.attr('x', innerWidth / 2)
+			.text(xAxisLabel);
 
 	const tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
 	+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
@@ -157,7 +186,7 @@ const scatterPlot = (selection, props) => {
 			.attr('cy', innerHeight/2)
 			.attr('r', 0)
 		.transition().duration(2000)
-		.delay((d, i) => i)
+		.delay((d, i) => i * 2)
 			.attr('r', circleRadius)
 			.attr('cx', d => xScale(xValue(d)))
 			.attr('cy', d => yScale(yValue(d)));
@@ -170,9 +199,9 @@ const scatterPlot = (selection, props) => {
 				.attr('cy', innerHeight/2)
 			.remove();
 
-	g.append('text')
+	gEnter.append('text')
 		.attr('class', 'title')
-  	.attr('y', -15)
+  		.attr('y', -15)
 		.text(title);
 }
 
@@ -186,27 +215,36 @@ const render = () => {
 			}
 		);
 
-
 	//Invoke function to generate the scatterplot
 	svg.call(scatterPlot, {
 		title: 'Scatterplot: Eye tracking data per city',
 		xValue: d => d.MappedFixationPointX,
-	  yValue: d => d.MappedFixationPointY,
-	  circleRadius: 4,
-	  margin: { top: 50, right: 20, bottom: 50, left: 60 },
+	  	yValue: d => d.MappedFixationPointY,
+	  	circleRadius: 4,
+	  	margin: { top: 50, right: 20, bottom: 80, left: 90 },
 	})
 }
 
 //(RE-)Render the data according to the selection by filter
-d3.csv('data.csv')
-  .then(loadedData => {
-		data = loadedData;
-  	data.forEach(d => {
-    	d.MappedFixationPointX = +d.MappedFixationPointX;
-    	d.MappedFixationPointY = +d.MappedFixationPointY;
-      if (!allVersions.includes(d.StimuliName)) {
-				allVersions.push(d.StimuliName);
-    	}
-    });
-  	render()
+Promise.all([
+	d3.csv('data.csv'),
+	d3.csv('stimuli/resolution.csv')
+]).then(loadedData => {
+	data = loadedData[0];
+	resData = loadedData[1];
+
+	data.forEach(d => {
+		d.MappedFixationPointX = +d.MappedFixationPointX;
+		d.MappedFixationPointY = +d.MappedFixationPointY;
+		if (!allVersions.includes(d.StimuliName)) {
+			allVersions.push(d.StimuliName);
+		}
+	});
+
+	resData.forEach(d => {
+		d.width = +d.width;
+		d.height = +d.height
+	})
+	stimulusName = allVersions[0];
+	render();
 });
