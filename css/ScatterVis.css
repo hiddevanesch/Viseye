@@ -69,3 +69,79 @@ text {
   fill: #8E8883;
 }
 
+#play-button {
+  position: absolute;
+  top: 0px;
+  left: 295px;
+  background: #f08080;
+  padding-right: 26px;
+  border-radius: 3px;
+  border: none;
+  color: white;
+  margin: 0;
+  padding: 0 12px;
+  width: 60px;
+  cursor: pointer;
+  height: 25px;
+}
+
+#checkBox_id {
+  position: absolute;
+  top: 0px;
+  left: 205px;
+  color: white;
+  width: 20px;
+  height: 20px;
+}
+
+#labelCheckBox {
+  position: absolute;
+  top: 6px;
+  left: 230px;
+}
+
+
+#cumulativeCheck-Box {
+  position: absolute;
+  top: 5px;
+  left: 45px;
+}
+
+#play-button:hover {
+  background-color: #696969;
+}    
+
+.ticks {
+  font-size: 28px;
+}
+
+.track,
+.track-inset,
+.track-overlay {
+  stroke-linecap: round;
+}
+
+.track {
+  stroke: #000;
+  stroke-opacity: 0.3;
+  stroke-width: 10px;
+}
+
+.track-inset {
+  stroke: #dcdcdc;
+  stroke-width: 8px;
+}
+
+.track-overlay {
+  pointer-events: stroke;
+  stroke-width: 50px;
+  stroke: transparent;
+  cursor: crosshair;
+}
+
+.handle {
+  fill: #fff;
+  stroke: #000;
+  stroke-opacity: 0.5;
+  stroke-width: 1.25px;
+}
