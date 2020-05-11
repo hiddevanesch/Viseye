@@ -457,6 +457,7 @@ Promise.all([
 		d.width = +d.width;
 		d.height = +d.height
 	})
+	createTimeline();
 	stimulusName = allVersions[0];
 	render();
 });
