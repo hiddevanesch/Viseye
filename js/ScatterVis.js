@@ -471,6 +471,5 @@ Promise.all([
 	})
 	createTimeline();
 	stimulusName = allVersions[0];
-	timelineUpdate = true;
 	render();
 });
