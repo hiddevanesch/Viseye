@@ -201,11 +201,6 @@ if (timelineUpdate){
 				`translate(${margin.left},${margin.top})`
 			);
 
-	//A color scale: one color per data selection
-	const dotColor = d3.scaleOrdinal()
-		.domain(allVersions)
-		.range(d3.schemeSet2);
-
 	//Transform the image resolution into range and domain of the axes
 	const xScale = d3.scaleLinear()
 		.domain([0, imgWidth])
