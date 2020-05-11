@@ -1,13 +1,11 @@
-const svg = d3.select('svg');
+const svg = d3.select('#svgScatter');
 const svgSlider = d3.select('#svgSlider');
 
-const margin = { top: 40, right: 20, bottom: 50, left: 60 };
 const width = +svg.attr('width');
 const height = +svg.attr('height');
 const widthSlider = +svgSlider.attr('width') - 100;
 const heightSlider = +svgSlider.attr('height');
-const innerWidth = width - margin.left - margin.right;
-const innerHeight = height - margin.top - margin.bottom;
+
 
 let data;
 let stimulusName;
