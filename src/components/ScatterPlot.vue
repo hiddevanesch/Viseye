@@ -62,8 +62,8 @@ export default {
     let timelineUpdate = false;
     let maxvalueData;
     let sliderLine;
-    const yAxisLabel = 'Y coordinate';
-    const xAxisLabel = 'X coordinate';
+    const yAxisLabel = 'y coordinate';
+    const xAxisLabel = 'x coordinate';
     const title = 'Scatterplot: Eye tracking data per city';
 
     /*
@@ -529,7 +529,7 @@ text {
 
 .tick text {
   font-size: 1.6em;
-  fill: #635F5D;
+  fill: #666666;
 }
 
 .tick line {
@@ -540,6 +540,7 @@ text {
 .title{
   font-size: 2em;
   text-align: center;
+  fill: #666666;
 }
 
 #menus {
@@ -557,7 +558,7 @@ text {
 }
 
 .axis-label {
-  fill: black;
+  fill: #666666;
   font-size: 15pt;
   font-family: sans-serif;
 }
@@ -606,7 +607,7 @@ text {
 }
 
 #play-button:hover {
-  background-color: #696969;
+  background-color: #666666;
 }    
 
 .ticks {
@@ -626,7 +627,7 @@ text {
 }
 
 .track-inset {
-  stroke: #dcdcdc;
+  stroke: #858585;
   stroke-width: 8px;
 }
 
