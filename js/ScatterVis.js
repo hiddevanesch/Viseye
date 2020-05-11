@@ -1,7 +1,10 @@
 const svg = d3.select('svg');
+const svgSlider = d3.select('#svgSlider')
 
 const width = +svg.attr('width');
 const height = +svg.attr('height');
+const widthSlider = +svgSlider.attr('width') - 100;
+const heightSlider = +svgSlider.attr('height');
 
 let data;
 let stimulusName;
