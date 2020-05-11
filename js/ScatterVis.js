@@ -1,10 +1,13 @@
 const svg = d3.select('svg');
-const svgSlider = d3.select('#svgSlider')
+const svgSlider = d3.select('#svgSlider');
 
+const margin = { top: 40, right: 20, bottom: 50, left: 60 };
 const width = +svg.attr('width');
 const height = +svg.attr('height');
 const widthSlider = +svgSlider.attr('width') - 100;
 const heightSlider = +svgSlider.attr('height');
+const innerWidth = width - margin.left - margin.right;
+const innerHeight = height - margin.top - margin.bottom;
 
 let data;
 let stimulusName;
@@ -155,29 +158,37 @@ const scatterPlot = (selection, props) => {
 	
 	const yAxisLabel = 'Mapped fixation point y';
 	const xAxisLabel = 'Mapped fixation point x';
-//Filter the data
+
+	//Filter the data, first it corrects the timeline, then it filters the data
+	currentValue = maxvalueData;
+	handle.attr("cx", timelineScale(currentValue));
+	label
+		.attr("x", timelineScale(currentValue))
+		.text(Math.round(currentValue/10)/100+ ' sec');
+	
+	//Filter the data
 	dataSelected = data.filter(d => d.StimuliName == stimulusName);
 
-// update the timeline according to the data if a chart has been selected
-if (timelineUpdate){
-	const axisTimeline = dataSelected => dataSelected.Timestamp;
-	/* 
-	update the minimum and maximum value of the selected data
-	update the domain of the slider 
-	update the value above the slider
-	*/
-	minTimeSlider = +d3.min(dataSelected, function(d) {return d.Timestamp || Infinity; });
-	maxTimeSlider = +d3.max(dataSelected,axisTimeline);
-	targetValue = maxTimeSlider - minTimeSlider;
-	timelineScale.domain([minTimeSlider,maxTimeSlider]);
-	slider.selectAll("text")
-		.data(timelineScale.ticks(10))
-		currentValue = maxTimeSlider;
-		handle.attr("cx", timelineScale(currentValue));
-		label
-			.attr("x", timelineScale(currentValue))
-			.text(Math.round(currentValue/10)/100+' sec');
-}
+	// update the timeline according to the data if a chart has been selected
+	if (timelineUpdate){
+		const axisTimeline = dataSelected => dataSelected.Timestamp;
+		/* 
+		update the minimum and maximum value of the selected data
+		update the domain of the slider 
+		update the value above the slider
+		*/
+		minTimeSlider = +d3.min(dataSelected, function(d) {return d.Timestamp || Infinity; });
+		maxTimeSlider = +d3.max(dataSelected,axisTimeline);
+		targetValue = maxTimeSlider - minTimeSlider;
+		timelineScale.domain([minTimeSlider,maxTimeSlider]);
+		slider.selectAll("text")
+			.data(timelineScale.ticks(10))
+			currentValue = maxTimeSlider;
+			handle.attr("cx", timelineScale(currentValue));
+			label
+				.attr("x", timelineScale(currentValue))
+				.text(Math.round(currentValue/10)/100+' sec');
+	}
 
 //Select the image according to the selected map(version)
 	let imageSelected = allVersions.filter(d => d == stimulusName);
@@ -216,7 +227,7 @@ if (timelineUpdate){
 
 	//Create container for scatterplot
 	const g = selection.selectAll('.container').data([null]);
-  const gEnter = g
+ 	const gEnter = g
     .enter().append('g')
       .attr('class', 'container');
 	//Translating the visualisation to innerposition with the updated data
@@ -413,7 +424,7 @@ if (timelineUpdate){
 				if(cumulativeFilter){
 				dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h);
 				}
-				else{
+				else {
 					dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h && d.Timestamp>h-500);
 				}
     drawPlot(dataSelected);
@@ -462,5 +473,6 @@ Promise.all([
 	})
 	createTimeline();
 	stimulusName = allVersions[0];
+	timelineUpdate = true;
 	render();
 });
