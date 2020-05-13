@@ -62,6 +62,7 @@ export default {
     let timelineUpdate = false;
     let maxvalueData;
     let sliderLine;
+    let firstLoad = true;
     const yAxisLabel = 'y coordinate';
     const xAxisLabel = 'x coordinate';
     const title = 'Scatterplot: Eye tracking data per city';
@@ -229,7 +230,7 @@ export default {
       let background = 'static/jpg/' + imageSelected;
 
       const img = selection.selectAll('image').data([null]);
-      const imgEnter = img.enter().append('image')
+      const imgEnter = img.enter().append('image');
 
       imgEnter
         .merge(img)
@@ -243,12 +244,12 @@ export default {
 
       //Transform the data values into positions
       const xScale = d3.scaleLinear()
-        .domain([d3.min(dataSelected, xValue), d3.max(dataSelected, xValue)])
+        .domain([0, d3.max(dataSelected, xValue)])
         .range([0, innerWidth])
         .nice();
 
       const yScale = d3.scaleLinear()
-        .domain([d3.min(dataSelected, yValue), d3.max(dataSelected, yValue)])
+        .domain([0, d3.max(dataSelected, yValue)])
         .range([innerHeight, 0])
         .nice();
 
@@ -274,55 +275,57 @@ export default {
       const yAxis = d3.axisLeft(yScale)
         .tickSize(-innerWidth)
         .tickPadding(10);
-
-      //Creating the axes
-      const yAxisG = g.select('.y-axis');
-      const yAxisGEnter = gEnter
-        .append('g')
-          .attr('class', 'y-axis');
-      svg.append('text')
-          .attr('class', 'title')
-          .attr('y', margin.top/2)
-          .attr('x', margin.left)
-          .text(title);
-      yAxisG
-        .merge(yAxisGEnter)
-          .call(yAxis)
-          .selectAll('.domain').remove();
-        
-      const xAxisG = g.select('.x-axis')
-        .append('text')
-          .attr('class', 'axis-label')
-          .attr('y',innerHeight+margin.top)
-          .attr('x', innerWidth / 2)
-          .attr('fill', 'black')
-          .text(xAxisLabel);
-      const xAxisGEnter = gEnter
-        .append('g')
-            .attr('class', 'x-axis');
-      xAxisG
-        .merge(xAxisGEnter)
-          .attr('transform', `translate(0,${innerHeight})`)
-          .call(xAxis)
-          .selectAll('.domain').remove();
-
-      xAxisGEnter
-        .append('text')
-          .attr('class', 'axis-label')
-          .attr('y', margin.top)
-          .attr('x', innerWidth / 2)
-          .text(xAxisLabel);
-
-      yAxisGEnter
-        .append('text')
-            .attr('class', 'axis-label')
-            .attr('y', -40)
-            .attr('x', -innerHeight / 2 )
-            .attr('transform', `rotate(-90)`)
-            .style('text-anchor', 'middle')
-            .text(yAxisLabel);
       
+      if (firstLoad) {
+        //Creating the axes
+        const yAxisG = g.select('.y-axis');
+        const yAxisGEnter = gEnter
+          .append('g')
+            .attr('class', 'y-axis');
+        svg.append('text')
+            .attr('class', 'title')
+            .attr('y', margin.top/2)
+            .attr('x', margin.left)
+            .text(title);
+        yAxisG
+          .merge(yAxisGEnter)
+            .call(yAxis)
+            .selectAll('.domain').remove();
+          
+        const xAxisG = g.select('.x-axis')
+          .append('text')
+            .attr('class', 'axis-label')
+            .attr('y',innerHeight+margin.top)
+            .attr('x', innerWidth / 2)
+            .attr('fill', 'black')
+            .text(xAxisLabel);
+        const xAxisGEnter = gEnter
+          .append('g')
+              .attr('class', 'x-axis');
+        xAxisG
+          .merge(xAxisGEnter)
+            .attr('transform', `translate(0,${innerHeight})`)
+            .call(xAxis)
+            .selectAll('.domain').remove();
 
+        xAxisGEnter
+          .append('text')
+            .attr('class', 'axis-label')
+            .attr('y', margin.top)
+            .attr('x', innerWidth / 2)
+            .text(xAxisLabel);
+
+        yAxisGEnter
+          .append('text')
+              .attr('class', 'axis-label')
+              .attr('y', -40)
+              .attr('x', -innerHeight / 2 )
+              .attr('transform', `rotate(-90)`)
+              .style('text-anchor', 'middle')
+              .text(yAxisLabel);
+          firstLoad = false;
+      }
+      
       //Draw circles for each row of the selected data
       const circles = g.merge(gEnter)
         .selectAll('circle').data(dataSelected);
@@ -335,10 +338,10 @@ export default {
             .on("mouseover", function(d) {
               tooltip.transition()
                 .duration(200)
-                .style("opacity", 1);
-              tooltip.html("Coordinates :" + d.MappedFixationPointX + "," + d.MappedFixationPointX + "<br/> By user:" + d.user)
-                .style("left", (d3.event.pageX) + "px")
-                .style("top", (d3.event.pageY - 28) + "px");
+                .style("opacity", 1)
+                .style("left", (d3.event.pageX + 5) + "px")
+                .style("top", (d3.event.pageY + 5) + "px");
+              tooltip.html("Coordinates :" + d.MappedFixationPointX + "," + d.MappedFixationPointY + "<br/> By user:" + d.user);
             })
             .on("mouseout", function() {
               tooltip.transition()
@@ -359,7 +362,6 @@ export default {
             .attr('cy', innerHeight/2)
           .remove();
 
-      
       // Update the data from the timeline scaler
       function drawPlot(dataDrawPlot) {
         const circles = g.merge(gEnter)
@@ -373,10 +375,10 @@ export default {
               .on("mouseover", function(d) {
                 tooltip.transition()
                   .duration(200)
-                  .style("opacity", 1);
-                tooltip.html("Coordinates :" + d.MappedFixationPointX + "," + d.MappedFixationPointX + "<br/> By user:" + d.user)
-                  .style("left", (d3.event.pageX) + "px")
-                  .style("top", (d3.event.pageY - 28) + "px");
+                  .style("opacity", 1)
+                  .style("left", (d3.event.pageX + 5) + "px")
+                  .style("top", (d3.event.pageY + 5) + "px");
+                tooltip.html("Coordinates :" + d.MappedFixationPointX + "," + d.MappedFixationPointY + "<br/> By user:" + d.user);
               })
               .on("mouseout", function() {
                 tooltip.transition()
@@ -414,8 +416,7 @@ export default {
       function step() {
         update(currentValue);
 
-        const amountOfPoints = data.filter(d => d.StimuliName == stimulusName).length;
-        amountSlider = amountOfPoints;
+        amountSlider = Math.min(data.filter(d => d.StimuliName == stimulusName).length,50);
         // Updates the slider by the compensated amount
         currentValue +=  targetValue/amountSlider;
         // If the slider is finished, then don't move it anymore, clear the interval and set the value to its start
@@ -469,7 +470,7 @@ export default {
       svg.call(scatterPlot, {
         xValue: d => d.MappedFixationPointX,
         yValue: d => d.MappedFixationPointY,
-        circleRadius: 10,
+        circleRadius: 5,
         margin: { top: 40, right: 20, bottom: 50, left: 60 },
       })
     }
@@ -639,5 +640,19 @@ text {
   stroke: #000;
   stroke-opacity: 0.5;
   stroke-width: 1.25px;
+}
+
+#tooltip {
+  opacity:0;
+  position: absolute;
+  padding: 5px;
+  pointer-events: none;
+  color: white;
+  font-family: sans-serif;
+  font-size: 0.6em;
+  font-weight: bold;
+  box-shadow: 5px -5px 5px rgba(0, 0, 0, 0.5);
+  background-color: #333;
+  border-radius: 4px;
 }
 </style>

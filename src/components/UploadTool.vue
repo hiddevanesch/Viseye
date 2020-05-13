@@ -46,9 +46,18 @@ export default {
       } else {
         var reader = new FileReader();
         var csvData = "";
+        var jsonData;
+        var iconv = require('iconv-lite');
         reader.onload = function(){
-          csvData = reader.result;
-          vm.addFiles(vm.tsvJSON(csvData));
+          csvData = iconv.decode(reader.result, 'latin1');
+          jsonData = vm.tsvJSON(csvData);
+          for (let i = 0; i < jsonData.length; i++) {
+            if (jsonData[i].StimuliName.includes("ý")) {
+              jsonData[i].StimuliName = jsonData[i].StimuliName.replace("Kýln", "Köln").replace("Brýssel", "Brüssel")
+              .replace("Gýteborg", "Göteborg").replace("Dýsseldorf", "Düsseldorf").replace("Zýrich", "Zürich");
+            }
+          }
+          vm.addFiles(jsonData);
         };
         reader.onloadend = function(){
           console.log("Loading finished, sending you to visualization.");
