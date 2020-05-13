@@ -226,7 +226,7 @@ export default {
       let imageSelected = allVersions.filter(d => d == stimulusName);
 
     //Update image and set background
-      let background = 'stimuli/' + imageSelected;
+      let background = 'static/jpg/' + imageSelected;
 
       const img = selection.selectAll('image').data([null]);
       const imgEnter = img.enter().append('image')
@@ -475,22 +475,19 @@ export default {
     }
 
     //(RE-)Render the data according to the selection by filter
-    d3.csv('data.csv')
-      .then(() => {
-        data = this.files;
-        data.forEach(d => {
-          d.MappedFixationPointX = +d.MappedFixationPointX;
+      data = this.files;
+      data.forEach(d => {
+        d.MappedFixationPointX = +d.MappedFixationPointX;
         d.MappedFixationPointY = +d.MappedFixationPointY;
         d.Timestamp  = +d.Timestamp;
-          if (!allVersions.includes(d.StimuliName)) {
-            allVersions.push(d.StimuliName);
-          }
+        if (!allVersions.includes(d.StimuliName)) {
+          allVersions.push(d.StimuliName);
+        }
       });
       createTimeline();
       stimulusName = '01_Antwerpen_S1.jpg';
       timelineUpdate = true;
         render()
-    });
     }
   }
 }
@@ -514,8 +511,7 @@ div.tooltip {
   position: absolute;
   text-align: center;
   /*width: 150px;*/
-  height: 28px;
-  padding: 2px 5px;
+  padding: 5px;
   font: 12px sans-serif;
   background: #498fff;
   border: 0px;
