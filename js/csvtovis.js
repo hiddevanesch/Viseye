@@ -33,9 +33,12 @@ let minTimeSlider;
 let maxTimeSlider;
 let timelineUpdate = false;
 let maxvalueData;
+let sliderLine;
 const yAxisLabel = 'Y coordinate';
 const xAxisLabel = 'X coordinate';
 const title = 'Scatterplot: Eye tracking data per city';
+let timer;
+let firstLoad = true;
 
 /*
 Selects the play button and the checkbox for interactions
@@ -173,7 +176,6 @@ const scatterPlot = (selection, props) => {
 		dataSelected = data.filter(d => (d.StimuliName == stimulusName && d.Timestamp <= currentValue));
 
 	// update the timeline according to the data if a chart has been selected
-	if (timelineUpdate){
 		const axisTimeline = dataSelected => dataSelected.Timestamp;
 		/* 
 		update the minimum and maximum value of the selected data
@@ -191,7 +193,6 @@ const scatterPlot = (selection, props) => {
 			label
 				.attr("x", timelineScale(currentValue))
 				.text(Math.round(currentValue/10)/100+' sec');
-}
 
 //Select the image according to the selected option
 	let imageSelected = allVersions.filter(d => d == stimulusName);
@@ -250,54 +251,58 @@ const scatterPlot = (selection, props) => {
 	const yAxis = d3.axisLeft(yScale)
 		.tickSize(-innerWidth)
 		.tickPadding(10);
-
+if ( firstLoad ){
 	//Creating the axes
 	const yAxisG = g.select('.y-axis');
 	const yAxisGEnter = gEnter
 		.append('g')
 			.attr('class', 'y-axis');
-	svg.append('text')
-			.attr('class', 'title')
-			.attr('y', margin.top/2)
-			.attr('x', margin.left)
-			.text(title);
-	yAxisG
-		.merge(yAxisGEnter)
-			.call(yAxis)
-			.selectAll('.domain').remove();
-		
-	const xAxisG = g.select('.x-axis')
-		.append('text')
-			.attr('class', 'axis-label')
-			.attr('y',innerHeight+margin.top)
-			.attr('x', innerWidth / 2)
-			.attr('fill', 'black')
-			.text(xAxisLabel);
-	const xAxisGEnter = gEnter
-		.append('g')
-				.attr('class', 'x-axis');
-	xAxisG
-		.merge(xAxisGEnter)
-			.attr('transform', `translate(0,${innerHeight})`)
-			.call(xAxis)
-			.selectAll('.domain').remove();
 
-	xAxisGEnter
-		.append('text')
-			.attr('class', 'axis-label')
-			.attr('y', margin.top)
-			.attr('x', innerWidth / 2)
-			.text(xAxisLabel);
 
-	yAxisGEnter
-		.append('text')
+		svg.append('text')
+				.attr('class', 'title')
+				.attr('y', margin.top/2)
+				.attr('x', margin.left)
+				.text(title);
+		yAxisG
+			.merge(yAxisGEnter)
+				.call(yAxis)
+				.selectAll('.domain').remove();
+			
+		const xAxisG = g.select('.x-axis')
+			.append('text')
 				.attr('class', 'axis-label')
-				.attr('y', -40)
-				.attr('x', -innerHeight / 2 )
-				.attr('transform', `rotate(-90)`)
-				.style('text-anchor', 'middle')
-				.text(yAxisLabel);
-	
+				.attr('y',innerHeight+margin.top)
+				.attr('x', innerWidth / 2)
+				.attr('fill', 'black')
+				.text(xAxisLabel);
+		const xAxisGEnter = gEnter
+			.append('g')
+					.attr('class', 'x-axis');
+		xAxisG
+			.merge(xAxisGEnter)
+				.attr('transform', `translate(0,${innerHeight})`)
+				.call(xAxis)
+				.selectAll('.domain').remove();
+
+		xAxisGEnter
+			.append('text')
+				.attr('class', 'axis-label')
+				.attr('y', margin.top)
+				.attr('x', innerWidth / 2)
+				.text(xAxisLabel);
+
+		yAxisGEnter
+			.append('text')
+					.attr('class', 'axis-label')
+					.attr('y', -40)
+					.attr('x', -innerHeight / 2 )
+					.attr('transform', `rotate(-90)`)
+					.style('text-anchor', 'middle')
+					.text(yAxisLabel);
+		firstLoad = false;
+		console.log('read');
+	}
 
 	//Draw circles for each row of the selected data
 	const circles = g.merge(gEnter)
@@ -391,9 +396,9 @@ const scatterPlot = (selection, props) => {
 	// Step function for the play button
 	function step() {
 		update(currentValue);
+		const amountSlider = Math.min(data.filter(d => d.StimuliName == stimulusName).length,50);
 
-		const amountOfPoints = data.filter(d => d.StimuliName == stimulusName).length;
-		amountSlider = amountOfPoints;
+		console.log(amountSlider);
 		// Updates the slider by the compensated amount
 		currentValue +=  targetValue/amountSlider;
 		// If the slider is finished, then don't move it anymore, clear the interval and set the value to its start
@@ -467,6 +472,5 @@ d3.csv('data.csv')
 	});
 	createTimeline();
 	stimulusName = '01_Antwerpen_S1.jpg';
-	timelineUpdate = true;
 	  render()
 });
