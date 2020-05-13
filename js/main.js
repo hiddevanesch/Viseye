@@ -10,3 +10,8 @@ var app = new Vue({
 
   }
 })
+
+
+let map = {
+  Kln: Köln
+}

@@ -103,7 +103,6 @@ function tsvJSON(csv){
       }
 
       result.push(obj);
-
   }
 
   //return result; //JavaScript object

@@ -6,17 +6,15 @@
   <title>Scatter Plot</title>
   <link rel="stylesheet" href="css/ScatterVis.css">
   <script src="https://unpkg.com/d3@5.6.0/dist/d3.min.js"></script>
+  <!-- specific plugin -->
+  <script src="https://d3js.org/d3-contour.v1.min.js"></script>
 </head>
   <body>
     <div id="menus"></div>
-    <input type="checkbox" id='checkBox_id' class="checkbox" checked='checked'/>
-      <label id='labelCheckBox'> Cumulative </label>
-      <button id="play-button">Play</button>
-      <svg id='svgSlider' height='50', width='500'></svg>
-    <div id ="scatterPlot">
+    <div id ="attentionMap">
       <div id="tooltip"></div>
       <svg id = "svgScatter" viewBox="0 0 960 500" width = "960" height = "500"></svg>
     </div>
-    <script src="js/ScatterVis.js" type="text/javascript"></script>
+    <script src="js/AttentionVis.js" type="text/javascript"></script>
   </body>
 </html>

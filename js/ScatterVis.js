@@ -6,7 +6,6 @@ const height = +svg.attr('height');
 const widthSlider = +svgSlider.attr('width') - 100;
 const heightSlider = +svgSlider.attr('height');
 
-
 let data;
 let stimulusName;
 let allVersions = [];
@@ -46,7 +45,6 @@ The timeline slider will be created here
 3. The amount of the slider which is  shown above the circle
 */
 function createTimeline(){
-
 	/*
 	define the axisTimeline for easy access to the timestamps
 	define the mintime of the slider, which is the minimal value of the dataset
