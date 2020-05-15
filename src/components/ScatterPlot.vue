@@ -339,8 +339,8 @@ export default {
               tooltip.transition()
                 .duration(200)
                 .style("opacity", 1)
-                .style("left", (d3.event.pageX + 5) + "px")
-                .style("top", (d3.event.pageY + 5) + "px");
+                .style("left", "calc(" + (d3.event.pageX + 15) + "px - 20vw)")
+                .style("top", (d3.event.pageY + 5 - 100) + "px");
               tooltip.html("Coordinates :" + d.MappedFixationPointX + "," + d.MappedFixationPointY + "<br/> By user:" + d.user);
             })
             .on("mouseout", function() {
@@ -376,8 +376,8 @@ export default {
                 tooltip.transition()
                   .duration(200)
                   .style("opacity", 1)
-                  .style("left", (d3.event.pageX + 5) + "px")
-                  .style("top", (d3.event.pageY + 5) + "px");
+                  .style("left", "calc(" + (d3.event.pageX + 15) + "px - 20vw)")
+                  .style("top", (d3.event.pageY + 5 - 100) + "px");
                 tooltip.html("Coordinates :" + d.MappedFixationPointX + "," + d.MappedFixationPointY + "<br/> By user:" + d.user);
               })
               .on("mouseout", function() {
