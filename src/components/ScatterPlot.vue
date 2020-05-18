@@ -339,9 +339,9 @@ export default {
               tooltip.transition()
                 .duration(200)
                 .style("opacity", 1)
-                .style("left", "calc(" + (d3.event.pageX + 15) + "px - 20vw)")
-                .style("top", (d3.event.pageY + 5 - 100) + "px");
-              tooltip.html("Coordinates :" + d.MappedFixationPointX + "," + d.MappedFixationPointY + "<br/> By user:" + d.user);
+                .style("left", "calc(" + (d3.event.pageX + 10) + "px - 20vw)")
+                .style("top", "calc(" + (d3.event.pageY + 10) + "px - 15vh)");
+              tooltip.html("Coordinates: " + d.MappedFixationPointX + "," + d.MappedFixationPointY + "<br/> By user: " + d.user);
             })
             .on("mouseout", function() {
               tooltip.transition()
@@ -376,9 +376,9 @@ export default {
                 tooltip.transition()
                   .duration(200)
                   .style("opacity", 1)
-                  .style("left", "calc(" + (d3.event.pageX + 15) + "px - 20vw)")
-                  .style("top", (d3.event.pageY + 5 - 100) + "px");
-                tooltip.html("Coordinates :" + d.MappedFixationPointX + "," + d.MappedFixationPointY + "<br/> By user:" + d.user);
+                  .style("left", "calc(" + (d3.event.pageX + 10) + "px - 20vw)")
+                  .style("top", "calc(" + (d3.event.pageY + 10) + "px - 15vh)");
+                tooltip.html("Coordinates: " + d.MappedFixationPointX + "," + d.MappedFixationPointY + "<br/> By user: " + d.user);
               })
               .on("mouseout", function() {
                 tooltip.transition()
@@ -654,5 +654,9 @@ text {
   box-shadow: 5px -5px 5px rgba(0, 0, 0, 0.5);
   background-color: #333;
   border-radius: 4px;
+}
+
+.label {
+  fill: #666666;
 }
 </style>

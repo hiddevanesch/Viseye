@@ -221,7 +221,7 @@ img {
   position: relative;
   width: 100%;
   min-height: 1px;
-  height: 100vh;
+  height: 85vh;
   padding-right: 15px;
   padding-left: 15px;
   padding-top: 20px;
@@ -238,6 +238,15 @@ img {
     max-width: 80%;
 }
 
+.bottom-align {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 20vw;
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
 .order2 {
     -webkit-box-ordinal-group: 3;
     -ms-flex-order: 2;
@@ -249,6 +258,9 @@ img {
   padding-bottom: 20px;
   padding-left: 30px;
   padding-right: 30px;
+  height: 15vh;
+  display: table-cell;
+  vertical-align: middle;
 }
 
 .topbar h1 {

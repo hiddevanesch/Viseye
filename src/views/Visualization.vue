@@ -9,6 +9,9 @@
         <button type="button" class="button button-blue bmar-small full-width">visualization 2</button>
         <button type="button" class="button button-blue bmar-small full-width">visualization 3</button>
         <button type="button" class="button button-blue bmar-small full-width">visualization 4</button>
+          <div class="bottom-align">
+            <button type="button" class="button button-green bmar-small full-width">screenshot</button>
+          </div>
       </div>
       <div class="visualizationbox viscol col80 order2 bg-dgray">
         <scatter-plot />
