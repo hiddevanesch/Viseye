@@ -138,7 +138,7 @@ const densityPlotX = (selection, props) => {
 		.enter().append('path')
 			.merge(path)
 			.transition().duration(1000)
-				.attr('d',  console.log(line()));
+				.attr('d',  line());
 
 	// Function to compute density
 	function kernelDensityEstimator(kernel, X) {
