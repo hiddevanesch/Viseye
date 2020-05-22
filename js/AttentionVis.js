@@ -1,13 +1,28 @@
-const svg = d3.select('#svgScatter');
+const svg = d3.select('#svgAttention');
+const svgDensX = d3.select('#svgDensityX');
+const svgDensY = d3.select('#svgDensityY');
 
 const width = +svg.attr('width');
 const height = +svg.attr('height');
+const widthDens = +svgDensX.attr('width');
+const heightDens = +svgDensX.attr('height');
 
 let data;
 let stimulusName;
-let allVersions = [];
 let dataSelected;
 let resData;
+let allVersions = [];
+
+//initialize the position of the svgs
+const initialization = (selection, props) => {
+	const {maps} = props;
+
+	selection.attr('transform',
+	`translate(${heightDens}, 0)`
+	);
+
+	stimulusName = maps[0]	
+}
 
 //Create dropdown menu
 const dropdownMenu = (selection, props) => {
@@ -38,13 +53,117 @@ const onStimulusNameClicked = option => {
 	render();
 }
 
-//plot a scatterplot
-const scatterPlot = (selection, props) => {
+//Plot density plot for mapped fixation point x
+const densityPlotX = (selection, props) => {
+	const {
+		data,
+		xScale,
+		xValue
+	} = props;
+
+	const yAxisLabel = 'Density';
+
+	//Set y axis range
+	const yScale = d3.scaleLinear()
+		.domain(0, 0,1)
+		.range(heightDens, 0);
+
+	// Compute kernel density estimation
+	let kde = kernelDensityEstimator(kernelEpanechnikov(7), xScale.ticks(40));
+	let density =  kde(data.map(xValue));
+
+	//Create container for density plot X
+	const g = selection.selectAll('.containerDensX').data([null]);
+ 	const gEnter = g
+    .enter().append('g')
+	  .attr('class', 'containerDensX');
+
+	//Customizing the axis
+	const xAxis = d3.axisBottom(xScale)
+		.tickSize(-heightDens)
+		.tickPadding(10);
+
+	const yAxis = d3.axisLeft(yScale)
+		.tickSize(-widthDens)
+		.tickPadding(10);
+
+	//Creating the axes
+	const yAxisG = g.select('.yAxis');
+	const yAxisGEnter = gEnter
+		.append('g')
+			.attr('class', 'yAxis_dens_x');
+	yAxisG
+		.merge(yAxisGEnter)
+			.call(yAxis)
+
+	//Y-axis label
+	yAxisGEnter
+    	.append('text')
+			.attr('class', 'axis-label')
+			.attr('y', -60)
+			.attr('transform', `rotate(-90)`)
+			.attr('text-anchor', 'middle')
+    	.merge(yAxisG.select('.axis-label'))
+      		.attr('x', -innerHeight / 2)
+      		.text(yAxisLabel);
+
+	const xAxisG = g.select('.xAxis');
+	const xAxisGEnter = gEnter
+		.append('g')
+				.attr('class', 'xAxis_dens_x');
+	xAxisG
+		.merge(xAxisGEnter)
+			.call(xAxis)
+
+	//X-axis label
+	xAxisGEnter
+		.append('text')
+			.attr('class', 'axis-label')
+			.attr('y', 60)
+			.attr('text-anchor', 'middle')
+		.merge(xAxisG.select('.axis-label'))
+			.attr('x', innerWidth / 2);
+
+	const line = () => {
+		d3.line()
+			.x(d => {return xScale(d[0]);})
+			.y(d => {return yScale(d[1]);})
+			.curve(d3.curveBasis);
+	}
+
+	// Plot the area
+	const path = g.merge(gEnter)
+		.selectAll('path').data(density);
+	path
+		.enter().append('path')
+			.merge(path)
+			.transition().duration(1000)
+				.attr('d',  console.log(line()));
+
+	// Function to compute density
+	function kernelDensityEstimator(kernel, X) {
+		return function(V) {
+	 		return X.map(function(x) {
+				return [x, d3.mean(V, function(v) { return kernel(x - v); })];
+	  		});
+		};
+	}
+	
+  	function kernelEpanechnikov(k) {
+		return function(v) {
+			  return Math.abs(v /= k) <= 1 
+				  ? 0.75 * (1 - v * v) / k 
+				  : 0;
+		};
+	}
+  
+}
+//Plot a attention map
+const attentionMap = (selection, props) => {
 	const {
 		title,
-		xValue,
-		yValue,
 		margin,
+		maps
 	} = props;
 
 	const innerWidth = width - margin.left - margin.right;
@@ -57,7 +176,7 @@ const scatterPlot = (selection, props) => {
 	dataSelected = data.filter(d => d.StimuliName == stimulusName);
 
 	//Select the image according to the selected map(version)
-	let imageSelected = allVersions.filter(d => d == stimulusName);
+	let imageSelected = maps.filter(d => d == stimulusName);
 
 	//Select the image resolution according to the selected map
 	let citySelected = resData.filter(d => stimulusName.includes(d.city));
@@ -84,18 +203,17 @@ const scatterPlot = (selection, props) => {
 	//Transform the image resolution into range and domain of the axes
 	const xScale = d3.scaleLinear()
 		.domain([0, imgWidth])
-		.range([0, innerWidth])
+		.range([0, innerWidth]);
 
 	const yScale = d3.scaleLinear()
 		.domain([0, imgHeight])
-		.range([innerHeight, 0])
-		.nice();
+		.range([innerHeight, 0]);
 
-	//Create container for scatterplot
-	const g = selection.selectAll('.container').data([null]);
+	//Create container for attention map
+	const g = selection.selectAll('.containerAttention').data([null]);
  	const gEnter = g
     .enter().append('g')
-      .attr('class', 'container');
+      .attr('class', 'containerAttention');
 	//Translating the visualisation to innerposition with the updated data
 	gEnter
 		.merge(g)
@@ -159,27 +277,40 @@ const scatterPlot = (selection, props) => {
   		.attr('y', -15)
 		.text(title);
 
-	// Prepare a color palette
-	let color = d3.scaleLinear()
-	 .domain([0, 1]) // Points per square pixel.
-	 .range(["green", "red"]);
-
 	// compute the density data
-	let densityData = d3.contourDensity()
-		.x(function(d) { return xScale(xValue(d)); })
-		.y(function(d) { return yScale(yValue(d)); })
-		.size([width, height])
-		.bandwidth(20);
-		(dataSelected)
+	const densityData = d3.contourDensity()
+		.x(d => { 
+			return xScale(d.MappedFixationPointX); 
+		})
+		.y(d => { 
+			return yScale(d.MappedFixationPointY); 
+		})
+		.size([imgWidth, imgHeight])
+		.bandwidth(15);
+	
+	// Prepare a color palette
+	let color = d3.scaleSequential(d3.interpolateMagma).domain(d3.extent(densityData(dataSelected).map(d => d.value))).nice();
 
-	// show the shape!
-	svg.insert("g", "g")
-	.selectAll("path")
-		.data(densityData)
-			.enter()
-				.append("path")
-					.attr("d", d3.geoPath())
-					.attr("fill", function(d) { return color(d.value); });
+	// Plot the attentio map
+	const paths = g.merge(gEnter)
+		.selectAll('path').data(densityData(dataSelected));
+	paths
+		.enter().append('path')
+		.merge(paths)
+			.transition()
+				.attr('d', d3.geoPath())
+				.attr('fill', d => {
+					return color(d.value);
+				})
+				.attr('opacity', 0.4);
+	paths
+		.exit().remove();
+	
+	svgDensX.call(densityPlotX, {
+		data: dataSelected,
+		xScale: xScale,
+		xValue: d => d.MappedFixationPointX
+	});
 }
 
 //Function render
@@ -193,11 +324,12 @@ const render = () => {
 		);
 
 	//Invoke function to generate the scatterplot
-	svg.call(scatterPlot, {
-		title: 'Scatterplot: Eye tracking data per city',
+	svg.call(attentionMap, {
+		title: 'Attentionmap: Eye tracking data per city',
+		margin: { top: 50, right: 20, bottom: 80, left: 90 },
+		maps: allVersions,
 		xValue: d => d.MappedFixationPointX,
-	  	yValue: d => d.MappedFixationPointY,
-	  	margin: { top: 50, right: 20, bottom: 80, left: 90 },
+		yValue: d => d.MappedFixationPointY,
 	})
 }
 
@@ -221,6 +353,6 @@ Promise.all([
 		d.width = +d.width;
 		d.height = +d.height;
 	})
-	stimulusName = allVersions[0];
+	svg.call(initialization, {maps: allVersions});
 	render();
 });

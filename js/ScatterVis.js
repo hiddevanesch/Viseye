@@ -214,18 +214,17 @@ const scatterPlot = (selection, props) => {
 	//Transform the image resolution into range and domain of the axes
 	const xScale = d3.scaleLinear()
 		.domain([0, imgWidth])
-		.range([0, innerWidth])
+		.range([0, innerWidth]);
 
 	const yScale = d3.scaleLinear()
 		.domain([0, imgHeight])
-		.range([innerHeight, 0])
-		.nice();
+		.range([innerHeight, 0]);
 
 	//Create container for scatterplot
-	const g = selection.selectAll('.container').data([null]);
+	const g = selection.selectAll('.containerScatter').data([null]);
  	const gEnter = g
     .enter().append('g')
-      .attr('class', 'container');
+      .attr('class', 'containerScatter');
 	//Translating the visualisation to innerposition with the updated data
 	gEnter
 		.merge(g)
@@ -315,7 +314,6 @@ const scatterPlot = (selection, props) => {
 			.attr('r', circleRadius)
 			.attr('cx', d => xScale(xValue(d)))
 			.attr('cy', d => yScale(yValue(d)));
-		
 	circles
 		.exit()
 			.transition().duration(2000)
@@ -342,10 +340,10 @@ const scatterPlot = (selection, props) => {
 					.on("mouseover", function(d) {
 						tooltip.transition()
 						  .duration(200)
-						  .style("opacity", 1);
-						tooltip.html("Coordinates :" + d.MappedFixationPointX + "," + d.MappedFixationPointX + "<br/> By user:" + d.user)
+						  .style("opacity", 1)
 						  .style("left", (d3.event.pageX) + "px")
 						  .style("top", (d3.event.pageY - 28) + "px");
+						tooltip.html("Coordinates :" + d.MappedFixationPointX + "," + d.MappedFixationPointX + "<br/> By user:" + d.user);
 					})
 					.on("mouseout", function(d) {
 						tooltip.transition()

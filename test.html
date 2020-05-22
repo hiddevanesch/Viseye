@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
+<script>
+
+// set the dimensions and margins of the graph
+var margin = {top: 30, right: 30, bottom: 30, left: 50},
+    width = 460 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+var svg = d3.select("#my_dataviz")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+// get the data
+d3.csv("https://gist.githubusercontent.com/Mikel-P/c2dee550a05fabb74e110c7f8f11b709/raw/8f9a813fc36644ff25598abf2a18bab7e4af7f70/closeGBPUSD.csv", function(data) {
+
+  // add the x Axis
+  var x = d3.scaleLinear()
+            .domain([0, 100000])
+            .range([0, width]);
+  svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+  // add the y Axis
+  var y = d3.scaleLinear()
+            .range([height, 0])
+            .domain([0, 0.5]);
+  svg.append("g")
+      .call(d3.axisLeft(y));
+
+  // Compute kernel density estimation
+  var kde = kernelDensityEstimator(kernelEpanechnikov(7), x.ticks(40))
+  var density =  kde( data.map(function(d){  return d.price; }) )
+
+  console.log(density);
+
+  // Plot the area
+  svg.append("path")
+      .datum(density)
+      .attr("d",  d3.line()
+          .x(function(d) {  return x(d[0]); })
+          .y(function(d) { return y(d[1]); })
+          .curve(d3.curveBasis)
+      );
+
+});
+
+// Function to compute density
+function kernelDensityEstimator(kernel, X) {
+  return function(V) {
+    return X.map(function(x) {
+      return [x, d3.mean(V, function(v) { return kernel(x - v); })];
+    });
+  };
+}
+function kernelEpanechnikov(k) {
+  return function(v) {
+    return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+  };
+}
+
+</script>
