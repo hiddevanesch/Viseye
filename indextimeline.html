@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Trying things</title>
+    <link rel="stylesheet" href="stylesheets/main.css">
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/7.0.0/math.min.js"></script>
+  </head>
+  <body>
+    <div class="canvas">
+      <div id="canvasCase">
+        <svg id="canvas"></svg>
+      </div>
+      <br>
+      <input type="range" min="0" max="10000" value="0" class="slider" id="timeLineSlider">
+    </div>
+    <input type="file" onchange="useFile(event)" id="file">
+    <select id="selector" ></select>
+    <script type="text/javascript" src="javascripts/timeline.js"></script>
+  </body>
+</html>
