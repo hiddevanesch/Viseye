@@ -63,6 +63,7 @@ export default {
     let maxvalueData;
     let sliderLine;
     let firstLoad = true;
+    let resData;
     const yAxisLabel = 'y coordinate';
     const xAxisLabel = 'x coordinate';
     const title = 'Scatterplot: Eye tracking data per city';
@@ -162,9 +163,7 @@ export default {
       } = props;
 
       //Create select keyword with click event listener
-      let select = selection.selectAll('select').data([null]);
-      select = select.enter().append('select')
-        .merge(select)
+      let select = d3.select("#selectMenu")
           .on('change', function() {
             onOptionClicked(this.value);
           });
@@ -226,6 +225,12 @@ export default {
     //Select the image according to the selected option
       let imageSelected = allVersions.filter(d => d == stimulusName);
 
+    //Select the image resolution according to the selected map
+      let citySelected = resData.filter(d => stimulusName.includes(d.city));
+
+      let imgWidth = citySelected[0].width;
+      let imgHeight = citySelected[0].height;
+
     //Update image and set background
       let background = 'static/jpg/' + imageSelected;
 
@@ -244,14 +249,12 @@ export default {
 
       //Transform the data values into positions
       const xScale = d3.scaleLinear()
-        .domain([0, d3.max(dataSelected, xValue)])
-        .range([0, innerWidth])
-        .nice();
+        .domain([0, imgWidth])
+        .range([0, innerWidth]);
 
       const yScale = d3.scaleLinear()
-        .domain([0, d3.max(dataSelected, yValue)])
-        .range([innerHeight, 0])
-        .nice();
+        .domain([0, imgHeight])
+        .range([innerHeight, 0]);
 
       //Create container for scatterplot
       const g = selection.selectAll('.container').data([null]);
@@ -318,7 +321,7 @@ export default {
         yAxisGEnter
           .append('text')
               .attr('class', 'axis-label')
-              .attr('y', -40)
+              .attr('y', -50)
               .attr('x', -innerHeight / 2 )
               .attr('transform', `rotate(-90)`)
               .style('text-anchor', 'middle')
@@ -476,6 +479,10 @@ export default {
     }
 
     //(RE-)Render the data according to the selection by filter
+      d3.csv('static/csv/resolution.csv')
+      .then(loadedData => {
+      resData = loadedData;
+
       data = this.files;
       data.forEach(d => {
         d.MappedFixationPointX = +d.MappedFixationPointX;
@@ -485,10 +492,17 @@ export default {
           allVersions.push(d.StimuliName);
         }
       });
+
+      resData.forEach(d => {
+        d.width = +d.width;
+        d.height = +d.height
+      });
+
       createTimeline();
-      stimulusName = '01_Antwerpen_S1.jpg';
+      stimulusName = allVersions[0];
       timelineUpdate = true;
-        render()
+        render();
+      });
     }
   }
 }
@@ -513,20 +527,27 @@ div.tooltip {
   text-align: center;
   /*width: 150px;*/
   padding: 5px;
-  font: 12px sans-serif;
-  background: #498fff;
+  background: #333;
   border: 0px;
   border-radius: 3px;
   pointer-events: none;
+  font-family: 'Product Sans Light';
+  font-weight: 400;
+  font-size: 16px;
+  box-shadow: 0px 0px 20px 0px rgba(0,0,0,0.5);
 }
 
 text {
-  font-family: sans-serif;
+  font-family: 'Product Sans Light';
+  font-weight: 400;
+  font-size: 16px;
 }
 
 .tick text {
-  font-size: 1.6em;
   fill: #666666;
+  font-family: 'Product Sans Regular';
+  font-weight: 400;
+  font-size: 16px;
 }
 
 .tick line {
@@ -534,8 +555,10 @@ text {
   opacity: 0.4;
 }
 
-.title{
-  font-size: 2em;
+.title {
+  font-size: 22px;
+  font-family: 'Product Sans Bold';
+  font-weight: 400;
   text-align: center;
   fill: #666666;
 }
@@ -556,29 +579,14 @@ text {
 
 .axis-label {
   fill: #666666;
-  font-size: 15pt;
-  font-family: sans-serif;
+  font-family: 'Product Sans Bold';
+  font-weight: 400;
+  font-size: 16px;
 }
 
 #scatterPlot {
   border: 100px;
   border-style: solid black;
-}
-
-#play-button {
-  position: relative;
-  top: 0px;
-  left: 295px;
-  background: #f08080;
-  padding-right: 26px;
-  border-radius: 3px;
-  border: none;
-  color: white;
-  margin: 0;
-  padding: 0 12px;
-  width: 60px;
-  cursor: pointer;
-  height: 25px;
 }
 
 #checkBox_id {
@@ -594,8 +602,11 @@ text {
   position: relative;
   top: 6px;
   left: 230px;
+  color: #666666;
+  font-family: 'Product Sans Regular';
+  font-weight: 400;
+  font-size: 16px;
 }
-
 
 #cumulativeCheck-Box {
   position: relative;
@@ -603,9 +614,25 @@ text {
   left: 45px;
 }
 
+#play-button {
+  padding: 10px;
+  color: #ffffff;
+  border: 0px;
+  font-size: 18px;
+  font-family: 'Product Sans Bold';
+  font-weight: 400;
+  border-radius: 3px;
+  text-transform: uppercase;
+  background-color: #498fff;
+}
+
 #play-button:hover {
-  background-color: #666666;
-}    
+  background-color: #3978dd;
+}
+
+#play-button:active {
+  background-color: #2b67c7;
+}
 
 .ticks {
   font-size: 28px;
@@ -643,14 +670,14 @@ text {
 }
 
 #tooltip {
-  opacity:0;
+  opacity: 0;
   position: absolute;
   padding: 5px;
   pointer-events: none;
   color: white;
-  font-family: sans-serif;
-  font-size: 0.6em;
-  font-weight: bold;
+  font-family: 'Product Sans Light';
+  font-weight: 400;
+  font-size: 18px;
   box-shadow: 5px -5px 5px rgba(0, 0, 0, 0.5);
   background-color: #333;
   border-radius: 4px;
@@ -658,5 +685,8 @@ text {
 
 .label {
   fill: #666666;
+  font-family: 'Product Sans Regular';
+  font-weight: 400;
+  font-size: 16px;
 }
 </style>
