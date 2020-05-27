@@ -5,8 +5,8 @@
     </header>
     <div class="visrow">
       <div class="menubar viscol col20 bg-ldgray">
-        <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('scatterplot')">scatter&shy;plot</button>
-        <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('vis2')">visualization 2</button>
+        <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('scatterplot')">scatter plot</button>
+        <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('gazestripes')">gaze stripes</button>
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('vis3')">visualization 3</button>
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('vis4')">visualization 4</button>
         <select class="selectMenu bmar-small full-width" id="selectMenu"></select>
@@ -16,6 +16,7 @@
       </div>
       <div class="visualizationbox viscol col80 order2 bg-dgray">
         <scatter-plot v-if="activeVis === 'scatterplot'" />
+        <gaze-stripes-plot v-if="activeVis === 'gazestripes'" />
       </div>
     </div>
   </div>
@@ -23,10 +24,12 @@
 
 <script>
 import ScatterPlot from "../components/ScatterPlot.vue"
+import GazeStripesPlot from "../components/GazeStripesPlot.vue"
 
 export default {
   components: {
-    ScatterPlot
+    ScatterPlot,
+    GazeStripesPlot
   },
   data() {
     return {
@@ -59,6 +62,8 @@ export default {
       let svg;
       if (activeVis === 'scatterplot') {
         svg = document.getElementById("scatterPlotSVG");
+      } else if (activeVis === 'gazestripes') {
+        svg = document.getElementById("canvas");
       }
       var canvas = document.createElement("canvas");
       var bbox = svg.getBBox();
