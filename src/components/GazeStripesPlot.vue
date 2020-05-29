@@ -1,5 +1,6 @@
 <template>
   <div class="canvas">
+    <h1 class="plot-title tmar-mini bmar-mini">Gaze stripes: Eye tracking data per city</h1>
     <div id="canvasCase">
       <svg id="canvas" />
     </div>

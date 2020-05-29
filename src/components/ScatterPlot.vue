@@ -1,6 +1,7 @@
 <template>
   <div>
     <!-- Color Scale -->
+    <h1 class="plot-title tmar-mini bmar-mini">Scatterplot: Eye tracking data per city</h1>
     <div id="tooltip"></div>
     <div id="scatterPlot">
       <svg id="scatterPlotSVG" viewBox="0 0 960 500" width="960" height="500"></svg>
@@ -35,7 +36,7 @@ export default {
     Useful variables for the window 
     Width and height of the slider etc.
     */
-    const margin = { top: 40, right: 20, bottom: 50, left: 60 };
+    const margin = { top: 20, right: 20, bottom: 50, left: 60 };
     const widthSlider = 50;
     const width = +svg.attr('width');
     const height = +svg.attr('height');
@@ -190,7 +191,6 @@ export default {
       //Filter the data, first it corrects the timeline, then it filters the data
       currentValue = maxvalueData;
       slider.attr("value", timelineScale(currentValue));
-      sliderLabel.text(Math.round(currentValue/10/100)+ ' sec');
       // label
       //   .attr("x", timelineScale(currentValue))
       //   .text(Math.round(currentValue/10)/100+ ' sec');
@@ -214,6 +214,7 @@ export default {
           .data(timelineScale.ticks(10))
           currentValue = maxTimeSlider;
           slider.attr("value", timelineScale(currentValue));
+          sliderLabel.text(Math.round(currentValue/10/100)+ ' sec');
           // label
           //   .attr("x", timelineScale(currentValue))
           //   .text(Math.round(currentValue/10)/100+' sec');
@@ -311,7 +312,7 @@ export default {
         xAxisGEnter
           .append('text')
             .attr('class', 'axis-label')
-            .attr('y', margin.top)
+            .attr('y', margin.top * 4)
             .attr('x', innerWidth / 2)
             .text(xAxisLabel);
 
@@ -469,7 +470,7 @@ export default {
         xValue: d => d.MappedFixationPointX,
         yValue: d => d.MappedFixationPointY,
         circleRadius: 5,
-        margin: { top: 40, right: 20, bottom: 50, left: 60 },
+        margin: { top: 10, right: 20, bottom: 50, left: 60 },
       })
     }
 
@@ -548,14 +549,6 @@ text {
 .tick line {
   stroke: #C0C0BB;
   opacity: 0.4;
-}
-
-.title {
-  font-size: 22px;
-  font-family: 'Product Sans Bold';
-  font-weight: 400;
-  text-align: center;
-  fill: #666666;
 }
 
 #menus {

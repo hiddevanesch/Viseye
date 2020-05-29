@@ -63,6 +63,14 @@ img {
   color: #111111;
 }
 
+.tmar-mini {
+  margin-top: 5px;
+}
+
+.tmar-tiny {
+  margin-top: 10px;
+}
+
 .tmar-small {
   margin-top: 20px;
 }
@@ -73,6 +81,14 @@ img {
 
 .tmar-big {
   margin-top: 60px;
+}
+
+.bmar-mini {
+  margin-bottom: 5px;
+}
+
+.bmar-tiny {
+  margin-bottom: 10px;
 }
 
 .bmar-small {
@@ -282,6 +298,13 @@ img {
   font-size: 50px;
   font-family: 'Product Sans Black';
   font-weight: 400;
+}
+
+.plot-title {
+  font-size: 22px;
+  font-family: 'Product Sans Bold';
+  font-weight: 400;
+  color: #666666;
 }
 
 .full-width {
