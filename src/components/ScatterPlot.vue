@@ -1,15 +1,15 @@
 <template>
   <div>
-    <div id="menus"></div>
-    <input type="checkbox" id='checkBox_id' class="checkbox" checked='checked'/>
-    <label id='labelCheckBox'>Cumulative</label>
-    <button id="play-button">Play</button>
-    <svg id='svgSlider' height='50' width='500'></svg>
     <!-- Color Scale -->
     <div id="tooltip"></div>
     <div id="scatterPlot">
       <svg id="scatterPlotSVG" viewBox="0 0 960 500" width="960" height="500"></svg>
     </div>
+    <input type="checkbox" id='checkBox_id' class="checkbox" checked='checked'/>
+    <label id='labelCheckBox'>Cumulative</label>
+    <button id="play-button">Play</button>
+    <input type="range" class="slider" id="timeSlider" width="200" />
+    <label id="timeLabel">NO DATA</label>
   </div>
 </template>
 
@@ -29,14 +29,14 @@ export default {
   methods: {
     visualize() {// Loads both of the SVG's in variables
     const svg = d3.select('#scatterPlotSVG');
-    const svgSlider = d3.select('#svgSlider');
+    //const svgSlider = d3.select('#svgSlider');
 
     /*
     Useful variables for the window 
     Width and height of the slider etc.
     */
     const margin = { top: 40, right: 20, bottom: 50, left: 60 };
-    const widthSlider = +svgSlider.attr('width') - 100;
+    const widthSlider = 50;
     const width = +svg.attr('width');
     const height = +svg.attr('height');
     const innerWidth = width - margin.left - margin.right;
@@ -46,9 +46,10 @@ export default {
     //Defining variables for general access
     let data;
     let slider;
+    let sliderLabel;
     let timelineScale;
-    let handle;
-    let label;
+    //let handle;
+    // let label;
     let timer;
     let stimulusName;
     let allVersions = [];
@@ -61,12 +62,12 @@ export default {
     let maxTimeSlider;
     let timelineUpdate = false;
     let maxvalueData;
-    let sliderLine;
+    //let sliderLine;
     let firstLoad = true;
     let resData;
     const yAxisLabel = 'y coordinate';
     const xAxisLabel = 'x coordinate';
-    const title = 'Scatterplot: Eye tracking data per city';
+    // const title = 'Scatterplot: Eye tracking data per city';
 
     /*
     Selects the play button and the checkbox for interactions
@@ -113,46 +114,41 @@ export default {
         .range([0,widthSlider])
         .clamp(true);
 
-      // The slider is added to its svg and translated to the correct position
-      slider = svgSlider.append('g')
-        .attr('class', 'slider')
-        .attr( 'transform', `translate(25,25)`);
+      // The slider and label are added
+      slider = d3.select("#timeSlider");
+      sliderLabel = d3.select('#timeLabel');
 
       // The bar of the slider is initialized, and its style is corrected
-      sliderLine = slider.append("line")
-        .attr("class", "track")
-        .attr("x1", timelineScale.range()[0])
-        .attr("x2", timelineScale.range()[1])
-        .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-        .attr("class", "track-inset")
-        .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-        .attr("class", "track-overlay");
+      slider
+        .attr("min", timelineScale.range()[0])
+        .attr("max", timelineScale.range()[1])
+        .attr("value", timelineScale.range()[1]);
 
       // Add the text to the slider
-      slider.insert("g", ".track-overlay")
-        .attr("class", "ticks")
-        .attr("transform", "translate(0," + 18 + ")")
-        .selectAll("text")
-        .data(timelineScale.ticks(10))
-        .enter()
-        .append("text")
-        .attr("x", timelineScale)
-        .attr("y", 10)
-        .attr("text-anchor", "middle")
-        .text(function(d) { d.Timestamp });
+      // slider.insert("g", ".track-overlay")
+      //   .attr("class", "ticks")
+      //   .attr("transform", "translate(0," + 18 + ")")
+      //   .selectAll("text")
+      //   .data(timelineScale.ticks(10))
+      //   .enter()
+      //   .append("text")
+      //   .attr("x", timelineScale)
+      //   .attr("y", 10)
+      //   .attr("text-anchor", "middle")
+      //   .text(function(d) { d.Timestamp });
 
 
       // Add the circle in the bar at the current value
-      handle = slider.insert("circle", ".track-overlay")
-        .attr("class", "handle")
-        .attr("r", 9);
+      // handle = slider.insert("circle", ".track-overlay")
+      //   .attr("class", "handle")
+      //   .attr("r", 9);
 
       // The amount of the slider above the circle
-      label = slider.append("text")  
-        .attr("class", "label")
-        .attr("text-anchor", "middle")
-        .text(minTimeSlider/1000)
-        .attr("transform", "translate("+0+","+ -13 +")")
+      // label = slider.append("text")  
+      //   .attr("class", "label")
+      //   .attr("text-anchor", "middle")
+      //   .text(minTimeSlider/1000)
+      //   .attr("transform", "translate("+0+","+ -13 +")")
     }
 
     //function dropdown menu
@@ -193,10 +189,11 @@ export default {
 
       //Filter the data, first it corrects the timeline, then it filters the data
       currentValue = maxvalueData;
-      handle.attr("cx", timelineScale(currentValue));
-      label
-        .attr("x", timelineScale(currentValue))
-        .text(Math.round(currentValue/10)/100+ ' sec');
+      slider.attr("value", timelineScale(currentValue));
+      sliderLabel.text(Math.round(currentValue/10/100)+ ' sec');
+      // label
+      //   .attr("x", timelineScale(currentValue))
+      //   .text(Math.round(currentValue/10)/100+ ' sec');
 
       // It selects all the values under the value of the slider
         dataSelected = data.filter(d => (d.StimuliName == stimulusName && d.Timestamp <= currentValue));
@@ -216,10 +213,10 @@ export default {
         slider.selectAll("text")
           .data(timelineScale.ticks(10))
           currentValue = maxTimeSlider;
-          handle.attr("cx", timelineScale(currentValue));
-          label
-            .attr("x", timelineScale(currentValue))
-            .text(Math.round(currentValue/10)/100+' sec');
+          slider.attr("value", timelineScale(currentValue));
+          // label
+          //   .attr("x", timelineScale(currentValue))
+          //   .text(Math.round(currentValue/10)/100+' sec');
     }
 
     //Select the image according to the selected option
@@ -285,11 +282,11 @@ export default {
         const yAxisGEnter = gEnter
           .append('g')
             .attr('class', 'y-axis');
-        svg.append('text')
-            .attr('class', 'title')
-            .attr('y', margin.top/2)
-            .attr('x', margin.left)
-            .text(title);
+        // svg.append('text')
+        //     .attr('class', 'title')
+        //     .attr('y', margin.top/2)
+        //     .attr('x', margin.left)
+        //     .text(title);
         yAxisG
           .merge(yAxisGEnter)
             .call(yAxis)
@@ -415,6 +412,30 @@ export default {
         }
       })
 
+      slider
+          .on("input", function() {
+            currentValue = timelineScale.invert(this.value);
+            update(currentValue); 
+            });
+
+      // Update button for the new value
+      function update(h) {
+        // update position and text of label according to slider scale
+        slider.attr("value", Math.round(timelineScale(h)));
+        sliderLabel.text(Math.round(currentValue/10/100)+ ' sec');
+        // label
+        // .attr("x", timelineScale(h))
+        // .text(Math.round(h/10)/100 + ' sec');
+        // filter data set and redraw plot
+            if(cumulativeFilter){
+            dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h);
+            }
+            else{
+              dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h && d.Timestamp>h-500);
+            }
+        drawPlot(dataSelected);
+      }
+
       // Step function for the play button
       function step() {
         update(currentValue);
@@ -429,32 +450,6 @@ export default {
           // timer = 0;
           playButton.text("Play");
         }
-        }
-
-      sliderLine.call(d3.drag()
-          .on("start.interrupt", function() { slider.interrupt(); })
-          .on("start drag", function() {
-            currentValue = timelineScale.invert(d3.event.x);
-            update(currentValue); 
-            }
-          )
-        );
-        
-      // Update button for the new value
-      function update(h) {
-        // update position and text of label according to slider scale
-        handle.attr("cx", timelineScale(h));
-        label
-        .attr("x", timelineScale(h))
-        .text(Math.round(h/10)/100 + ' sec');
-        // filter data set and redraw plot
-            if(cumulativeFilter){
-            dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h);
-            }
-            else{
-              dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h && d.Timestamp>h-500);
-            }
-        drawPlot(dataSelected);
       }
     }
 
@@ -527,7 +522,7 @@ div.tooltip {
   text-align: center;
   /*width: 150px;*/
   padding: 5px;
-  background: #333;
+  background: #498fff;
   border: 0px;
   border-radius: 3px;
   pointer-events: none;
@@ -590,7 +585,6 @@ text {
 }
 
 #checkBox_id {
-  position: relative;
   top: 0px;
   left: 205px;
   color: white;
@@ -599,7 +593,6 @@ text {
 }
 
 #labelCheckBox {
-  position: relative;
   top: 6px;
   left: 230px;
   color: #666666;
@@ -667,20 +660,6 @@ text {
   stroke: #000;
   stroke-opacity: 0.5;
   stroke-width: 1.25px;
-}
-
-#tooltip {
-  opacity: 0;
-  position: absolute;
-  padding: 5px;
-  pointer-events: none;
-  color: white;
-  font-family: 'Product Sans Light';
-  font-weight: 400;
-  font-size: 18px;
-  box-shadow: 5px -5px 5px rgba(0, 0, 0, 0.5);
-  background-color: #333;
-  border-radius: 4px;
 }
 
 .label {

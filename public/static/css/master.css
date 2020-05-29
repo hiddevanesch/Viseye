@@ -142,6 +142,10 @@ img {
   text-align-last: center;
 }
 
+.slider {
+  width: 100%;
+}
+
 .button {
   padding: 10px;
   color: #ffffff;
