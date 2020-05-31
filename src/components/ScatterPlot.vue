@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Color Scale -->
-    <h1 class="plot-title tmar-mini bmar-mini">Scatterplot: Eye tracking data per city</h1>
+    <h1 class="plot-title tmar-mini bmar-mini">Scatter plot: Eye tracking data per city</h1>
     <div id="tooltip"></div>
     <div id="scatterPlot">
       <svg id="scatterPlotSVG" viewBox="0 0 960 500" width="960" height="500"></svg>
@@ -28,9 +28,8 @@ export default {
     this.visualize();
   },
   methods: {
-    visualize() {// Loads both of the SVG's in variables
+    visualize() {// Loads the SVG in variable
     const svg = d3.select('#scatterPlotSVG');
-    //const svgSlider = d3.select('#svgSlider');
 
     /*
     Useful variables for the window 
@@ -49,8 +48,6 @@ export default {
     let slider;
     let sliderLabel;
     let timelineScale;
-    //let handle;
-    // let label;
     let timer;
     let stimulusName;
     let allVersions = [];
@@ -63,12 +60,10 @@ export default {
     let maxTimeSlider;
     let timelineUpdate = false;
     let maxvalueData;
-    //let sliderLine;
     let firstLoad = true;
     let resData;
     const yAxisLabel = 'y coordinate';
     const xAxisLabel = 'x coordinate';
-    // const title = 'Scatterplot: Eye tracking data per city';
 
     /*
     Selects the play button and the checkbox for interactions
@@ -191,9 +186,6 @@ export default {
       //Filter the data, first it corrects the timeline, then it filters the data
       currentValue = maxvalueData;
       slider.attr("value", timelineScale(currentValue));
-      // label
-      //   .attr("x", timelineScale(currentValue))
-      //   .text(Math.round(currentValue/10)/100+ ' sec');
 
       // It selects all the values under the value of the slider
         dataSelected = data.filter(d => (d.StimuliName == stimulusName && d.Timestamp <= currentValue));
@@ -424,9 +416,7 @@ export default {
         // update position and text of label according to slider scale
         slider.attr("value", Math.round(timelineScale(h)));
         sliderLabel.text(Math.round(currentValue/10/100)+ ' sec');
-        // label
-        // .attr("x", timelineScale(h))
-        // .text(Math.round(h/10)/100 + ' sec');
+
         // filter data set and redraw plot
             if(cumulativeFilter){
             dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h);
