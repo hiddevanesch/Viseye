@@ -23,18 +23,28 @@
 </template>
 
 <script>
-import ScatterPlot from "../components/ScatterPlot.vue"
-import GazeStripesPlot from "../components/GazeStripesPlot.vue"
+import { mapState } from "vuex";
+import * as d3 from "d3";
+import ScatterPlot from "../components/ScatterPlot.vue";
+import GazeStripesPlot from "../components/GazeStripesPlot.vue";
 
 export default {
   components: {
     ScatterPlot,
     GazeStripesPlot
   },
+  computed: {
+    ...mapState([
+      'files'
+    ])
+  },
   data() {
     return {
       activeVis: 'scatterplot'
     }
+  },
+  mounted: function() {
+    this.setOptions();
   },
   methods: {
     downloadSVG(activeVis) {
@@ -94,6 +104,27 @@ export default {
         document.removeChild(canvas);
       };
       screenShot.src = url;
+    },
+    setOptions() {
+      let data;
+      let allVersions = [];
+      
+      //Create options inside the dropdown menu with the corresponding value for the displayed text
+      function pushOptions() {
+        const option = d3.select("#selectMenu").selectAll('option').data(allVersions);
+        option.enter().append('option')
+          .merge(option)
+            .text(d => d)
+            .attr("value", d => d);
+      }
+      
+      data = this.files;
+      data.forEach(d => {
+        if (!allVersions.includes(d.StimuliName)) {
+          allVersions.push(d.StimuliName);
+        }
+        pushOptions();
+      });
     },
     setActiveVis(visType) {
       this.activeVis = visType;

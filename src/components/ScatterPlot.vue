@@ -2,7 +2,6 @@
   <div>
     <!-- Color Scale -->
     <h1 class="plot-title tmar-mini bmar-mini">Scatter plot: Eye tracking data per city</h1>
-    <div id="tooltip"></div>
     <div id="scatterPlot">
       <svg id="scatterPlotSVG" viewBox="0 0 960 500" width="960" height="500"></svg>
     </div>
@@ -74,7 +73,7 @@ export default {
       checkBox.on('change', function(){ 
         cumulativeFilter = cumulativeFilter ? false : true;
       });
-    var tooltip = d3.select("#menus").append("div")
+    var tooltip = d3.select("#scatterPlot").append("div")
       .attr("class", "tooltip")
       .style("opacity", 0);
 
@@ -147,26 +146,11 @@ export default {
       //   .attr("transform", "translate("+0+","+ -13 +")")
     }
 
-    //function dropdown menu
-    const dropdownMenu = (selection, props) => {
-      const {
-        options,
-        onOptionClicked
-      } = props;
-
-      //Create select keyword with click event listener
-      let select = d3.select("#selectMenu")
+    //Create select keyword with click event listener
+    d3.select("#selectMenu")
           .on('change', function() {
-            onOptionClicked(this.value);
+            onStimulusNameClicked(this.value);
           });
-
-      //Create options inside the dropdown menu with the corresponding value for the displayed text
-      const option = select.selectAll('option').data(options);
-      option.enter().append('option')
-        .merge(option)
-          .text(d => d)
-          .attr("value", d => d);
-      }
 
     //Store the selected option
     const onStimulusNameClicked = option => {
@@ -334,7 +318,7 @@ export default {
                 .style("opacity", 1)
                 .style("left", "calc(" + (d3.event.pageX + 10) + "px - 20vw)")
                 .style("top", "calc(" + (d3.event.pageY + 10) + "px - 15vh)");
-              tooltip.html("Coordinates: " + d.MappedFixationPointX + "," + d.MappedFixationPointY + "<br/> By user: " + d.user);
+              tooltip.html("Coordinates: " + d.MappedFixationPointX + ", " + d.MappedFixationPointY + "<br/> By user: " + d.user);
             })
             .on("mouseout", function() {
               tooltip.transition()
@@ -371,7 +355,7 @@ export default {
                   .style("opacity", 1)
                   .style("left", "calc(" + (d3.event.pageX + 10) + "px - 20vw)")
                   .style("top", "calc(" + (d3.event.pageY + 10) + "px - 15vh)");
-                tooltip.html("Coordinates: " + d.MappedFixationPointX + "," + d.MappedFixationPointY + "<br/> By user: " + d.user);
+                tooltip.html("Coordinates: " + d.MappedFixationPointX + ", " + d.MappedFixationPointY + "<br/> By user: " + d.user);
               })
               .on("mouseout", function() {
                 tooltip.transition()
@@ -446,14 +430,7 @@ export default {
 
     //Function render
     const render = () => {
-    //Invoke function dropdownMenu to generate menu
-      d3.select('#menus')
-        .call(dropdownMenu, {
-          options: allVersions,
-          onOptionClicked: onStimulusNameClicked
-          }
-        );
-        
+    //Invoke function dropdownMenu to generate menu  
 
       //Invoke function to generate the scatterplot
       svg.call(scatterPlot, {
@@ -485,7 +462,7 @@ export default {
       });
 
       createTimeline();
-      stimulusName = allVersions[0];
+      stimulusName = d3.select("#selectMenu").node().value;
       timelineUpdate = true;
         render();
       });
@@ -520,7 +497,7 @@ div.tooltip {
   font-family: 'Product Sans Light';
   font-weight: 400;
   font-size: 16px;
-  box-shadow: 0px 0px 20px 0px rgba(0,0,0,0.5);
+  box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.25);
 }
 
 text {
