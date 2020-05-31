@@ -5,6 +5,8 @@ const width = +svg.attr('width');
 const height = +svg.attr('height');
 const innerWidth = width - margin.left - margin.right;
 const innerHeight = height - margin.top - margin.bottom;
+const maxAmountOfAOI = 10;
+var intersectingRectangles = false;
 
 //Defining variables for general access
 let data;
@@ -12,6 +14,8 @@ let stimulusName;
 let allVersions = [];
 let dataSelected;
 let SquareArray = [];
+
+
 
 var selectionRect = {
     element			: null,
@@ -54,7 +58,6 @@ var selectionRect = {
         return "x1: " + attrs.x1 + " x2: " + attrs.x2 + " y1: " + attrs.y1 + " y2: " + attrs.y2;
     },
     init: function(newX, newY) {
-        console.log(newX,newY);
         var rectElement = svg.append("rect")
                 .attr('rx',4)
                 .attr('ry',4)
@@ -63,7 +66,8 @@ var selectionRect = {
                 .attr('width',0)
                 .attr('height',0)
                 .attr('class', 'rectangle')
-                .classed("selection", true);
+				.classed("selection", true)
+				.on("dblclick", removeElement);
         this.setElement(rectElement);
         this.originX = newX;
         this.originY = newY;
@@ -96,90 +100,123 @@ var selectionRect = {
     }
 };
 	
-	var clickTime = d3.select("#clicktime");
-	var attributesText = d3.select("#attributestext");
-	
-	function dragStart() {
-		console.log("dragStart");
+var clickTime = d3.select("#clicktime");
+var attributesText = d3.select("#attributestext");
+
+function dragStart() {
+	if(SquareArray.length<maxAmountOfAOI){
 		var p = d3.mouse(this);
 		selectionRect.init(p[0], p[1]);
 	}
-	
-	function dragMove() {
-		console.log("dragMove");
+	else{
+		console.log('You already have 10 AOIs');
+	}
+}
+ 
+function dragMove() {
+	if(SquareArray.length<maxAmountOfAOI){
 		var p = d3.mouse(this);
 		selectionRect.update(p[0], p[1]);
 		attributesText
 			.text(selectionRect.getCurrentAttributesAsText());
 	}
-	
-	function dragEnd() {
-		console.log("dragEnd");
+}
+
+function dragEnd() {
+	if(SquareArray.length<maxAmountOfAOI){
 		var finalAttributes = selectionRect.getCurrentAttributes();
-		console.dir(finalAttributes);
 		if(finalAttributes.x2 - finalAttributes.x1 > 1 && finalAttributes.y2 - finalAttributes.y1 > 1){
-			console.log("range selected");
 			// range selected
 			d3.event.sourceEvent.preventDefault();
-            selectionRect.focus();
-            var nextBox = {
-                startCoordinateX: selectionRect.originX,
-                startCoordinateY: innerHeight - selectionRect.originY,
-                endCoordinateX: selectionRect.currentX,
-                endCoordinateY: innerHeight - selectionRect.currentY
-            }
-            SquareArray.push(nextBox);
-            console.log(SquareArray);
+			selectionRect.focus();
+			var nextBox = {
+				startCoordinateX: Math.min(selectionRect.originX,selectionRect.currentX),
+				startCoordinateY: Math.min(innerHeight - selectionRect.originY,innerHeight - selectionRect.currentY),
+				endCoordinateX: Math.max(selectionRect.currentX,selectionRect.originX),
+				endCoordinateY: Math.max(innerHeight - selectionRect.currentY,innerHeight - selectionRect.originY),
+			}
+			for (var i=0; i<SquareArray.length;i++){
+				if(rectanglesIntersect(SquareArray[i],nextBox)){
+					intersectingRectangles = true;
+				}
+			}
+			if(intersectingRectangles){
+				selectionRect.remove();
+				alert('These rectangles intersect!');
+				intersectingRectangles = false;
+			} else {
+				SquareArray.push(nextBox);
+			}
+			
 		} else {
-			console.log("single point");
 			// single point selected
 			selectionRect.remove();
-			// trigger click event manually
-			clicked();
-        }
+		}
 	}
-	
-	var dragBehavior = d3.drag()
-		.on("drag", dragMove)
-		.on("start", dragStart)
-		.on("end", dragEnd);
-	
-	svg.call(dragBehavior);
-	
-	function clicked() {
-		var d = new Date();
-		clickTime
-			.text("Clicked at " + d.toTimeString().substr(0,8) + ":" + d.getMilliseconds());
-    }
-    
+}
+function removeElement(d) {
+	// need to remove this object from data
+	d3.select(this).remove();
+	console.log(SquareArray.length,"before")
+	for(let i=0 ; i < SquareArray.length ; i++){
+		console.log(SquareArray[i].startCoordinateX, this, SquareArray[i].startCoordinateX == this.x.baseVal.value && SquareArray.length > 1 )
+		if(SquareArray[i].startCoordinateX == this.x.baseVal.value && SquareArray.length > 1){
+			SquareArray.splice(i,1);
+		}
+		else if(SquareArray[i].startCoordinateX == this.x.baseVal.value && SquareArray.length == 1){
+			SquareArray = [];
+		}
+	}
+	console.log(SquareArray.length)	
+}
+
+var dragBehavior = d3.drag()
+	.on("drag", dragMove)
+	.on("start", dragStart)
+	.on("end", dragEnd);
+
+svg.call(dragBehavior);
+
+function rectanglesIntersect(rectOne, rectTwo ){
+	var maxOneX = Math.max(rectOne.startCoordinateX,rectOne.endCoordinateX);
+	var minOneX = Math.min(rectOne.startCoordinateX,rectOne.endCoordinateX);
+	var maxOneY = Math.max(rectOne.startCoordinateY,rectOne.endCoordinateY);
+	var minOneY = Math.min(rectOne.startCoordinateY,rectOne.endCoordinateY);
+	var maxTwoX = Math.max(rectTwo.startCoordinateX,rectTwo.endCoordinateX);
+	var minTwoX = Math.min(rectTwo.startCoordinateX,rectTwo.endCoordinateX);
+	var maxTwoY = Math.max(rectTwo.startCoordinateY,rectTwo.endCoordinateY);
+	var minTwoY = Math.min(rectTwo.startCoordinateY,rectTwo.endCoordinateY);
+	return (maxOneX >= minTwoX && minOneX <= maxTwoX && minOneY <= maxTwoY && maxOneY >= minTwoY);
+}
+
 //function dropdown menu
 const dropdownMenu = (selection, props) => {
-	const {
-		options,
-		onOptionClicked
-	} = props;
+const {
+	options,
+	onOptionClicked
+} = props;
 
-	//Create select keyword with click event listener
-	let select = selection.selectAll('select').data([null]);
-	select = select.enter().append('select')
-		.merge(select)
-			.on('change', function() {
-				onOptionClicked(this.value);
-			});
+//Create select keyword with click event listener
+let select = selection.selectAll('select').data([null]);
+select = select.enter().append('select')
+	.merge(select)
+		.on('change', function() {
+			onOptionClicked(this.value);
+		});
 
-	//Create options inside the dropdown menu with the corresponding value for the displayed text
-	const option = select.selectAll('option').data(options);
-	option.enter().append('option')
-		.merge(option)
-			.text(d => d)
-			.attr("value", d => d);
-	}
+//Create options inside the dropdown menu with the corresponding value for the displayed text
+const option = select.selectAll('option').data(options);
+option.enter().append('option')
+	.merge(option)
+		.text(d => d)
+		.attr("value", d => d);
+}
 
-    //Store the selected option
-    const onStimulusNameClicked = option => {
-        stimulusName = option;
-        render();
-    }
+//Store the selected option
+const onStimulusNameClicked = option => {
+	stimulusName = option;
+	render();
+}
 
 //plot a scatterplot
 const scatterPlot = (selection, props) => {
@@ -265,7 +302,6 @@ const render = () => {
     })
 	svg.selectAll('.rectangle').remove();
 	SquareArray = [];
-	console.log(innerHeight,innerWidth)
 }
 
 //(RE-)Render the data according to the selection by filter
