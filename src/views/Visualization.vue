@@ -40,7 +40,7 @@ export default {
   },
   data() {
     return {
-      activeVis: 'scatterplot'
+      activeVis: ''
     }
   },
   mounted: function() {
@@ -106,6 +106,7 @@ export default {
       screenShot.src = url;
     },
     setOptions() {
+      let _this = this;
       let data;
       let allVersions = [];
       
@@ -125,6 +126,13 @@ export default {
         }
         pushOptions();
       });
+
+      startVis('scatterplot');
+
+      function startVis(visType) {
+        console.log('StimuliNames loaded, loading in first visualization.');
+        _this.setActiveVis(visType);
+      }
     },
     setActiveVis(visType) {
       this.activeVis = visType;
