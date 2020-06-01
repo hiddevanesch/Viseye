@@ -1,28 +1,13 @@
 const svg = d3.select('#svgAttention');
-const svgDensX = d3.select('#svgDensityX');
-const svgDensY = d3.select('#svgDensityY');
 
 const width = +svg.attr('width');
 const height = +svg.attr('height');
-const widthDens = +svgDensX.attr('width');
-const heightDens = +svgDensX.attr('height');
 
 let data;
 let stimulusName;
 let dataSelected;
 let resData;
 let allVersions = [];
-
-//initialize the position of the svgs
-const initialization = (selection, props) => {
-	const {maps} = props;
-
-	selection.attr('transform',
-	`translate(${heightDens}, 0)`
-	);
-
-	stimulusName = maps[0]	
-}
 
 //Create dropdown menu
 const dropdownMenu = (selection, props) => {
@@ -44,7 +29,7 @@ const dropdownMenu = (selection, props) => {
 	option.enter().append('option')
 		.merge(option)
 			.text(d => d)
-			.attr("value", d => d);
+			.attr('value', d => d);
 }
 
 //Store the selected option
@@ -53,111 +38,6 @@ const onStimulusNameClicked = option => {
 	render();
 }
 
-//Plot density plot for mapped fixation point x
-const densityPlotX = (selection, props) => {
-	const {
-		data,
-		xScale,
-		xValue
-	} = props;
-
-	const yAxisLabel = 'Density';
-
-	//Set y axis range
-	const yScale = d3.scaleLinear()
-		.domain(0, 0,1)
-		.range(heightDens, 0);
-
-	// Compute kernel density estimation
-	let kde = kernelDensityEstimator(kernelEpanechnikov(7), xScale.ticks(40));
-	let density =  kde(data.map(xValue));
-
-	//Create container for density plot X
-	const g = selection.selectAll('.containerDensX').data([null]);
- 	const gEnter = g
-    .enter().append('g')
-	  .attr('class', 'containerDensX');
-
-	//Customizing the axis
-	const xAxis = d3.axisBottom(xScale)
-		.tickSize(-heightDens)
-		.tickPadding(10);
-
-	const yAxis = d3.axisLeft(yScale)
-		.tickSize(-widthDens)
-		.tickPadding(10);
-
-	//Creating the axes
-	const yAxisG = g.select('.yAxis');
-	const yAxisGEnter = gEnter
-		.append('g')
-			.attr('class', 'yAxis_dens_x');
-	yAxisG
-		.merge(yAxisGEnter)
-			.call(yAxis)
-
-	//Y-axis label
-	yAxisGEnter
-    	.append('text')
-			.attr('class', 'axis-label')
-			.attr('y', -60)
-			.attr('transform', `rotate(-90)`)
-			.attr('text-anchor', 'middle')
-    	.merge(yAxisG.select('.axis-label'))
-      		.attr('x', -innerHeight / 2)
-      		.text(yAxisLabel);
-
-	const xAxisG = g.select('.xAxis');
-	const xAxisGEnter = gEnter
-		.append('g')
-				.attr('class', 'xAxis_dens_x');
-	xAxisG
-		.merge(xAxisGEnter)
-			.call(xAxis)
-
-	//X-axis label
-	xAxisGEnter
-		.append('text')
-			.attr('class', 'axis-label')
-			.attr('y', 60)
-			.attr('text-anchor', 'middle')
-		.merge(xAxisG.select('.axis-label'))
-			.attr('x', innerWidth / 2);
-
-	const line = () => {
-		d3.line()
-			.x(d => {return xScale(d[0]);})
-			.y(d => {return yScale(d[1]);})
-			.curve(d3.curveBasis);
-	}
-
-	// Plot the area
-	const path = g.merge(gEnter)
-		.selectAll('path').data(density);
-	path
-		.enter().append('path')
-			.merge(path)
-			.transition().duration(1000)
-				.attr('d',  line());
-
-	// Function to compute density
-	function kernelDensityEstimator(kernel, X) {
-		return function(V) {
-	 		return X.map(function(x) {
-				return [x, d3.mean(V, function(v) { return kernel(x - v); })];
-	  		});
-		};
-	}
-	
-  	function kernelEpanechnikov(k) {
-		return function(v) {
-			  return Math.abs(v /= k) <= 1 
-				  ? 0.75 * (1 - v * v) / k 
-				  : 0;
-		};
-	}
-  
-}
 //Plot a attention map
 const attentionMap = (selection, props) => {
 	const {
@@ -188,7 +68,7 @@ const attentionMap = (selection, props) => {
 	let background = 'stimuli/' + imageSelected;
 
 	const img = selection.selectAll('image').data([null]);
-	const imgEnter = img.enter().append('image')
+	const imgEnter = img.enter().append('image');
 
 	imgEnter
 		.merge(img)
@@ -213,7 +93,8 @@ const attentionMap = (selection, props) => {
 	const g = selection.selectAll('.containerAttention').data([null]);
  	const gEnter = g
     .enter().append('g')
-      .attr('class', 'containerAttention');
+	  .attr('class', 'containerAttention');
+	  
 	//Translating the visualisation to innerposition with the updated data
 	gEnter
 		.merge(g)
@@ -289,7 +170,10 @@ const attentionMap = (selection, props) => {
 		.bandwidth(15);
 	
 	// Prepare a color palette
-	let color = d3.scaleSequential(d3.interpolateMagma).domain(d3.extent(densityData(dataSelected).map(d => d.value))).nice();
+	let color = d3.scaleSequential(d3.interpolateInferno).domain(d3.extent(densityData(dataSelected).map(d => d.value))).nice()
+		, max = d3.max(densityData(dataSelected).map(d => d.value))
+		, min = d3.min(densityData(dataSelected).map(d => d.value))
+	;
 
 	// Plot the attentio map
 	const paths = g.merge(gEnter)
@@ -297,20 +181,141 @@ const attentionMap = (selection, props) => {
 	paths
 		.enter().append('path')
 		.merge(paths)
-			.transition()
-				.attr('d', d3.geoPath())
-				.attr('fill', d => {
-					return color(d.value);
-				})
-				.attr('opacity', 0.4);
+			.attr('d', d3.geoPath())
+			.attr('fill', d => {
+				return color(d.value);
+			})
+			.attr('opacity', 0.4);
 	paths
 		.exit().remove();
 	
-	svgDensX.call(densityPlotX, {
-		data: dataSelected,
-		xScale: xScale,
-		xValue: d => d.MappedFixationPointX
-	});
+	//Append def element to svg
+	const defs = svg.append('defs');
+
+	//Append a linearGradient element to the defs
+	const linearGradient = defs.append('linearGradient')
+		.attr('id', 'linear-gradient');
+
+	//Vertical gradient
+	linearGradient
+		.attr("x1", "0%")
+		.attr("y1", "0%")
+		.attr("x2", "100%")
+		.attr("y2", "0%");
+	
+	let colorScale = d3.scaleSequential(d3.interpolateInferno)
+		.domain([innerHeight, 0])
+	
+	// //Append multiple color stops by using D3's data/enter step
+	// linearGradient.selectAll("stop")
+	// 	.data( colorScale.range() )
+	// 	.enter().append("stop")
+	// 	.attr("offset", function(d,i) { return i/(colorScale.range().length-1); })
+	// 	.attr("stop-color", function(d) { return d; });
+
+	// 	console.log(colorScale.range())
+	// //Draw the rectangle and fill with gradient
+	// svg.append("rect")
+	// 	.attr("width", 300)
+	// 	.attr("height", 20)
+	// 	.style("fill", "url(#linear-gradient)");
+
+	//Draw the rectangle and fill with gradient
+	let bars = svg.selectAll(".bars")
+		 .data(d3.range(innerHeight), function(d) { return d; })
+		 	.enter().append("rect")
+				.attr("class", "bars")
+				.attr("x", function(d, i) { return i; })
+				.attr("y", 0)
+				.attr('transform',
+				 	`translate(${width - 10},${margin.top}) rotate(90)`
+				)
+				.attr('width', 1)
+				.attr('height', 20)
+				.style("fill", function(d, i ) { return colorScale(d); })
+	;
+	
+	const main_svg = d3.select('#attentionMap svg.aperture').attr('class', 'zoom')
+		, mini_svg   = d3.select('#mini svg').append('g').attr('class', 'zoom')
+		, viewbox = main_svg.attr('viewBox').split(' ').map(d => +d)
+		// store the image's initial viewBox
+		, extent_1 = [
+			[viewbox[0], viewbox[1]]
+		  , [(viewbox[2] - viewbox[0]), (viewbox[3] - viewbox[1])]
+		]
+		, brush  = d3.brush()
+			.extent(extent_1)
+			.on('brush', brushed)
+		, zoom = d3.zoom()
+			.scaleExtent([0.2, 1])
+			.extent(extent_1)
+			.on('zoom', zoomed)
+	;
+	
+	// Apply the brush to the minimap, and also apply the zoom behavior here
+	mini_svg
+		.call(brush)
+		.call(brush.move, brush.extent())
+		.call(zoom)
+	;
+	// Apply the zoom behavior to the main svg
+	main_svg
+		.call(zoom)
+	;
+
+	function brushed() {
+		// Ignore brush-via-zoom
+		if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return;
+		
+		let sel = d3.event.selection
+			, vb = sel
+				? [sel[0][0], sel[0][1], (sel[1][0] - sel[0][0]), (sel[1][1] - sel[0][1])]
+				: viewbox
+			, k = vb[3] / viewbox[3]
+			, t = d3.zoomIdentity.translate(vb[0], vb[1]).scale(k)
+		;
+
+		mini_svg
+			.property('__zoom', t)
+		;
+		main_svg
+			.attr('viewBox', vb.join(' '))
+			.property('__zoom', t)
+		;
+	} // brushed()
+	
+	function zoomed() {
+		// If the zoom input was on the minimap, forward it to the main SVG
+		if(this === mini_svg.node()) {
+			return main_svg.call(zoom.transform, d3.event.transform);
+		}
+
+		// Disable panning on main_svg
+		if(d3.event.sourceEvent.type === 'mousemove') return;
+		// Ignore zoom via brush
+		if(!d3.event.sourceEvent || d3.event.sourceEvent.type === 'brush') return;
+	
+		// Process the zoom event on the main SVG
+		let t = d3.event.transform;
+		
+		t.x = t.x < viewbox[0] ? viewbox[0] : t.x;
+		t.x = t.x > viewbox[2] ? viewbox[2] : t.x;
+		t.y = t.y < viewbox[1] ? viewbox[1] : t.y;
+		t.y = t.y > viewbox[3] ? viewbox[3] : t.y;
+		
+		if(t.k === 1) t.x = t.y = 0;
+	
+		const vb = [t.x, t.y, viewbox[2] * t.k, viewbox[3] * t.k];
+	
+		main_svg.attr('viewBox', vb.join(' '));
+		mini_svg
+			.property('__zoom', t)
+			.call(
+				brush.move
+			, [[t.x, t.y], [t.x + vb[2], t.y + vb[3]]]
+			)
+		;
+	} // zoomed()
 }
 
 //Function render
@@ -326,7 +331,7 @@ const render = () => {
 	//Invoke function to generate the scatterplot
 	svg.call(attentionMap, {
 		title: 'Attentionmap: Eye tracking data per city',
-		margin: { top: 50, right: 20, bottom: 80, left: 90 },
+		margin: { top: 50, right: 40, bottom: 80, left: 90 },
 		maps: allVersions,
 		xValue: d => d.MappedFixationPointX,
 		yValue: d => d.MappedFixationPointY,
@@ -353,6 +358,6 @@ Promise.all([
 		d.width = +d.width;
 		d.height = +d.height;
 	})
-	svg.call(initialization, {maps: allVersions});
+	stimulusName = allVersions[0];
 	render();
 });

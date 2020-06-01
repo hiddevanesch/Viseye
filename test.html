@@ -1,74 +1,370 @@
+
 <!DOCTYPE html>
-<meta charset="utf-8">
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title></title>
+  <style>
+  div#plots {
+    margin-bottom: 15px;
+}
 
-<!-- Load d3.js -->
-<script src="https://d3js.org/d3.v4.js"></script>
+div#scatterplot, div#heatchart {
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+}
 
-<!-- Create a div where the graph will take place -->
-<div id="my_dataviz"></div>
-<script>
+div#scatterContainer, div#heatchartContainer {
+    float: left;
+    margin-left: 15px;
+    margin-bottom: 20px;
+}
 
-// set the dimensions and margins of the graph
-var margin = {top: 30, right: 30, bottom: 30, left: 50},
-    width = 460 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
+button {
+    margin-left: 15px;
+    margin-bottom: 15px;
+}
 
-// append the svg object to the body of the page
-var svg = d3.select("#my_dataviz")
-  .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
+circle {
+    fill: #09c;
+}
 
-// get the data
-d3.csv("https://gist.githubusercontent.com/Mikel-P/c2dee550a05fabb74e110c7f8f11b709/raw/8f9a813fc36644ff25598abf2a18bab7e4af7f70/closeGBPUSD.csv", function(data) {
+select {
+    margin-left: 15px;
+}
+</style>
+</head>
+<body>
 
-  // add the x Axis
-  var x = d3.scaleLinear()
-            .domain([0, 100000])
-            .range([0, width]);
-  svg.append("g")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
+<select onchange="onNumPointsChange(event);">
+    <option value="500">500</option>
+    <option value="1500" selected="true">1500</option>
+    <option value="5000">5000</option>
+    <option value="15000">15,000</option>
+    <option value="25000">25,000</option>
+    <option value="50000">50,000</option>
+</select> points
 
-  // add the y Axis
-  var y = d3.scaleLinear()
-            .range([height, 0])
-            .domain([0, 0.5]);
-  svg.append("g")
-      .call(d3.axisLeft(y));
+<button onclick="onRandomizeClick();">Randomize!</button>
 
-  // Compute kernel density estimation
-  var kde = kernelDensityEstimator(kernelEpanechnikov(7), x.ticks(40))
-  var density =  kde( data.map(function(d){  return d.price; }) )
+<div id="plots">
+    <div id="scatterContainer">
+        <div id="scatterplot"></div>
+        
+        <input type="checkbox" checked="true" onchange="onShowScatterplotChange(event);">show scatterplot</input>
+    </div>
+    
+    <div id="heatchartContainer">
+        <div id="heatchart"></div>
+    </div>            
+    
+</div>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script>
+var numPoints = 1500,
+  size = 300,
+  numRows = 100,
+  numCols = 100,
+  showingScatter = true,
+  scatterDirty = false,
+  data = null,
+  cells = null,
+  color = d3.interpolateRgb("#fff", "#c09");
 
-  console.log(density);
+var getEmptyCells = function() {
+  var emptyCells = [];
+  for (var rowNum = 0; rowNum < numRows; rowNum++) {
+    emptyCells.push([]);
+    var row = emptyCells[emptyCells.length - 1];
+    for (var colNum = 0; colNum < numCols; colNum++) {
+      row.push({
+        row: rowNum,
+        col: colNum,
+        density: 0,
+        points: []
+      });
+    }
+  }
+  return emptyCells;
+};
 
-  // Plot the area
-  svg.append("path")
-      .datum(density)
-      .attr("d",  d3.line()
-          .x(function(d) {  return x(d[0]); })
-          .y(function(d) { return y(d[1]); })
-          .curve(d3.curveBasis)
-      );
+var clearCells = function() {
+  for (var rowNum = 0; rowNum < numRows; rowNum++) {
+    for (var colNum = 0; colNum < numCols; colNum++) {
+      cells[rowNum][colNum].density = 0;
+      cells[rowNum][colNum].points = [];
+    }
+  }
+};
 
-});
+var randomizeData = function() {
+  data = [];
 
-// Function to compute density
-function kernelDensityEstimator(kernel, X) {
-  return function(V) {
-    return X.map(function(x) {
-      return [x, d3.mean(V, function(v) { return kernel(x - v); })];
+  if (cells === null) {
+    cells = getEmptyCells();
+  }
+  else {
+    clearCells();
+  }
+
+  var x, y, col, row;
+  for (var i = 0; i < numPoints; i++) {
+    x = Math.random() * size;
+    y = Math.random() * size;
+    col = Math.min(Math.floor(x / size * numCols), numCols - 1);
+    row = Math.min(Math.floor(y / size * numRows), numRows - 1);
+
+    data.push({
+      x: x,
+      y: y,
+      col: col,
+      row: row,
+      cell: cells[row][col],
+      ind: i
     });
-  };
-}
-function kernelEpanechnikov(k) {
-  return function(v) {
-    return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
-  };
-}
 
-</script>
+    cells[row][col].points.push(data[data.length - 1]);
+  }
+};
+
+var selectPoints = function(points) {
+  d3.selectAll(points).attr("r", 4).attr("stroke", "#f00").attr("stroke-width", 3);
+
+  for (var i = 0; i < points.length; i++) {
+    points[i].parentNode.appendChild(points[i]);
+  }
+};
+
+var deselectPoints = function(points) {
+  d3.selectAll(points).attr("r", 2).attr("stroke", "none");
+};
+
+var selectCell = function(cell) {
+  d3.select(cell).attr("stroke", "#f00").attr("stroke-width", 3);
+
+  cell.parentNode.parentNode.appendChild(cell.parentNode);
+  cell.parentNode.appendChild(cell);
+};
+
+var deselectCell = function(cell) {
+  d3.select(cell).attr("stroke", "#fff").attr("stroke-width", 1);
+};
+
+var onPointOver = function(point, data) {
+  selectPoints([point]);
+  var cell = d3.select("div#heatchart").select('[cell="r' + data.row + 'c' + data.col + '"]');
+  selectCell(cell.node());
+};
+
+var onPointOut = function(point, data) {
+  deselectPoints([point]);
+  var cell = d3.select("div#heatchart").select('[cell="r' + data.row + 'c' + data.col + '"]');
+  deselectCell(cell.node());
+};
+
+var createScatterplot = function() {
+  var scatterplot = d3.select("div#scatterplot").append("svg:svg").attr("width", size).attr("height", size);
+
+  scatterplot.selectAll("circle").data(data).enter().append("svg:circle").attr("cx", function(d, i) {
+    return d.x;
+  }).attr("cy", function(d, i) {
+    return d.y;
+  }).attr("r", 2).attr("ind", function(d) {
+    return d.ind;
+  }).on("mouseover", function(d) {
+    onPointOver(this, d);
+  }).on("mouseout", function(d) {
+    onPointOut(this, d);
+  });
+};
+
+var onCellOver = function(cell, data) {
+  selectCell(cell);
+
+  if (showingScatter) {
+    var pointEls = [];
+
+    for (var i = 0; i < data.points.length; i++) {
+      pointEls.push(d3.select("div#scatterplot").select('[ind="' + data.points[i].ind + '"]').node());
+    }
+
+    selectPoints(pointEls);
+  }
+};
+
+var onCellOut = function(cell, data) {
+  deselectCell(cell);
+
+  if (showingScatter) {
+    var pointEls = [];
+
+    for (var i = 0; i < data.points.length; i++) {
+      pointEls.push(d3.select("div#scatterplot").select('[ind="' + data.points[i].ind + '"]').node());
+    }
+
+    deselectPoints(pointEls);
+  }
+};
+
+var updateScatterplot = function() {
+  // select
+  var dots = d3.select("div#scatterplot").select("svg").selectAll("circle").data(data);
+
+  // enter
+  dots.enter().append("svg:circle").attr("cx", function(d, i) {
+    return d.x;
+  }).attr("cy", function(d, i) {
+    return d.y;
+  }).attr("r", 2).attr("ind", function(d) {
+    return d.ind;
+  }).on("mouseover", function(d) {
+    onPointOver(this, d);
+  }).on("mouseout", function(d) {
+    onPointOut(this, d);
+  });
+
+  // update
+  dots.attr("cx", function(d, i) {
+    return d.x;
+  }).attr("cy", function(d, i) {
+    return d.y;
+  }).attr("ind", function(d) {
+    return d.ind;
+  }).on("mouseover", function(d) {
+    onPointOver(this, d);
+  }).on("mouseout", function(d) {
+    onPointOut(this, d);
+  });
+
+  // exit
+  dots.exit().remove();
+};
+
+var createHeatchart = function() {
+  var min = 999;
+  var max = -999;
+  var l;
+
+  for (var rowNum = 0; rowNum < cells.length; rowNum++) {
+    for (var colNum = 0; colNum < numCols; colNum++) {
+      l = cells[rowNum][colNum].points.length;
+
+      if (l > max) {
+        max = l;
+      }
+      if (l < min) {
+        min = l;
+      }
+    }
+  }
+
+  var heatchart = d3.select("div#heatchart").append("svg:svg").attr("width", size).attr("height", size);
+
+  heatchart.selectAll("g").data(cells).enter().append("svg:g").selectAll("rect").data(function(d) {
+    return d;
+  }).enter().append("svg:rect").attr("x", function(d, i) {
+    return d.col * (size / numCols);
+  }).attr("y", function(d, i) {
+    return d.row * (size / numRows);
+  }).attr("width", size / numCols).attr("height", size / numRows).attr("fill", function(d, i) {
+    return color((d.points.length - min) / (max - min));
+  })
+  //.attr("stroke", "#fff")
+  .attr("cell", function(d) {
+    return "r" + d.row + "c" + d.col;
+  }).on("mouseover", function(d) {
+    onCellOver(this, d);
+  }).on("mouseout", function(d) {
+    onCellOut(this, d);
+  });
+};
+
+var updateHeatchart = function() {
+  var min = 999;
+  var max = -999;
+  var l;
+
+  for (var rowNum = 0; rowNum < cells.length; rowNum++) {
+    for (var colNum = 0; colNum < numCols; colNum++) {
+      l = cells[rowNum][colNum].points.length;
+
+      if (l > max) {
+        max = l;
+      }
+      if (l < min) {
+        min = l;
+      }
+    }
+  }
+
+  d3.select("div#heatchart").select("svg").selectAll("g").data(cells).selectAll("rect").data(function(d) {
+    return d;
+  }).attr("x", function(d, i) {
+    return d.col * (size / numCols);
+  }).attr("y", function(d, i) {
+    return d.row * (size / numRows);
+  }).attr("fill", function(d, i) {
+    return color((d.points.length - min) / (max - min));
+  }).attr("cell", function(d) {
+    return "r" + d.row + "c" + d.col;
+  }).on("mouseover", function(d) {
+    onCellOver(this, d);
+  }).on("mouseout", function(d) {
+    onCellOut(this, d);
+  });
+};
+
+var onRandomizeClick = function() {
+  randomizeData();
+
+  if (showingScatter) {
+    updateScatterplot();
+  }
+  else {
+    scatterDirty = true;
+  }
+
+  updateHeatchart();
+};
+
+var onNumPointsChange = function(event) {
+  numPoints = event.target.options[event.target.selectedIndex].value;
+  randomizeData();
+
+  if (showingScatter) {
+    updateScatterplot();
+  }
+  else {
+    scatterDirty = true;
+  }
+
+  updateHeatchart();
+};
+
+var onShowScatterplotChange = function(event) {
+  showingScatter = event.target.checked;
+
+  if (showingScatter) {
+    if (scatterDirty) {
+      updateScatterplot();
+      scatterDirty = false;
+    }
+
+    d3.select("div#scatterplot").select("svg").attr("visibility", "visible");
+  }
+  else {
+    d3.select("div#scatterplot").select("svg").attr("visibility", "hidden");
+  }
+};
+
+var init = function() {
+  randomizeData();
+  createScatterplot();
+  createHeatchart();
+};
+
+init();
+  </script>
+</body>
+</html>

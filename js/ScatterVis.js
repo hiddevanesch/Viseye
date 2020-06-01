@@ -25,19 +25,6 @@ let maxTimeSlider;
 let timelineUpdate = false;
 let maxvalueData;
 
-/*
-Selects the play button and the checkbox for interactions
-If the checkbox is clicked, then the boolean filter will be flipped
-*/
-var playButton = d3.select('#play-button');
-var checkBox = d3.select("#checkBox_id")
-	checkBox.on('change', function(){ 
-		cumulativeFilter = cumulativeFilter ? false : true;
-	});
-var tooltip = d3.select("#menus").append("div")
-	.attr("class", "tooltip")
-	.style("opacity", 0);
-
 /* 
 The timeline slider will be created here
 1. The slider consists of three parts, the slider itself
@@ -199,7 +186,7 @@ const scatterPlot = (selection, props) => {
 	let background = 'stimuli/' + imageSelected;
 
 	const img = selection.selectAll('image').data([null]);
-	const imgEnter = img.enter().append('image')
+	const imgEnter = img.enter().append('image');
 
 	imgEnter
 		.merge(img)
@@ -282,13 +269,105 @@ const scatterPlot = (selection, props) => {
 			.attr('x', innerWidth / 2)
 			.text(xAxisLabel);
 
-	const tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
+	gEnter.append('text')
+		.attr('class', 'title')
+  		.attr('y', -15)
+		.text(title);
+	
+	drawPlot(selectedData);
+
+
+	const main_svg = d3.select("#scatterPlot svg.aperture").attr("class", "zoom")
+	, mini_svg   = d3.select("#mini svg").append("g").attr("class", "zoom")
+	, viewbox = main_svg.attr("viewBox").split(' ').map(d => +d)
+	// store the image's initial viewBox
+	, extent_1 = [
+		[viewbox[0], viewbox[1]]
+	  , [(viewbox[2] - viewbox[0]), (viewbox[3] - viewbox[1])]
+	]
+	, brush  = d3.brush()
+        .extent(extent_1)
+		.on("brush", brushed)
+	, zoom = d3.zoom()
+		.scaleExtent([0.2, 1])
+		.extent(extent_1)
+		.on("zoom", zoomed)
+	;
+
+	// Apply the brush to the minimap, and also apply the zoom behavior here
+	mini_svg
+		.call(brush)
+		.call(brush.move, brush.extent())
+		.call(zoom)
+	;
+	// Apply the zoom behavior to the main svg
+	main_svg
+		.call(zoom)
+	;
+
+	function brushed() {
+		// Ignore brush-via-zoom
+		if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return;
+		
+		let sel = d3.event.selection
+		  , vb = sel
+				? [sel[0][0], sel[0][1], (sel[1][0] - sel[0][0]), (sel[1][1] - sel[0][1])]
+				: viewbox
+		  , k = vb[3] / viewbox[3]
+		  , t = d3.zoomIdentity.translate(vb[0], vb[1]).scale(k)
+		;
+
+		mini_svg
+			.property("__zoom", t)
+		;
+		main_svg
+			.attr("viewBox", vb.join(' '))
+			.property("__zoom", t)
+		;
+	} // brushed()
+	
+	function zoomed() {
+		// If the zoom input was on the minimap, forward it to the main SVG
+		if(this === mini_svg.node()) {
+			return main_svg.call(zoom.transform, d3.event.transform);
+		}
+
+		// Disable panning on main_svg
+		if(d3.event.sourceEvent.type === "mousemove") return;
+		// Ignore zoom via brush
+		if(!d3.event.sourceEvent || d3.event.sourceEvent.type === "brush") return;
+	
+		// Process the zoom event on the main SVG
+		let t = d3.event.transform;
+		
+		t.x = t.x < viewbox[0] ? viewbox[0] : t.x;
+		t.x = t.x > viewbox[2] ? viewbox[2] : t.x;
+		t.y = t.y < viewbox[1] ? viewbox[1] : t.y;
+		t.y = t.y > viewbox[3] ? viewbox[3] : t.y;
+		
+		if(t.k === 1) t.x = t.y = 0;
+	
+		const vb = [t.x, t.y, viewbox[2] * t.k, viewbox[3] * t.k];
+	
+		main_svg.attr("viewBox", vb.join(' '));
+		mini_svg
+			.property("__zoom", t)
+			.call(
+				  brush.move
+				, [[t.x, t.y], [t.x + vb[2], t.y + vb[3]]]
+			  )
+		;
+	} // zoomed()
+	
+	// Update the data from the timeline scaler
+	function drawPlot(dataDrawPlot) {
+		const tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
 	+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
 	+ '<br/>' + 'Description: ' + d['description'];
 
 	//Draw circles for each row of the selected data
 	const circles = g.merge(gEnter)
-		.selectAll('circle').data(dataSelected);
+		.selectAll('circle').data(dataDrawPlot);
 	circles
 		.enter().append('circle')
 			.on('mouseover', d => {
@@ -321,38 +400,7 @@ const scatterPlot = (selection, props) => {
 				.attr('cx', innerWidth/2)
 				.attr('cy', innerHeight/2)
 			.remove();
-
-	gEnter.append('text')
-		.attr('class', 'title')
-  		.attr('y', -15)
-		.text(title);
-	
-	// Update the data from the timeline scaler
-	function drawPlot(dataDrawPlot) {
-		const circles = g.merge(gEnter)
-			.selectAll('circle').data(dataDrawPlot);
-		circles
-			.enter().append('circle')
-				.merge(circles)
-					.attr('r', circleRadius)
-					.attr('cx', d => xScale(xValue(d)))
-					.attr('cy', d => yScale(yValue(d)))
-					.on("mouseover", function(d) {
-						tooltip.transition()
-						  .duration(200)
-						  .style("opacity", 1)
-						  .style("left", (d3.event.pageX) + "px")
-						  .style("top", (d3.event.pageY - 28) + "px");
-						tooltip.html("Coordinates :" + d.MappedFixationPointX + "," + d.MappedFixationPointX + "<br/> By user:" + d.user);
-					})
-					.on("mouseout", function(d) {
-						tooltip.transition()
-						  .duration(500)
-						  .style("opacity", 0);
-					  });
-		circles
-			.exit().remove();
-		}	
+	}	
 	
 	/*
 	 Play button on click
@@ -441,8 +489,8 @@ const render = () => {
 		xValue: d => d.MappedFixationPointX,
 	  	yValue: d => d.MappedFixationPointY,
 	  	circleRadius: 4,
-	  	margin: { top: 50, right: 20, bottom: 80, left: 90 },
-	})
+	  	margin: { top: 50, right: 20, bottom: 80, left: 90 }
+	});
 }
 
 //(RE-)Render the data according to the selection by filter
@@ -464,8 +512,21 @@ Promise.all([
 	resData.forEach(d => {
 		d.width = +d.width;
 		d.height = +d.height
-	})
+	});
 	createTimeline();
 	stimulusName = allVersions[0];
 	render();
 });
+
+/*
+Selects the play button and the checkbox for interactions
+If the checkbox is clicked, then the boolean filter will be flipped
+*/
+var playButton = d3.select('#play-button');
+var checkBox = d3.select("#checkBox_id")
+	checkBox.on('change', function(){ 
+		cumulativeFilter = cumulativeFilter ? false : true;
+	});
+var tooltip = d3.select("#menus").append("div")
+	.attr("class", "tooltip")
+	.style("opacity", 0);
