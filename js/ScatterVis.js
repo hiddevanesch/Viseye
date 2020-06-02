@@ -274,7 +274,7 @@ const scatterPlot = (selection, props) => {
   		.attr('y', -15)
 		.text(title);
 	
-	drawPlot(selectedData);
+	drawPlot(dataSelected);
 
 
 	const main_svg = d3.select("#scatterPlot svg.aperture").attr("class", "zoom")

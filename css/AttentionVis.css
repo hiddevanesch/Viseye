@@ -48,16 +48,18 @@ text {
 
 .vis {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   flex-wrap: nowrap;
   align-items: center;
   width: 100vw;
 }
+
 .vis > div {
   --margin: 1em;
   margin: var(--margin)
 }
-#scatterPlot {
+
+#attentionMap {
   flex: 3 0 calc(75% - var(--margin));
 }
 

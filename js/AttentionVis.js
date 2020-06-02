@@ -171,8 +171,6 @@ const attentionMap = (selection, props) => {
 	
 	// Prepare a color palette
 	let color = d3.scaleSequential(d3.interpolateInferno).domain(d3.extent(densityData(dataSelected).map(d => d.value))).nice()
-		, max = d3.max(densityData(dataSelected).map(d => d.value))
-		, min = d3.min(densityData(dataSelected).map(d => d.value))
 	;
 
 	// Plot the attentio map
@@ -188,52 +186,6 @@ const attentionMap = (selection, props) => {
 			.attr('opacity', 0.4);
 	paths
 		.exit().remove();
-	
-	//Append def element to svg
-	const defs = svg.append('defs');
-
-	//Append a linearGradient element to the defs
-	const linearGradient = defs.append('linearGradient')
-		.attr('id', 'linear-gradient');
-
-	//Vertical gradient
-	linearGradient
-		.attr("x1", "0%")
-		.attr("y1", "0%")
-		.attr("x2", "100%")
-		.attr("y2", "0%");
-	
-	let colorScale = d3.scaleSequential(d3.interpolateInferno)
-		.domain([innerHeight, 0])
-	
-	// //Append multiple color stops by using D3's data/enter step
-	// linearGradient.selectAll("stop")
-	// 	.data( colorScale.range() )
-	// 	.enter().append("stop")
-	// 	.attr("offset", function(d,i) { return i/(colorScale.range().length-1); })
-	// 	.attr("stop-color", function(d) { return d; });
-
-	// 	console.log(colorScale.range())
-	// //Draw the rectangle and fill with gradient
-	// svg.append("rect")
-	// 	.attr("width", 300)
-	// 	.attr("height", 20)
-	// 	.style("fill", "url(#linear-gradient)");
-
-	//Draw the rectangle and fill with gradient
-	let bars = svg.selectAll(".bars")
-		 .data(d3.range(innerHeight), function(d) { return d; })
-		 	.enter().append("rect")
-				.attr("class", "bars")
-				.attr("x", function(d, i) { return i; })
-				.attr("y", 0)
-				.attr('transform',
-				 	`translate(${width - 10},${margin.top}) rotate(90)`
-				)
-				.attr('width', 1)
-				.attr('height', 20)
-				.style("fill", function(d, i ) { return colorScale(d); })
-	;
 	
 	const main_svg = d3.select('#attentionMap svg.aperture').attr('class', 'zoom')
 		, mini_svg   = d3.select('#mini svg').append('g').attr('class', 'zoom')
@@ -316,6 +268,55 @@ const attentionMap = (selection, props) => {
 			)
 		;
 	} // zoomed()
+
+	//Color gradient legend
+	const legend = d3.select('#svgLegend');
+
+	let colorScale = d3.scaleSequential(d3.interpolateInferno)
+	.domain([innerHeight, 0])
+
+	//Draw the rectangle and fill with gradient
+	legend.selectAll(".bars")
+		 .data(d3.range(innerHeight), function(d) { return d; })
+		 	.enter().append("rect")
+				.attr("class", "bars")
+				.attr("x", function(d, i) { return i; })
+				.attr("y", 0)
+				.attr('transform',
+				 	`translate(${width - margin.right + 25},${margin.top}) rotate(90)`
+				)
+				.attr('width', 1)
+				.attr('height', 20)
+				.style("fill", function(d, i ) { return colorScale(d); })
+	;
+
+	//create tick marks
+	const legScale = d3.scaleBand()
+		.domain('Low Medium-low Medium Medium-high High'.split(' '))
+		.range([innerHeight, 0]);
+	
+	const axisLeg = d3.axisRight(legScale);
+
+	const titleLeg = 'Level of Density'
+	
+	//Draw axis
+	legend
+		.append("g")
+			.attr('class', 'axisLeg')
+			.attr('transform',
+						`translate(${width - margin.right + 25},${margin.top})`
+					)
+			.call(axisLeg)
+			.selectAll('.domain').remove();
+
+	//Denote that the legend is about density
+	legend
+		.append('text')
+			.attr('class', 'titleLeg')
+			.attr('transform',
+						`translate(${width - margin.right + 5},${margin.top - 10})`
+					)
+			.text(titleLeg);
 }
 
 //Function render
@@ -331,7 +332,7 @@ const render = () => {
 	//Invoke function to generate the scatterplot
 	svg.call(attentionMap, {
 		title: 'Attentionmap: Eye tracking data per city',
-		margin: { top: 50, right: 40, bottom: 80, left: 90 },
+		margin: { top: 50, right: 130, bottom: 80, left: 90 },
 		maps: allVersions,
 		xValue: d => d.MappedFixationPointX,
 		yValue: d => d.MappedFixationPointY,
