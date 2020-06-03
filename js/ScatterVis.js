@@ -164,7 +164,6 @@ const scatterPlot = (selection, props) => {
 	dataSelected = data.filter(d => d.StimuliName == stimulusName);
 
 	// update the timeline according to the data if a chart has been selected
-	if (timelineUpdate){
 		const axisTimeline = dataSelected => dataSelected.Timestamp;
 		/* 
 		update the minimum and maximum value of the selected data
@@ -182,7 +181,6 @@ const scatterPlot = (selection, props) => {
 			label
 				.attr('x', timelineScale(currentValue))
 				.text(Math.round(currentValue/10)/100+' sec');
-	}
 
 //Select the image according to the selected map(version)
 	let imageSelected = allVersions.filter(d => d == stimulusName);
