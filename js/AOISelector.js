@@ -111,13 +111,16 @@ var selectionRect = {
         this.element.remove();
         this.element = null;
 	},
-	// This function would make it possible to remove the previous element, but this is not used here in this way.
+	// This function would make it possible to remove the previous element, but this
     removePrevious: function() {
         if(this.previousElement) {
             this.previousElement.remove();
         }
     }
 };
+	
+var clickTime = d3.select("#clicktime");
+var attributesText = d3.select("#attributestext");
 
 function dragStart() {
 	if(SquareArray.length<maxAmountOfAOI){
@@ -145,7 +148,7 @@ function dragEnd() {
 			// range selected
 			d3.event.sourceEvent.preventDefault();
 			selectionRect.focus();
-			sortArray(possibleAoiNames);
+			possibleAoiNames = sortArray(possibleAoiNames);
 			var nextBox = {
 				DatasetStartX : xScale.invert(Math.min(selectionRect.originX,selectionRect.currentX)),
 				DatasetStartY : yScale.invert(Math.max(selectionRect.originY,selectionRect.currentY)),
@@ -166,9 +169,7 @@ function dragEnd() {
 			} else {	
 				FilterAOI(nextBox)
 				SquareArray.push(nextBox);
-				
-			}
-			
+			}		
 		} else {
 			// single point selected
 			selectionRect.remove();
@@ -180,7 +181,7 @@ function sortArray(numbers){
 	numbers.sort(function(a, b){
 		return a - b;
 	});
-	possibleAoiNames=numbers;
+	return numbers;
 }
 function removeElement(d) {
 	// need to remove this object from data
@@ -188,24 +189,24 @@ function removeElement(d) {
 	for(let i=0 ; i < SquareArray.length ; i++){
 		if(Math.round(xScale(SquareArray[i].DatasetStartX)) == this.x.baseVal.value && 
 		  (Math.round(yScale(SquareArray[i].DatasetEndY)) == this.y.baseVal.value || 
-		   Math.round(yScale(SquareArray[i].DatasetStartY)) == this.y.baseVal.value) &&
-		   SquareArray.length  > 1){
+		   Math.round(yScale(SquareArray[i].DatasetStartY)) == this.y.baseVal.value)){
 			possibleAoiNames.push(SquareArray[i].numberBox);
 			data.forEach(function(d) {
 				if (d.MappedFixationPointX > SquareArray[i].DatasetStartX && 
 					d.MappedFixationPointX < SquareArray[i].DatasetEndX   &&
 					d.MappedFixationPointY > SquareArray[i].DatasetStartY && 
 					d.MappedFixationPointY < SquareArray[i].DatasetEndY   ){
-					(d.AOIName = "");
-					(d.AOIcolor = "");
-					(d.AOI_order = "");
+					delete d.AOIName;
+					delete d.AOIcolor;
+					delete d.AOI_order;
 				}
 			});
-			SquareArray.splice(i,1);
-		}
-		else if(Math.round(xScale(SquareArray[i].DatasetStartX)) == this.x.baseVal.value && SquareArray.length == 1){
-			possibleAoiNames.push(SquareArray[i].numberBox);
-			SquareArray = [];
+			if(SquareArray.length == 1){
+				SquareArray = [];
+			}
+			else{
+				SquareArray.splice(i,1);
+			}
 		}
 	}
 }
@@ -351,9 +352,6 @@ Promise.all([
     data.forEach(d => {
 		d.MappedFixationPointX = +d.MappedFixationPointX;
 		d.MappedFixationPointY = +d.MappedFixationPointY;
-		d.AOIName = "";
-		d.AOIcolor = "";
-		d.AOI_order = "";
         if (!allVersions.includes(d.StimuliName)) {
             allVersions.push(d.StimuliName);
         }
