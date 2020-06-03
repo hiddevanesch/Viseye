@@ -6,7 +6,7 @@ const height = +svg.attr('height');
 const innerWidth = width - margin.left - margin.right;
 const innerHeight = height - margin.top - margin.bottom;
 const maxAmountOfAOI = 10;
-var intersectingRectangles = false;
+
 
 //Defining variables for general access
 let data;
@@ -16,7 +16,17 @@ let dataSelected;
 let SquareArray = [];
 let xScale;
 let yScale;
+let intersectingRectangles = false;
+let possibleAoiNames = [];
 
+// Fills the possible AOI numbers into the array, according to the max amount which is given.
+for(let k = 0; k<maxAmountOfAOI ;k++){
+	possibleAoiNames.push(k);
+}
+
+// Makes a rectangle which is selected
+// Also defines the previous elements etc.
+// Also has a function which returns the attributes of the array
 var selectionRect = {
     element			: null,
     previousElement : null,
@@ -41,7 +51,8 @@ var selectionRect = {
         };
     },
     getCurrentAttributes: function() {
-        // use plus sign to convert string into number
+		// use plus sign to convert string into number
+		// Gives the x, y , width and the height of the triangle once asked for it
         var x = +this.element.attr("x");
         var y = +this.element.attr("y");
         var widthRectangle = +this.element.attr("width");
@@ -52,11 +63,15 @@ var selectionRect = {
             x2  : x + widthRectangle,
             y2  : y + heightRectangle
         };
-    },
+	},
+	// This function makes it able to give a clear attribute in a sentence
     getCurrentAttributesAsText: function() {
         var attrs = this.getCurrentAttributes();
         return "x1: " + attrs.x1 + " x2: " + attrs.x2 + " y1: " + attrs.y1 + " y2: " + attrs.y2;
-    },
+	},
+	// Makes a rectangle once called with the new x and new y.
+	// It updates the size, the x, the y, the height and width.
+	// If someone double clicked on the rectangle, then it calls the function removelement
     init: function(newX, newY) {
         var rectElement = svg.append("rect")
                 .attr('rx',4)
@@ -72,7 +87,8 @@ var selectionRect = {
         this.originX = newX;
         this.originY = newY;
         this.update(newX, newY);
-    },
+	},
+	// Updates the new function with the new coordinates.
     update: function(newX, newY) {
         this.currentX = newX;
         this.currentY = newY;
@@ -83,25 +99,25 @@ var selectionRect = {
         .attr('height',this.getNewAttributes().height);
 
         
-    },
+	},
+	// Selects the color of the rectangle.
     focus: function() {
         this.element
             .style("stroke", "#DE695B")
             .style("stroke-width", "2.5");
-    },
+	},
+	// If the remove function is called, then it removes the element
     remove: function() {
         this.element.remove();
         this.element = null;
-    },
+	},
+	// This function would make it possible to remove the previous element, but this is not used here in this way.
     removePrevious: function() {
         if(this.previousElement) {
             this.previousElement.remove();
         }
     }
 };
-	
-var clickTime = d3.select("#clicktime");
-var attributesText = d3.select("#attributestext");
 
 function dragStart() {
 	if(SquareArray.length<maxAmountOfAOI){
@@ -129,12 +145,15 @@ function dragEnd() {
 			// range selected
 			d3.event.sourceEvent.preventDefault();
 			selectionRect.focus();
+			sortArray(possibleAoiNames);
 			var nextBox = {
 				DatasetStartX : xScale.invert(Math.min(selectionRect.originX,selectionRect.currentX)),
 				DatasetStartY : yScale.invert(Math.max(selectionRect.originY,selectionRect.currentY)),
 				DatasetEndX : xScale.invert(Math.max(selectionRect.currentX,selectionRect.originX)),
-				DatasetEndY : yScale.invert(Math.min(selectionRect.currentY,selectionRect.originY))
+				DatasetEndY : yScale.invert(Math.min(selectionRect.currentY,selectionRect.originY)),
+				numberBox : possibleAoiNames[0]
 			}
+			possibleAoiNames.splice(0,1);
 			for (var i=0; i<SquareArray.length;i++){
 				if(rectanglesIntersect(SquareArray[i],nextBox)){
 					intersectingRectangles = true;
@@ -145,7 +164,9 @@ function dragEnd() {
 				alert('These rectangles intersect!');
 				intersectingRectangles = false;
 			} else {	
+				FilterAOI(nextBox)
 				SquareArray.push(nextBox);
+				
 			}
 			
 		} else {
@@ -154,21 +175,61 @@ function dragEnd() {
 		}
 	}
 }
+
+function sortArray(numbers){
+	numbers.sort(function(a, b){
+		return a - b;
+	});
+	possibleAoiNames=numbers;
+}
 function removeElement(d) {
 	// need to remove this object from data
 	d3.select(this).remove();
 	for(let i=0 ; i < SquareArray.length ; i++){
-		if(Math.round(xScale(SquareArray[i].DatasetStartX)) == this.x.baseVal.value 
-			&& (Math.round(yScale(SquareArray[i].DatasetEndY)) == this.y.baseVal.value
-			|| Math.round(yScale(SquareArray[i].DatasetStartY)) == this.y.baseVal.value)
-			&& SquareArray.length > 1){
+		if(Math.round(xScale(SquareArray[i].DatasetStartX)) == this.x.baseVal.value && 
+		  (Math.round(yScale(SquareArray[i].DatasetEndY)) == this.y.baseVal.value || 
+		   Math.round(yScale(SquareArray[i].DatasetStartY)) == this.y.baseVal.value) &&
+		   SquareArray.length  > 1){
+			possibleAoiNames.push(SquareArray[i].numberBox);
+			data.forEach(function(d) {
+				if (d.MappedFixationPointX > SquareArray[i].DatasetStartX && 
+					d.MappedFixationPointX < SquareArray[i].DatasetEndX   &&
+					d.MappedFixationPointY > SquareArray[i].DatasetStartY && 
+					d.MappedFixationPointY < SquareArray[i].DatasetEndY   ){
+					(d.AOIName = "");
+					(d.AOIcolor = "");
+					(d.AOI_order = "");
+				}
+			});
 			SquareArray.splice(i,1);
 		}
 		else if(Math.round(xScale(SquareArray[i].DatasetStartX)) == this.x.baseVal.value && SquareArray.length == 1){
+			possibleAoiNames.push(SquareArray[i].numberBox);
 			SquareArray = [];
 		}
 	}
-	console.log(SquareArray.length)	
+}
+
+// code for filtering datapoints when selecting AOI's made by Floris
+const FilterAOI = (RectangleBox) => {
+	// x1,y1 is first click 
+	// x2, y2 is second click
+	// max 10 AOI's!
+	AOIlist = ["AOI1", "AOI2", "AOI3", "AOI4", "AOI5", "AOI6", "AOI7", "AOI8", "AOI9", "AOI10"];
+	AOIcolorlist = ["#e129b8", "#0166cc", "#f4a8a1", "#a652ec", "#3a1b12", "#49464e", "#72b36a", "#d693bf", "#f4fe76", "#2713ca"];
+	data.forEach(function(d) {
+		if (d.MappedFixationPointX > RectangleBox.DatasetStartX && 
+			d.MappedFixationPointX < RectangleBox.DatasetEndX   &&
+			d.MappedFixationPointY > RectangleBox.DatasetStartY && 
+			d.MappedFixationPointY < RectangleBox.DatasetEndY   ){
+			// above if statements checks if a point is in the created AOI for all points
+			// add columns to the data containing the aoi info.
+			// x1,y1 is left lower corner, x2,y2 is right upper corner
+			(d.AOIName = AOIlist[RectangleBox.numberBox]);
+			(d.AOIcolor = AOIcolorlist[RectangleBox.numberBox]);
+			(d.AOI_order = RectangleBox.numberBox+1);
+		}
+	});
 }
 
 var dragBehavior = d3.drag()
@@ -288,6 +349,11 @@ Promise.all([
     resData = loadedData[1];
 
     data.forEach(d => {
+		d.MappedFixationPointX = +d.MappedFixationPointX;
+		d.MappedFixationPointY = +d.MappedFixationPointY;
+		d.AOIName = "";
+		d.AOIcolor = "";
+		d.AOI_order = "";
         if (!allVersions.includes(d.StimuliName)) {
             allVersions.push(d.StimuliName);
         }
