@@ -283,12 +283,12 @@ const scatterPlot = (selection, props) => {
   		.attr('y', -15)
 		.text(title);
 	
+	const tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
+		+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
+		+ '<br/>' + 'Description: ' + d['description'];
+
 	// Update the data from the timeline scaler
 	function drawPlot(dataDrawPlot) {
-		const tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
-			+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
-			+ '<br/>' + 'Description: ' + d['description'];
-
 		//Draw circles for each row of the selected data
 		const circles = g.merge(gEnter)
 			.selectAll('circle').data(dataDrawPlot);
@@ -424,11 +424,11 @@ const scatterPlot = (selection, props) => {
 		//Return random centroid points with coloring
 		let randomCentroid = (fill) => {
 			let r = Math.floor(Math.random()*points.length);
-			let random = points[r];
+			let centroid = points[r];
 
-			points.splice(r, 1);
-			random.fill = fill;
-			return random;
+			//points.splice(r, 1);
+			centroid.fill = fill;
+			return centroid;
 		}
 	
 		//Gives distinct coloring to all centroid points
@@ -497,27 +497,48 @@ const scatterPlot = (selection, props) => {
 	
 		//updates the plot
 		function update() {
-		
-			let data = points.concat(centroids);
+			let data = points;
 
 			// The data join
-			let circle = svg.selectAll('circle')
-				.data(data);
+			const circles = g.merge(gEnter)
+				.selectAll('circle').data(data);
 				
 			// Create new elements as needed
-			circle.enter().append('circle')
-				.attr('id', function(d) { return d.id; })
-				.attr('class', function(d) { return d.type; })
-				.attr('r', 5);
-				
-			// Update old elements as needed
-			circle.transition().delay(100).duration(1000)
-				.attr('cx', function(d) { return xScale(d.x); })
-				.attr('cy', function(d) { return yScale(d.y); })
-				.style('fill', function(d) { return d.fill; });
-			
+			circles
+				.enter().append('circle')
+					.on('mouseover', d => {
+						d3.select('#tooltip').transition()
+								.duration(200)
+									.style('opacity', .9)
+									.style('left', (d3.event.pageX + 5) + 'px')
+									.style('top', (d3.event.pageY + 5) + 'px')
+									.style('display', 'block');
+						d3.select('#tooltip').html(tooltipformat(d));
+					})
+					.on('mouseout', d => {
+						d3.select('#tooltip')
+							.transition().duration(400)
+							.style('opacity', 0);
+					})
+				.merge(circles)
+					.attr('cx', innerWidth/2)
+					.attr('cy', innerHeight/2)
+					.attr('r', 0)
+				// Update old elements as needed
+				.transition().duration(1000)
+				.delay((i) => i * 2)
+					.attr('r', circleRadius)
+					.attr('cx', d => xScale(d.x))
+					.attr('cy', d => yScale(d.y))
+					.style('fill', d => { return d.fill; });	
 			// Remove old nodes
-			circle.exit().remove();
+			circles
+				.exit()
+					.transition().duration(1000)
+						.attr('r', 0)
+						.attr('cx', innerWidth/2)
+						.attr('cy', innerHeight/2)
+					.remove();
 		}
 	
 		/**
@@ -558,6 +579,7 @@ const scatterPlot = (selection, props) => {
 			points = initializePoints();
 			centroids = initializeCentroids(numClusters);
 			
+			console.log(points);
 			// initial drawing
 			update();
 			
@@ -573,10 +595,10 @@ const scatterPlot = (selection, props) => {
 		}
 	
 		// Call the main function
-		//initialize();
+		initialize();
 	}
 
-	Cluster(3, 4);
+	Cluster(3, 10);
 
 	const zoom = () => {
 		const main_svg = d3.select('#scatterPlot svg.aperture').attr('class', 'zoom')
