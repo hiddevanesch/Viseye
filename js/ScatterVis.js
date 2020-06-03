@@ -25,6 +25,16 @@ let maxTimeSlider;
 let timelineUpdate = false;
 let maxvalueData;
 
+/*
+Selects the play button and the checkbox for interactions
+If the checkbox is clicked, then the boolean filter will be flipped
+*/
+let playButton = d3.select('#play-button');
+let checkBox = d3.select('#checkBox_id')
+	checkBox.on('change', function(){ 
+		cumulativeFilter = cumulativeFilter ? false : true;
+	});
+
 /* 
 The timeline slider will be created here
 1. The slider consists of three parts, the slider itself
@@ -46,16 +56,6 @@ function createTimeline(){
 	targetValue = maxTimeSlider - minTimeSlider;
 
 	/*
-	Selects the play button and the checkbox for interactions
-	If the checkbox is clicked, then the boolean filter will be flipped
-	*/
-	let playButton = d3.select('#play-button');
-	let checkBox = d3.select("#checkBox_id")
-		checkBox.on('change', function(){ 
-			cumulativeFilter = cumulativeFilter ? false : true;
-		});
-
-	/*
 	Make the distribution of the timeline
 	the domain is set between the minimum and maximum value of the data
 	the range is set to the width of the slider
@@ -71,40 +71,40 @@ function createTimeline(){
 		.attr( 'transform', `translate(25,25)`);
 
 	// The bar of the slider is initialized, and its style is corrected
-	sliderLine = slider.append("line")
-		.attr("class", "track")
-		.attr("x1", timelineScale.range()[0])
-		.attr("x2", timelineScale.range()[1])
+	sliderLine = slider.append('line')
+		.attr('class', 'track')
+		.attr('x1', timelineScale.range()[0])
+		.attr('x2', timelineScale.range()[1])
 		.select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-		.attr("class", "track-inset")
+		.attr('class', 'track-inset')
 		.select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-		.attr("class", "track-overlay");
+		.attr('class', 'track-overlay');
 
 	// Add the text to the slider
-	slider.insert("g", ".track-overlay")
-		.attr("class", "ticks")
-		.attr("transform", "translate(0," + 18 + ")")
-		.selectAll("text")
+	slider.insert('g', '.track-overlay')
+		.attr('class', 'ticks')
+		.attr('transform', 'translate(0,' + 18 + ')')
+		.selectAll('text')
 		.data(timelineScale.ticks(10))
 		.enter()
-		.append("text")
-		.attr("x", timelineScale)
-		.attr("y", 10)
-		.attr("text-anchor", "middle")
+		.append('text')
+		.attr('x', timelineScale)
+		.attr('y', 10)
+		.attr('text-anchor', 'middle')
 		.text(function(d) { d.Timestamp });
 
 
 	// Add the circle in the bar at the current value
-	handle = slider.insert("circle", ".track-overlay")
-		.attr("class", "handle")
-		.attr("r", 9);
+	handle = slider.insert('circle', '.track-overlay')
+		.attr('class', 'handle')
+		.attr('r', 9);
 
 	// The amount of the slider above the circle
-	label = slider.append("text")  
-		.attr("class", "label")
-		.attr("text-anchor", "middle")
+	label = slider.append('text')  
+		.attr('class', 'label')
+		.attr('text-anchor', 'middle')
 		.text(minTimeSlider/1000)
-		.attr("transform", "translate("+0+","+ -13 +")")
+		.attr('transform', 'translate('+0+','+ -13 +')')
 }
 
 //Create dropdown menu
@@ -127,7 +127,7 @@ const dropdownMenu = (selection, props) => {
 	option.enter().append('option')
 		.merge(option)
 			.text(d => d)
-			.attr("value", d => d);
+			.attr('value', d => d);
 }
 
 //Store the selected option
@@ -154,9 +154,9 @@ const scatterPlot = (selection, props) => {
 
 	//Filter the data, first it corrects the timeline, then it filters the data
 	currentValue = maxvalueData;
-	handle.attr("cx", timelineScale(currentValue));
+	handle.attr('cx', timelineScale(currentValue));
 	label
-		.attr("x", timelineScale(currentValue))
+		.attr('x', timelineScale(currentValue))
 		.text(Math.round(currentValue/10)/100+ ' sec');
 	
 	//Filter the data
@@ -174,12 +174,12 @@ const scatterPlot = (selection, props) => {
 		maxTimeSlider = +d3.max(dataSelected,axisTimeline);
 		targetValue = maxTimeSlider - minTimeSlider;
 		timelineScale.domain([minTimeSlider,maxTimeSlider]);
-		slider.selectAll("text")
+		slider.selectAll('text')
 			.data(timelineScale.ticks(10))
 			currentValue = maxTimeSlider;
-			handle.attr("cx", timelineScale(currentValue));
+			handle.attr('cx', timelineScale(currentValue));
 			label
-				.attr("x", timelineScale(currentValue))
+				.attr('x', timelineScale(currentValue))
 				.text(Math.round(currentValue/10)/100+' sec');
 	}
 
@@ -284,91 +284,6 @@ const scatterPlot = (selection, props) => {
   		.attr('y', -15)
 		.text(title);
 	
-	drawPlot(dataSelected);
-
-
-	const main_svg = d3.select("#scatterPlot svg.aperture").attr("class", "zoom")
-	, mini_svg   = d3.select("#mini svg").append("g").attr("class", "zoom")
-	, viewbox = main_svg.attr("viewBox").split(' ').map(d => +d)
-	// store the image's initial viewBox
-	, extent_1 = [
-		[viewbox[0], viewbox[1]]
-	  , [(viewbox[2] - viewbox[0]), (viewbox[3] - viewbox[1])]
-	]
-	, brush  = d3.brush()
-        .extent(extent_1)
-		.on("brush", brushed)
-	, zoom = d3.zoom()
-		.scaleExtent([0.2, 1])
-		.extent(extent_1)
-		.on("zoom", zoomed)
-	;
-
-	// Apply the brush to the minimap, and also apply the zoom behavior here
-	mini_svg
-		.call(brush)
-		.call(brush.move, brush.extent())
-		.call(zoom)
-	;
-	// Apply the zoom behavior to the main svg
-	main_svg
-		.call(zoom)
-	;
-
-	function brushed() {
-		// Ignore brush-via-zoom
-		if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return;
-		
-		let sel = d3.event.selection
-		  , vb = sel
-				? [sel[0][0], sel[0][1], (sel[1][0] - sel[0][0]), (sel[1][1] - sel[0][1])]
-				: viewbox
-		  , k = vb[3] / viewbox[3]
-		  , t = d3.zoomIdentity.translate(vb[0], vb[1]).scale(k)
-		;
-
-		mini_svg
-			.property("__zoom", t)
-		;
-		main_svg
-			.attr("viewBox", vb.join(' '))
-			.property("__zoom", t)
-		;
-	} // brushed()
-	
-	function zoomed() {
-		// If the zoom input was on the minimap, forward it to the main SVG
-		if(this === mini_svg.node()) {
-			return main_svg.call(zoom.transform, d3.event.transform);
-		}
-
-		// Disable panning on main_svg
-		if(d3.event.sourceEvent.type === "mousemove") return;
-		// Ignore zoom via brush
-		if(!d3.event.sourceEvent || d3.event.sourceEvent.type === "brush") return;
-	
-		// Process the zoom event on the main SVG
-		let t = d3.event.transform;
-		
-		t.x = t.x < viewbox[0] ? viewbox[0] : t.x;
-		t.x = t.x > viewbox[2] ? viewbox[2] : t.x;
-		t.y = t.y < viewbox[1] ? viewbox[1] : t.y;
-		t.y = t.y > viewbox[3] ? viewbox[3] : t.y;
-		
-		if(t.k === 1) t.x = t.y = 0;
-	
-		const vb = [t.x, t.y, viewbox[2] * t.k, viewbox[3] * t.k];
-	
-		main_svg.attr("viewBox", vb.join(' '));
-		mini_svg
-			.property("__zoom", t)
-			.call(
-				  brush.move
-				, [[t.x, t.y], [t.x + vb[2], t.y + vb[3]]]
-			  )
-		;
-	} // zoomed()
-	
 	// Update the data from the timeline scaler
 	function drawPlot(dataDrawPlot) {
 		const tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
@@ -421,12 +336,12 @@ const scatterPlot = (selection, props) => {
 		then the slider will start moving
 		the command step will be executed every 0.1 seconds
 	*/ 
-	playButton.on("click", function() {
+	playButton.on('click', function() {
 		let button = d3.select(this);
-		if (button.text() == "Pause") {
+		if (button.text() == 'Pause') {
 		moving = false;
 		clearInterval(timer);
-		button.text("Play");
+		button.text('Play');
 		} else {
 			if (currentValue >= maxTimeSlider){
 				currentValue=minTimeSlider;
@@ -434,7 +349,7 @@ const scatterPlot = (selection, props) => {
 			}
 		moving = true;
 		timer = setInterval(step, 250);
-		button.text("Pause");
+		button.text('Pause');
 		}
 	})
 
@@ -452,13 +367,13 @@ const scatterPlot = (selection, props) => {
 		  currentValue = minTimeSlider;
 		  clearInterval(timer);
 		  // timer = 0;
-		  playButton.text("Play");
+		  playButton.text('Play');
 		}
 	  }
 
 	sliderLine.call(d3.drag()
-		  .on("start.interrupt", function() { slider.interrupt(); })
-		  .on("start drag", function() {
+		  .on('start.interrupt', function() { slider.interrupt(); })
+		  .on('start drag', function() {
 			  currentValue = timelineScale.invert(d3.event.x);
 			  update(currentValue); 
 			  }
@@ -468,9 +383,9 @@ const scatterPlot = (selection, props) => {
 	// Update button for the new value
 	function update(h) {
 		// update position and text of label according to slider scale
-		handle.attr("cx", timelineScale(h));
+		handle.attr('cx', timelineScale(h));
 		label
-		.attr("x", timelineScale(h))
+		.attr('x', timelineScale(h))
 		.text(Math.round(h/10)/100 + ' sec');
 		// filter data set and redraw plot
 				if(cumulativeFilter){
@@ -519,7 +434,7 @@ const scatterPlot = (selection, props) => {
 			for (let i = 0; i < num; i++) {
 				let color = colors(i);
 				let centroid = randomCentroid(color);
-				centroid.id = 'centroid' + "-" + i;
+				centroid.id = 'centroid' + '-' + i;
 				allCentroids.push(centroid);
 			}
 			return allCentroids;
@@ -582,22 +497,21 @@ const scatterPlot = (selection, props) => {
 		
 			let data = points.concat(centroids);
 
-			console.log(data);
 			// The data join
-			let circle = svg.selectAll("circle")
+			let circle = svg.selectAll('circle')
 				.data(data);
 				
 			// Create new elements as needed
-			circle.enter().append("circle")
-				.attr("id", function(d) { return d.id; })
-				.attr("class", function(d) { return d.type; })
-				.attr("r", 5);
+			circle.enter().append('circle')
+				.attr('id', function(d) { return d.id; })
+				.attr('class', function(d) { return d.type; })
+				.attr('r', 5);
 				
 			// Update old elements as needed
 			circle.transition().delay(100).duration(1000)
-				.attr("cx", function(d) { return xScale(d.x); })
-				.attr("cy", function(d) { return yScale(d.y); })
-				.style("fill", function(d) { return d.fill; });
+				.attr('cx', function(d) { return xScale(d.x); })
+				.attr('cy', function(d) { return yScale(d.y); })
+				.style('fill', function(d) { return d.fill; });
 			
 			// Remove old nodes
 			circle.exit().remove();
@@ -607,7 +521,7 @@ const scatterPlot = (selection, props) => {
 		 * Updates the text in the label.
 		 */
 		function setText(text) {
-			svg.selectAll(".label").text(text);
+			svg.selectAll('.label').text(text);
 		}
 		
 		/**
@@ -619,7 +533,7 @@ const scatterPlot = (selection, props) => {
 		function iterate() {
 			
 			// Update label
-			setText("Iteration " + iter + " of " + maxIter);
+			setText('Iteration ' + iter + ' of ' + maxIter);
 	
 			// Colorize the points
 			colorizePoints();
@@ -650,16 +564,101 @@ const scatterPlot = (selection, props) => {
 					iter++;
 				} else {
 					clearInterval(interval);
-					setText("Done");
+					setText('Done');
 				}
 			}, 2 * 1000);
 		}
 	
 		// Call the main function
-		initialize();
+		//initialize();
 	}
 
 	Cluster(3, 4);
+
+	const zoom = () => {
+		const main_svg = d3.select('#scatterPlot svg.aperture').attr('class', 'zoom')
+		, mini_svg   = d3.select('#mini svg').append('g').attr('class', 'zoom')
+		, viewbox = main_svg.attr('viewBox').split(' ').map(d => +d)
+		// store the image's initial viewBox
+		, extent_1 = [
+			[viewbox[0], viewbox[1]]
+		, [(viewbox[2] - viewbox[0]), (viewbox[3] - viewbox[1])]
+		]
+		, brush  = d3.brush()
+			.extent(extent_1)
+			.on('brush', brushed)
+		, zoom = d3.zoom()
+			.scaleExtent([0.2, 1])
+			.extent(extent_1)
+			.on('zoom', zoomed)
+		;
+
+		// Apply the brush to the minimap, and also apply the zoom behavior here
+		mini_svg
+			.call(brush)
+			.call(brush.move, brush.extent())
+			.call(zoom)
+		;
+		// Apply the zoom behavior to the main svg
+		main_svg
+			.call(zoom)
+		;
+
+		function brushed() {
+			// Ignore brush-via-zoom
+			if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return;
+			
+			let sel = d3.event.selection
+			, vb = sel
+					? [sel[0][0], sel[0][1], (sel[1][0] - sel[0][0]), (sel[1][1] - sel[0][1])]
+					: viewbox
+			, k = vb[3] / viewbox[3]
+			, t = d3.zoomIdentity.translate(vb[0], vb[1]).scale(k)
+			;
+
+			mini_svg
+				.property('__zoom', t)
+			;
+			main_svg
+				.attr('viewBox', vb.join(' '))
+				.property('__zoom', t)
+			;
+		} // brushed()
+		
+		function zoomed() {
+			// If the zoom input was on the minimap, forward it to the main SVG
+			if(this === mini_svg.node()) {
+				return main_svg.call(zoom.transform, d3.event.transform);
+			}
+
+			// Disable panning on main_svg
+			if(d3.event.sourceEvent.type === 'mousemove') return;
+			// Ignore zoom via brush
+			if(!d3.event.sourceEvent || d3.event.sourceEvent.type === 'brush') return;
+		
+			// Process the zoom event on the main SVG
+			let t = d3.event.transform;
+			
+			t.x = t.x < viewbox[0] ? viewbox[0] : t.x;
+			t.x = t.x > viewbox[2] ? viewbox[2] : t.x;
+			t.y = t.y < viewbox[1] ? viewbox[1] : t.y;
+			t.y = t.y > viewbox[3] ? viewbox[3] : t.y;
+			
+			if(t.k === 1) t.x = t.y = 0;
+		
+			const vb = [t.x, t.y, viewbox[2] * t.k, viewbox[3] * t.k];
+		
+			main_svg.attr('viewBox', vb.join(' '));
+			mini_svg
+				.property('__zoom', t)
+				.call(
+					brush.move
+					, [[t.x, t.y], [t.x + vb[2], t.y + vb[3]]]
+				)
+			;
+		} // zoomed()
+	}
+	zoom();
 }
 
 //Function render
