@@ -51,8 +51,11 @@ export default {
         filterImageNames(this.value);
       });
 
+      // Select current Stimuli
+      var startSelection = d3.select("#selectMenu").node().value;
+      
+      filterImageNames(startSelection);
       sortImageNames();
-      filterImageNames(imageNames[0]);
 
       console.log("finished");
 
@@ -61,14 +64,6 @@ export default {
           if (!imageNames.includes(el.StimuliName)) {
             imageNames.push(el.StimuliName);
           }
-        }
-
-        var x = document.getElementById("selector");
-        for (const el of imageNames) {
-          var option = document.createElement("option");
-          option.text = el;
-          option.value = el;
-          x.add(option);
         }
       }
 

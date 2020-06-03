@@ -1,7 +1,7 @@
 * {
   margin: 0px;
   padding: 0px;
-  overflow: hidden;
+  /* overflow: hidden; */
   box-sizing: border-box;
 }
 
@@ -228,6 +228,25 @@ img {
   -webkit-box-align: center;
   -ms-flex-align: center;
   align-items: center;
+}
+
+.load-bg {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  cursor: wait;
+  transition: all .5s ease-out;
+}
+
+.load-bg-inside {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
 }
 
 .visualization-container {

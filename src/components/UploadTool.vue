@@ -3,6 +3,9 @@
     <p class="p bmar-small tx-dgray">Please upload your data in the correct file format. We now only support .csv files. For more information about the supported layout of the .csv file, please click here.</p>
     <input type="file" class="uploadbutton" accept=".csv" id="filebutton" name="filein" @change="openFileBrowse()"/>
     <label for="filebutton" class="button button-green inline-block">select file</label>
+    <div class="load-bg bg-dgray" id="loadBox" style="display:none;">
+      <div class="load-bg-inside" id="loadBoxInside"></div>
+    </div>
   </div>
 </template>
 
@@ -44,6 +47,7 @@ export default {
       if (input.files[0].type != "application/vnd.ms-excel"){
       alert("You have uploaded a wrong file type. We require a .csv file not a " + input.files[0].type + " file.");
       } else {
+        vm.loadingAnimation();
         var reader = new FileReader();
         var csvData = "";
         var jsonData;
@@ -60,11 +64,18 @@ export default {
           vm.addFiles(jsonData);
         };
         reader.onloadend = function(){
-          console.log("Loading finished, sending you to visualization.");
+          console.log("Loading finished, initializing visualization.");
           router.push({ name: 'Visualization' });
         };
       reader.readAsText(input.files[0]);
       }
+    },
+    loadingAnimation() {
+
+      var target = document.getElementById('loadBox');
+      target.style.display = "block";
+      // var targetInside = document.getElementById('loadBoxInside');
+
     }
   }
 }

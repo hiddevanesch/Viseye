@@ -8,7 +8,7 @@
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('scatterplot')">scatter plot</button>
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('gazestripes')">gaze stripes</button>
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('attentionmap')">attention map</button>
-        <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('vis4')">visualization 4</button>
+        <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('alpscarf')">alp scarf</button>
         <select class="selectMenu bmar-small full-width" id="selectMenu"></select>
           <div class="bottom-align">
             <button type="button" class="button button-green bmar-small full-width" @click="downloadSVG(activeVis)">screenshot</button>
@@ -18,6 +18,7 @@
         <scatter-plot v-if="activeVis === 'scatterplot'" />
         <gaze-stripes-plot v-if="activeVis === 'gazestripes'" />
         <attention-map v-if="activeVis === 'attentionmap'" />
+        <alp-scarf v-if="activeVis === 'alpscarf'" />
       </div>
     </div>
   </div>
@@ -29,12 +30,14 @@ import * as d3 from "d3";
 import ScatterPlot from "../components/ScatterPlot.vue";
 import GazeStripesPlot from "../components/GazeStripesPlot.vue";
 import AttentionMap from "../components/AttentionMap.vue";
+import AlpScarf from "../components/AlpScarf.vue";
 
 export default {
   components: {
     ScatterPlot,
     GazeStripesPlot,
-    AttentionMap
+    AttentionMap,
+    AlpScarf
   },
   computed: {
     ...mapState([
