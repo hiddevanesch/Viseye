@@ -14,8 +14,8 @@ let stimulusName;
 let allVersions = [];
 let dataSelected;
 let SquareArray = [];
-
-
+let xScale;
+let yScale;
 
 var selectionRect = {
     element			: null,
@@ -130,10 +130,10 @@ function dragEnd() {
 			d3.event.sourceEvent.preventDefault();
 			selectionRect.focus();
 			var nextBox = {
-				startCoordinateX: Math.min(selectionRect.originX,selectionRect.currentX),
-				startCoordinateY: Math.min(innerHeight - selectionRect.originY,innerHeight - selectionRect.currentY),
-				endCoordinateX: Math.max(selectionRect.currentX,selectionRect.originX),
-				endCoordinateY: Math.max(innerHeight - selectionRect.currentY,innerHeight - selectionRect.originY),
+				DatasetStartX : xScale.invert(Math.min(selectionRect.originX,selectionRect.currentX)),
+				DatasetStartY : yScale.invert(Math.max(selectionRect.originY,selectionRect.currentY)),
+				DatasetEndX : xScale.invert(Math.max(selectionRect.currentX,selectionRect.originX)),
+				DatasetEndY : yScale.invert(Math.min(selectionRect.currentY,selectionRect.originY))
 			}
 			for (var i=0; i<SquareArray.length;i++){
 				if(rectanglesIntersect(SquareArray[i],nextBox)){
@@ -144,7 +144,7 @@ function dragEnd() {
 				selectionRect.remove();
 				alert('These rectangles intersect!');
 				intersectingRectangles = false;
-			} else {
+			} else {	
 				SquareArray.push(nextBox);
 			}
 			
@@ -157,13 +157,14 @@ function dragEnd() {
 function removeElement(d) {
 	// need to remove this object from data
 	d3.select(this).remove();
-	console.log(SquareArray.length,"before")
 	for(let i=0 ; i < SquareArray.length ; i++){
-		console.log(SquareArray[i].startCoordinateX, this, SquareArray[i].startCoordinateX == this.x.baseVal.value && SquareArray.length > 1 )
-		if(SquareArray[i].startCoordinateX == this.x.baseVal.value && SquareArray.length > 1){
+		if(Math.round(xScale(SquareArray[i].DatasetStartX)) == this.x.baseVal.value 
+			&& (Math.round(yScale(SquareArray[i].DatasetEndY)) == this.y.baseVal.value
+			|| Math.round(yScale(SquareArray[i].DatasetStartY)) == this.y.baseVal.value)
+			&& SquareArray.length > 1){
 			SquareArray.splice(i,1);
 		}
-		else if(SquareArray[i].startCoordinateX == this.x.baseVal.value && SquareArray.length == 1){
+		else if(Math.round(xScale(SquareArray[i].DatasetStartX)) == this.x.baseVal.value && SquareArray.length == 1){
 			SquareArray = [];
 		}
 	}
@@ -178,14 +179,14 @@ var dragBehavior = d3.drag()
 svg.call(dragBehavior);
 
 function rectanglesIntersect(rectOne, rectTwo ){
-	var maxOneX = Math.max(rectOne.startCoordinateX,rectOne.endCoordinateX);
-	var minOneX = Math.min(rectOne.startCoordinateX,rectOne.endCoordinateX);
-	var maxOneY = Math.max(rectOne.startCoordinateY,rectOne.endCoordinateY);
-	var minOneY = Math.min(rectOne.startCoordinateY,rectOne.endCoordinateY);
-	var maxTwoX = Math.max(rectTwo.startCoordinateX,rectTwo.endCoordinateX);
-	var minTwoX = Math.min(rectTwo.startCoordinateX,rectTwo.endCoordinateX);
-	var maxTwoY = Math.max(rectTwo.startCoordinateY,rectTwo.endCoordinateY);
-	var minTwoY = Math.min(rectTwo.startCoordinateY,rectTwo.endCoordinateY);
+	var maxOneX = Math.max(Math.round(xScale(rectOne.DatasetStartX)),Math.round(xScale(rectOne.DatasetEndX)));
+	var minOneX = Math.min(Math.round(xScale(rectOne.DatasetStartX)),Math.round(xScale(rectOne.DatasetEndX)));
+	var maxOneY = Math.max(Math.round(yScale(rectOne.DatasetStartY)),Math.round(yScale(rectOne.DatasetEndY)));
+	var minOneY = Math.min(Math.round(yScale(rectOne.DatasetStartY)),Math.round(yScale(rectOne.DatasetEndY)));
+	var maxTwoX = Math.max(Math.round(xScale(rectTwo.DatasetStartX)),Math.round(xScale(rectTwo.DatasetEndX)));
+	var minTwoX = Math.min(Math.round(xScale(rectTwo.DatasetStartX)),Math.round(xScale(rectTwo.DatasetEndX)));
+	var maxTwoY = Math.max(Math.round(yScale(rectTwo.DatasetStartY)),Math.round(yScale(rectTwo.DatasetEndY)));
+	var minTwoY = Math.min(Math.round(yScale(rectTwo.DatasetStartY)),Math.round(yScale(rectTwo.DatasetEndY)));
 	return (maxOneX >= minTwoX && minOneX <= maxTwoX && minOneY <= maxTwoY && maxOneY >= minTwoY);
 }
 
@@ -220,57 +221,40 @@ const onStimulusNameClicked = option => {
 
 //plot a scatterplot
 const scatterPlot = (selection, props) => {
-	const {
-		xValue,
-		yValue,
-		circleRadius,
-	} = props;
-
 		dataSelected = data.filter(d => (d.StimuliName == stimulusName));
 
 
-//Select the image according to the selected option
-    let imageSelected = allVersions.filter(d => d == stimulusName);
-    
+//Select the image according to the selected map(version)
+let imageSelected = allVersions.filter(d => d == stimulusName);
+
+//Select the image resolution according to the selected map
+let citySelected = resData.filter(d => stimulusName.includes(d.city));
+let imgWidth = citySelected[0].width;
+let imgHeight = citySelected[0].height;
+
 //Update image and set background
-	let background = 'stimuli/' + imageSelected;
+let background = 'stimuli/' + imageSelected;
 
-	const img = selection.selectAll('image').data([null]);
-	const imgEnter = img.enter().append('image')
-	imgEnter
-		.merge(img)
-			.attr('xlink:href', background)
-			.attr('preserveAspectRatio', 'none')
-			.attr('width', innerWidth)
-			.attr('height', innerHeight)
-			.attr('transform',
-				`translate(${margin.left},${margin.top})`
-			);
+const img = selection.selectAll('image').data([null]);
+const imgEnter = img.enter().append('image')
 
-	//Transform the data values into positions
-	const xScale = d3.scaleLinear()
-		.domain([d3.min(dataSelected, xValue), d3.max(dataSelected, xValue)])
-		.range([0, innerWidth])
-		.nice();
-
-	const yScale = d3.scaleLinear()
-		.domain([d3.min(dataSelected, yValue), d3.max(dataSelected, yValue)])
-		.range([innerHeight, 0])
-		.nice();
-
-	//Create container for scatterplot
-	const g = selection.selectAll('.container').data([null]);
-  	const gEnter = g
-    .enter().append('g')
-	  .attr('class', 'container');
-	  
-	//Translating the visualisation to innerposition with the updated data
-	gEnter
-		.merge(g)
-			.attr('transform',
-				`translate(${margin.left},${margin.top})`
-			);
-
+imgEnter
+	.merge(img)
+		.attr('xlink:href', background)
+		.attr('preserveAspectRatio', 'none')
+		.attr('width', innerWidth)
+		.attr('height', innerHeight)
+		.attr('transform',
+			`translate(${margin.left},${margin.top})`
+		);
+    //Transform the image resolution into range and domain of the axes
+    xScale = d3.scaleLinear()
+        .domain([0, imgWidth])
+        .range([0, innerWidth])
+    yScale = d3.scaleLinear()
+        .domain([0, imgHeight])
+        .range([innerHeight, 0])
+        .nice();
 
 	//Customizing the axis
 	const xAxis = d3.axisBottom(xScale)
@@ -280,7 +264,6 @@ const scatterPlot = (selection, props) => {
 	const yAxis = d3.axisLeft(yScale)
 		.tickSize(-innerWidth)
 		.tickPadding(10);
-
 }
 
 //Function render
@@ -292,30 +275,28 @@ const render = () => {
 			onOptionClicked: onStimulusNameClicked
 			}
 		);
-		
-
-	//Invoke function to generate the scatterplot
-	svg.call(scatterPlot, {
-		xValue: d => d.MappedFixationPointX,
-	  yValue: d => d.MappedFixationPointY,
-	  circleRadius: 10,
-    })
+	svg.call(scatterPlot)
 	svg.selectAll('.rectangle').remove();
 	SquareArray = [];
 }
 
-//(RE-)Render the data according to the selection by filter
-d3.csv('data.csv')
-  .then(loadedData => {
-		data = loadedData;
-  	data.forEach(d => {
-    	d.MappedFixationPointX = +d.MappedFixationPointX;
-		d.MappedFixationPointY = +d.MappedFixationPointY;
-		d.Timestamp  = +d.Timestamp;
-      if (!allVersions.includes(d.StimuliName)) {
-				allVersions.push(d.StimuliName);
-    	}
-	});
-	stimulusName = '01_Antwerpen_S1.jpg';
-	  render()
+Promise.all([
+    d3.csv('data.csv'),
+    d3.csv('stimuli/resolution.csv')
+]).then(loadedData => {
+    data = loadedData[0];
+    resData = loadedData[1];
+
+    data.forEach(d => {
+        if (!allVersions.includes(d.StimuliName)) {
+            allVersions.push(d.StimuliName);
+        }
+    });
+    resData.forEach(d => {
+        d.width = +d.width;
+        d.height = +d.height
+    })
+    stimulusName = allVersions[0];
+    render();
 });
+
