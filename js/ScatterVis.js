@@ -42,6 +42,7 @@ The timeline slider will be created here
 3. The amount of the slider which is  shown above the circle
 */
 function createTimeline(){
+
 	/*
 	define the axisTimeline for easy access to the timestamps
 	define the mintime of the slider, which is the minimal value of the dataset
@@ -71,40 +72,40 @@ function createTimeline(){
 		.attr( 'transform', `translate(25,25)`);
 
 	// The bar of the slider is initialized, and its style is corrected
-	sliderLine = slider.append('line')
-		.attr('class', 'track')
-		.attr('x1', timelineScale.range()[0])
-		.attr('x2', timelineScale.range()[1])
+	sliderLine = slider.append("line")
+		.attr("class", "track")
+		.attr("x1", timelineScale.range()[0])
+		.attr("x2", timelineScale.range()[1])
 		.select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-		.attr('class', 'track-inset')
+		.attr("class", "track-inset")
 		.select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-		.attr('class', 'track-overlay');
+		.attr("class", "track-overlay");
 
 	// Add the text to the slider
-	slider.insert('g', '.track-overlay')
-		.attr('class', 'ticks')
-		.attr('transform', 'translate(0,' + 18 + ')')
-		.selectAll('text')
+	slider.insert("g", ".track-overlay")
+		.attr("class", "ticks")
+		.attr("transform", "translate(0," + 18 + ")")
+		.selectAll("text")
 		.data(timelineScale.ticks(10))
 		.enter()
-		.append('text')
-		.attr('x', timelineScale)
-		.attr('y', 10)
-		.attr('text-anchor', 'middle')
+		.append("text")
+		.attr("x", timelineScale)
+		.attr("y", 10)
+		.attr("text-anchor", "middle")
 		.text(function(d) { d.Timestamp });
 
 
 	// Add the circle in the bar at the current value
-	handle = slider.insert('circle', '.track-overlay')
-		.attr('class', 'handle')
-		.attr('r', 9);
+	handle = slider.insert("circle", ".track-overlay")
+		.attr("class", "handle")
+		.attr("r", 9);
 
 	// The amount of the slider above the circle
-	label = slider.append('text')  
-		.attr('class', 'label')
-		.attr('text-anchor', 'middle')
+	label = slider.append("text")  
+		.attr("class", "label")
+		.attr("text-anchor", "middle")
 		.text(minTimeSlider/1000)
-		.attr('transform', 'translate('+0+','+ -13 +')')
+		.attr("transform", "translate("+0+","+ -13 +")")
 }
 
 //Create dropdown menu
@@ -313,89 +314,93 @@ const scatterPlot = (selection, props) => {
 				.attr('cx', innerWidth/2)
 				.attr('cy', innerHeight/2)
 				.attr('r', 0)
-			.transition().duration(2000)
+			.transition().duration(1000)
 			.delay((d, i) => i * 2)
 				.attr('r', circleRadius)
 				.attr('cx', d => xScale(xValue(d)))
 				.attr('cy', d => yScale(yValue(d)));
 		circles
 			.exit()
-				.transition().duration(2000)
+				.transition().duration(1000)
 					.attr('r', 0)
 					.attr('cx', innerWidth/2)
 					.attr('cy', innerHeight/2)
 				.remove();
 	}
 	
-	/*
-	 Play button on click
-	 if the button is on pause, it will change to play
-		then the slider will stop moving
-		and the interval will be cleared
-	 if the button is on play, it will change to pause
-		then the slider will start moving
-		the command step will be executed every 0.1 seconds
-	*/ 
-	playButton.on('click', function() {
-		let button = d3.select(this);
-		if (button.text() == 'Pause') {
-		moving = false;
-		clearInterval(timer);
-		button.text('Play');
-		} else {
-			if (currentValue >= maxTimeSlider){
-				currentValue=minTimeSlider;
-				update(currentValue);
+	function timeSlider() {
+		/*
+		Play button on click
+		if the button is on pause, it will change to play
+			then the slider will stop moving
+			and the interval will be cleared
+		if the button is on play, it will change to pause
+			then the slider will start moving
+			the command step will be executed every 0.1 seconds
+		*/ 
+		playButton.on('click', function() {
+			let button = d3.select(this);
+			if (button.text() == 'Pause') {
+			moving = false;
+			clearInterval(timer);
+			button.text('Play');
+			} else {
+				if (currentValue >= maxTimeSlider){
+					currentValue=minTimeSlider;
+					update(currentValue);
+				}
+			moving = true;
+			timer = setInterval(step, 250);
+			button.text('Pause');
 			}
-		moving = true;
-		timer = setInterval(step, 250);
-		button.text('Pause');
+		})
+
+		// Step function for the play button
+		function step() {
+			update(currentValue);
+
+			const amountOfPoints = data.filter(d => d.StimuliName == stimulusName).length;
+			amountSlider = amountOfPoints;
+			// Updates the slider by the compensated amount
+			currentValue +=  targetValue/amountSlider;
+			// If the slider is finished, then don't move it anymore, clear the interval and set the value to its start
+			if (currentValue > maxTimeSlider) {
+			moving = false;
+			currentValue = minTimeSlider;
+			clearInterval(timer);
+			// timer = 0;
+			playButton.text('Play');
+			}
+
+			sliderLine.call(d3.drag()
+				.on('start.interrupt', function() { slider.interrupt(); })
+				.on('start drag', function() {
+					currentValue = timelineScale.invert(d3.event.x);
+					update(currentValue); 
+					}
+				)
+			);
+				
+			// Update button for the new value
+			function update(h) {
+				// update position and text of label according to slider scale
+				handle.attr('cx', timelineScale(h));
+				label
+				.attr('x', timelineScale(h))
+				.text(Math.round(h/10)/100 + ' sec');
+				// filter data set and redraw plot
+						if(cumulativeFilter){
+						dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h);
+						}
+						else {
+							dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h && d.Timestamp>h-500);
+						}
+			drawPlot(dataSelected);
+			}
 		}
-	})
-
-	// Step function for the play button
-	function step() {
-		update(currentValue);
-
-		const amountOfPoints = data.filter(d => d.StimuliName == stimulusName).length;
-		amountSlider = amountOfPoints;
-		// Updates the slider by the compensated amount
-		currentValue +=  targetValue/amountSlider;
-		// If the slider is finished, then don't move it anymore, clear the interval and set the value to its start
-		if (currentValue > maxTimeSlider) {
-		  moving = false;
-		  currentValue = minTimeSlider;
-		  clearInterval(timer);
-		  // timer = 0;
-		  playButton.text('Play');
-		}
-	  }
-
-	sliderLine.call(d3.drag()
-		  .on('start.interrupt', function() { slider.interrupt(); })
-		  .on('start drag', function() {
-			  currentValue = timelineScale.invert(d3.event.x);
-			  update(currentValue); 
-			  }
-		  )
-	  );
-		
-	// Update button for the new value
-	function update(h) {
-		// update position and text of label according to slider scale
-		handle.attr('cx', timelineScale(h));
-		label
-		.attr('x', timelineScale(h))
-		.text(Math.round(h/10)/100 + ' sec');
-		// filter data set and redraw plot
-				if(cumulativeFilter){
-				dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h);
-				}
-				else {
-					dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h && d.Timestamp>h-500);
-				}
-    drawPlot(dataSelected);
 	}
+	
+	timeSlider();
 
 	const Cluster = (numClusters, maxIter) => {
 		// the current iteration
