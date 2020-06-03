@@ -177,7 +177,16 @@ const render = () => {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const loadAndProcessData = () => {
+    
     var data = this.files
+
+    //Code for deleting points without AOI
+    for (let i = 0 ; i < data.length; i++){
+        if (!(data[i].hasOwnProperty("AOIName"))){
+            data.splice(i,1)
+        }
+    }
+
     Promise.all([
         //        d3.csv('aoi_names_pages_seq_sc5.csv'),
         //d3.csv('aoi_names_pages_seq_sc5.repeatAOI.csv'),
