@@ -7,7 +7,7 @@
       <div class="menubar viscol col20 bg-ldgray">
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('scatterplot')">scatter plot</button>
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('gazestripes')">gaze stripes</button>
-        <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('vis3')">visualization 3</button>
+        <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('attentionmap')">attention map</button>
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('vis4')">visualization 4</button>
         <select class="selectMenu bmar-small full-width" id="selectMenu"></select>
           <div class="bottom-align">
@@ -17,6 +17,7 @@
       <div class="visualizationbox viscol col80 order2 bg-dgray">
         <scatter-plot v-if="activeVis === 'scatterplot'" />
         <gaze-stripes-plot v-if="activeVis === 'gazestripes'" />
+        <attention-map v-if="activeVis === 'attentionmap'" />
       </div>
     </div>
   </div>
@@ -27,11 +28,13 @@ import { mapState } from "vuex";
 import * as d3 from "d3";
 import ScatterPlot from "../components/ScatterPlot.vue";
 import GazeStripesPlot from "../components/GazeStripesPlot.vue";
+import AttentionMap from "../components/AttentionMap.vue";
 
 export default {
   components: {
     ScatterPlot,
-    GazeStripesPlot
+    GazeStripesPlot,
+    AttentionMap
   },
   computed: {
     ...mapState([
@@ -74,6 +77,8 @@ export default {
         svg = document.getElementById("scatterPlotSVG");
       } else if (activeVis === 'gazestripes') {
         svg = document.getElementById("canvas");
+      } else if (activeVis === 'attentionmap') {
+        svg = document.getElementById("svgAttention");
       }
       var canvas = document.createElement("canvas");
       var bbox = svg.getBBox();
