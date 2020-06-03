@@ -404,22 +404,9 @@ const scatterPlot = (selection, props) => {
 		// the current iteration
 		let iter = 1,
 			centroids = [],
-			points = [];
+			points = dataSelected;
 
 		const colors = d3.scaleOrdinal(d3.schemeCategory10);
-
-		let initializePoints = () => {
-			let allPoints = [];
-
-			dataSelected.forEach(d => {
-				let point = {
-						x: d.MappedFixationPointX,
-						y: d.MappedFixationPointY
-					}
-				allPoints.push(point);
-			});
-			return allPoints;
-		}
 
 		//Return random centroid points with coloring
 		let randomCentroid = (fill) => {
@@ -453,7 +440,7 @@ const scatterPlot = (selection, props) => {
 		//Find the closest centroid to the point as argument
 		let findClosestCentroid = (point) => {
 			let closest = {i: -1, distance: innerWidth};
-			centroids.forEach(function(d, i) {
+			centroids.forEach((d, i) => {
 				let distance = euclidianDistance(d, point);
 				// Only update when the centroid is closer
 				if (distance < closest.distance) {
@@ -466,7 +453,7 @@ const scatterPlot = (selection, props) => {
 		
 		//All points close to the centroid get the according coloring
 		const colorizePoints = () => {
-			points.forEach(function(d) {
+			points.forEach(d => {
 				let closest = findClosestCentroid(d);
 				d.fill = closest.fill;
 			});
@@ -496,7 +483,7 @@ const scatterPlot = (selection, props) => {
 		}
 	
 		//updates the plot
-		function update() {
+		const update = () => {
 			let data = points;
 
 			// The data join
@@ -541,20 +528,13 @@ const scatterPlot = (selection, props) => {
 					.remove();
 		}
 	
-		/**
-		 * Updates the text in the label.
-		 */
-		function setText(text) {
+		//Update the text in the label
+		const setText = (text) => {
 			svg.selectAll('.label').text(text);
 		}
 		
-		/**
-		 * Executes one iteration of the algorithm:
-		 * - Fill the points with the color of the closest centroid (this makes it 
-		 *   part of its cluster)
-		 * - Move the centroids to the center of their cluster.
-		 */
-		function iterate() {
+		//Executes iteration of the algorithm
+		const iterate = () => {
 			
 			// Update label
 			setText('Iteration ' + iter + ' of ' + maxIter);
@@ -569,21 +549,16 @@ const scatterPlot = (selection, props) => {
 			update();
 		}
 	
-		/** 
-		 * The main function initializes the algorithm and calls an iteration every 
-		 * two seconds.
-		 */
-		function initialize() {
+		//Initialization of the algorithm, calls one iteration each 500 ms
+		const initialize = () => {
 			
 			// Initialize random and centroids
-			points = initializePoints();
 			centroids = initializeCentroids(numClusters);
-			
-			console.log(points);
+
 			// initial drawing
 			update();
 			
-			let interval = setInterval(function() {
+			let interval = setInterval(() => {
 				if(iter < maxIter + 1) {
 					iterate();
 					iter++;
@@ -591,7 +566,7 @@ const scatterPlot = (selection, props) => {
 					clearInterval(interval);
 					setText('Done');
 				}
-			}, 2 * 1000);
+			}, 500);
 		}
 	
 		// Call the main function
