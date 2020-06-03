@@ -54,11 +54,16 @@ function visualize(jsonObj) {
   var height = svgInfo.height;
   var uniqueUsers = [];
   var select = d3.select("#selector");
+
   select.on("change", function() {
     filterImageNames(this.value);
   });
+  //changed this
+  var startSelection = select.options(select.selectIndex).innerHTML;
+
   sortImageNames();
-  filterImageNames(imageNames[0]);
+  //changed this
+  filterImageNames(startSelection);
   console.log("finished");
   function sortImageNames() {
     for (const el of jsonObj) {
@@ -75,7 +80,6 @@ function visualize(jsonObj) {
     }
   }
   function reloadData(json) {
-    //changed this
     for( let i=0; i < uniqueUsers.length; i++){
       d3.selectAll(".userPictures-" + i.toString()).remove();
       d3.selectAll(".userDefs" + i.toString()).remove();
@@ -120,12 +124,10 @@ function visualize(jsonObj) {
         loadUserLine(i);
       }
     }
-    //changed this
     var slider = document.getElementById("timeLineSlider");
     slider.max = userLineData[0].points.length * pictureSize - width;
     slider.value = -userLineData[0].horizontalOffset;
 
-    //changed this
     svg.on("mousemove", function() {
       var mouseCoords = d3.mouse(this);
       mouseX = mouseCoords[0];
@@ -200,7 +202,6 @@ function visualize(jsonObj) {
             ")"
         );
     }
-    //added this
     svg.append("text")
         .attr("id", "userText-" + lineNumber.toString())
         .attr("x", 20)
@@ -209,7 +210,6 @@ function visualize(jsonObj) {
         .text(userLineData[lineNumber].points[0].user)
   }
   function unloadUserLine(lineNumber) {
-    //changed this
     loadedUserLines.splice(loadedUserLines.indexOf(lineNumber));
     d3.selectAll(".userPictures-" + lineNumber.toString()).remove();
     d3.selectAll(".userDefs" + lineNumber.toString()).remove();
@@ -218,7 +218,6 @@ function visualize(jsonObj) {
 
   function overLoadPicture(lineNumber, forwards) {
     if (forwards) {
-      //changed this
       d3.select(d3.selectAll(".userPictures-" + lineNumber.toString())["_groups"][0][0]).remove();
       userLineData[lineNumber].loadedPictures.shift();
       var ik =
@@ -280,7 +279,6 @@ function visualize(jsonObj) {
         );
       userLineData[lineNumber].pictureOffset += 1;
     } else {
-      //changed this
       if(userLineData[lineNumber].pictureOffset - 1 >= 0){
         d3.select(
           d3.selectAll(".userPictures-" + lineNumber.toString())[
@@ -382,13 +380,10 @@ function visualize(jsonObj) {
       //calculate the userline that is closest to the middle
       var closestUserLine = loadedUserLines[0];
       for (var i = 1; i < loadedUserLines.length; i++) {
-        //changed to height == 0
         if ( Math.pow(userLineData[loadedUserLines[i]].height, 2) < Math.pow(userLineData[closestUserLine].height, 2)) {
           closestUserLine = loadedUserLines[i];
         }
       }
-
-      //changed this
       if (closestUserLine != selectUserLine) {
         selectUserLine = closestUserLine;
         var slider = document.getElementById("timeLineSlider");
@@ -396,21 +391,10 @@ function visualize(jsonObj) {
         slider.value = -userLineData[closestUserLine].horizontalOffset;
       }
       //add sideways scrolling
-      //changed this
       var slide = document.getElementById("timeLineSlider").value;
       if(-slide + pictureSize * (userLineData[closestUserLine].points.length) > width){
         userLineData[closestUserLine].horizontalOffset = -slide;
       }
-
-      //remove this
-      // //limit the horizontal scrolling to the first and last pictures
-      // if (userLineData[closestUserLine].horizontalOffset > 0) {
-      //   userLineData[closestUserLine].horizontalOffset = 0;
-      // } else if (userLineData[closestUserLine].horizontalOffset < -(userLineData[closestUserLine].points.length-1) * pictureSize
-      // ) {
-      //   userLineData[closestUserLine].horizontalOffset =
-      //     -(userLineData[closestUserLine].points.length-1) * pictureSize;
-      // }
 
       //scroll the pictures
       for (let i = 0; i < d3.selectAll(".userPictures-" + closestUserLine.toString())["_groups"][0].length;i++) {
@@ -430,7 +414,6 @@ function visualize(jsonObj) {
   }
   function main() {
     //if user wants to scroll up or down
-    //changed this
     if ( mouseX > width*4/5 && mouseX < width && (
       0.01 * (height / 2 - mouseY) > 0.75 ||
       0.01 * (height / 2 - mouseY) < -0.75
@@ -438,7 +421,6 @@ function visualize(jsonObj) {
       userScroll += 0.1 * (height / 2 - mouseY);
     }
     //sets maximum for vertical scrolling
-    //changed this
     if (userScroll < -(userLineData.length-1) * pictureSize) {
       userScroll = -(userLineData.length-1) * pictureSize;
     } else if (userScroll > 0) {
