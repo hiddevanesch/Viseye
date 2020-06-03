@@ -283,47 +283,50 @@ const scatterPlot = (selection, props) => {
   		.attr('y', -15)
 		.text(title);
 	
+	//Format of tooltip
 	const tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
 		+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
 		+ '<br/>' + 'Description: ' + d['description'];
 
-	// Update the data from the timeline scaler
-	function drawPlot(dataDrawPlot) {
-		//Draw circles for each row of the selected data
-		const circles = g.merge(gEnter)
-			.selectAll('circle').data(dataDrawPlot);
-		circles
-			.enter().append('circle')
-				.on('mouseover', d => {
-					d3.select('#tooltip').transition()
-							.duration(200)
-								.style('opacity', .9)
-								.style('left', (d3.event.pageX + 5) + 'px')
-								.style('top', (d3.event.pageY + 5) + 'px')
-								.style('display', 'block');
-					d3.select('#tooltip').html(tooltipformat(d));
-				})
-				.on('mouseout', d => {
-					d3.select('#tooltip')
-						.transition().duration(400)
-						.style('opacity', 0);
-				})
-			.merge(circles)
+	//Draw circles for each row of the selected data
+	const circles = g.merge(gEnter)
+		.selectAll('circle').data(dataDrawPlot);
+	circles
+		.enter().append('circle')
+			.on('mouseover', d => {
+				d3.select('#tooltip').transition()
+						.duration(200)
+							.style('opacity', .9)
+							.style('left', (d3.event.pageX + 5) + 'px')
+							.style('top', (d3.event.pageY + 5) + 'px')
+							.style('display', 'block');
+				d3.select('#tooltip').html(tooltipformat(d));
+			})
+			.on('mouseout', d => {
+				d3.select('#tooltip')
+					.transition().duration(400)
+					.style('opacity', 0);
+			})
+		.merge(circles)
+			.attr('cx', innerWidth/2)
+			.attr('cy', innerHeight/2)
+			.attr('r', 0)
+		.transition().duration(1000)
+		.delay((d, i) => i * 2)
+			.attr('r', circleRadius)
+			.attr('cx', d => xScale(xValue(d)))
+			.attr('cy', d => yScale(yValue(d)));
+	circles
+		.exit()
+			.transition().duration(1000)
+				.attr('r', 0)
 				.attr('cx', innerWidth/2)
 				.attr('cy', innerHeight/2)
-				.attr('r', 0)
-			.transition().duration(1000)
-			.delay((d, i) => i * 2)
-				.attr('r', circleRadius)
-				.attr('cx', d => xScale(xValue(d)))
-				.attr('cy', d => yScale(yValue(d)));
-		circles
-			.exit()
-				.transition().duration(1000)
-					.attr('r', 0)
-					.attr('cx', innerWidth/2)
-					.attr('cy', innerHeight/2)
-				.remove();
+			.remove();
+
+	// Update the data from the timeline scaler
+	function drawPlot(dataDrawPlot) {
+		
 	}
 	
 	function timeSlider() {
