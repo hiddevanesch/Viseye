@@ -17,8 +17,13 @@ text {
   opacity: 0.4;
 }
 
-.title{
+.title {
   font-size: 2em;
+  text-align: center;
+}
+
+.titleLeg {
+  font-size: 1.1em;
   text-align: center;
 }
 

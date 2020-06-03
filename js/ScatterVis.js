@@ -17,9 +17,9 @@ let handle;
 let label;
 let currentValue;
 let targetValue;
-var cumulativeFilter = true;
-var amountSlider;
-var moving = false;
+let cumulativeFilter = true;
+let amountSlider;
+let moving = false;
 let minTimeSlider;
 let maxTimeSlider;
 let timelineUpdate = false;
@@ -44,6 +44,16 @@ function createTimeline(){
 	maxTimeSlider = +d3.max(data,axisTimeline);
 	maxvalueData = maxTimeSlider;
 	targetValue = maxTimeSlider - minTimeSlider;
+
+	/*
+	Selects the play button and the checkbox for interactions
+	If the checkbox is clicked, then the boolean filter will be flipped
+	*/
+	let playButton = d3.select('#play-button');
+	let checkBox = d3.select("#checkBox_id")
+		checkBox.on('change', function(){ 
+			cumulativeFilter = cumulativeFilter ? false : true;
+		});
 
 	/*
 	Make the distribution of the timeline
@@ -362,45 +372,45 @@ const scatterPlot = (selection, props) => {
 	// Update the data from the timeline scaler
 	function drawPlot(dataDrawPlot) {
 		const tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
-	+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
-	+ '<br/>' + 'Description: ' + d['description'];
+			+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
+			+ '<br/>' + 'Description: ' + d['description'];
 
-	//Draw circles for each row of the selected data
-	const circles = g.merge(gEnter)
-		.selectAll('circle').data(dataDrawPlot);
-	circles
-		.enter().append('circle')
-			.on('mouseover', d => {
-				d3.select('#tooltip').transition()
-						.duration(200)
-							.style('opacity', .9)
-							.style('left', (d3.event.pageX + 5) + 'px')
-							.style('top', (d3.event.pageY + 5) + 'px')
-							.style('display', 'block');
-				d3.select('#tooltip').html(tooltipformat(d));
-			})
-			.on('mouseout', d => {
-				d3.select('#tooltip')
-					.transition().duration(400)
-					.style('opacity', 0);
-			})
-		.merge(circles)
-			.attr('cx', innerWidth/2)
-			.attr('cy', innerHeight/2)
-			.attr('r', 0)
-		.transition().duration(2000)
-		.delay((d, i) => i * 2)
-			.attr('r', circleRadius)
-			.attr('cx', d => xScale(xValue(d)))
-			.attr('cy', d => yScale(yValue(d)));
-	circles
-		.exit()
-			.transition().duration(2000)
-				.attr('r', 0)
+		//Draw circles for each row of the selected data
+		const circles = g.merge(gEnter)
+			.selectAll('circle').data(dataDrawPlot);
+		circles
+			.enter().append('circle')
+				.on('mouseover', d => {
+					d3.select('#tooltip').transition()
+							.duration(200)
+								.style('opacity', .9)
+								.style('left', (d3.event.pageX + 5) + 'px')
+								.style('top', (d3.event.pageY + 5) + 'px')
+								.style('display', 'block');
+					d3.select('#tooltip').html(tooltipformat(d));
+				})
+				.on('mouseout', d => {
+					d3.select('#tooltip')
+						.transition().duration(400)
+						.style('opacity', 0);
+				})
+			.merge(circles)
 				.attr('cx', innerWidth/2)
 				.attr('cy', innerHeight/2)
-			.remove();
-	}	
+				.attr('r', 0)
+			.transition().duration(2000)
+			.delay((d, i) => i * 2)
+				.attr('r', circleRadius)
+				.attr('cx', d => xScale(xValue(d)))
+				.attr('cy', d => yScale(yValue(d)));
+		circles
+			.exit()
+				.transition().duration(2000)
+					.attr('r', 0)
+					.attr('cx', innerWidth/2)
+					.attr('cy', innerHeight/2)
+				.remove();
+	}
 	
 	/*
 	 Play button on click
@@ -412,7 +422,7 @@ const scatterPlot = (selection, props) => {
 		the command step will be executed every 0.1 seconds
 	*/ 
 	playButton.on("click", function() {
-		var button = d3.select(this);
+		let button = d3.select(this);
 		if (button.text() == "Pause") {
 		moving = false;
 		clearInterval(timer);
@@ -471,6 +481,185 @@ const scatterPlot = (selection, props) => {
 				}
     drawPlot(dataSelected);
 	}
+
+	const Cluster = (numClusters, maxIter) => {
+		// the current iteration
+		let iter = 1,
+			centroids = [],
+			points = [];
+
+		const colors = d3.scaleOrdinal(d3.schemeCategory10);
+
+		let initializePoints = () => {
+			let allPoints = [];
+
+			dataSelected.forEach(d => {
+				let point = {
+						x: d.MappedFixationPointX,
+						y: d.MappedFixationPointY
+					}
+				allPoints.push(point);
+			});
+			return allPoints;
+		}
+
+		//Return random centroid points with coloring
+		let randomCentroid = (fill) => {
+			let r = Math.floor(Math.random()*points.length);
+			let random = points[r];
+
+			points.splice(r, 1);
+			random.fill = fill;
+			return random;
+		}
+	
+		//Gives distinct coloring to all centroid points
+		let initializeCentroids = (num) => {
+			let allCentroids = [];
+			for (let i = 0; i < num; i++) {
+				let color = colors(i);
+				let centroid = randomCentroid(color);
+				centroid.id = 'centroid' + "-" + i;
+				allCentroids.push(centroid);
+			}
+			return allCentroids;
+		}
+		
+		//Computes the euclidian distane
+		let euclidianDistance = (a, b) => {
+			let dx = b.x - a.x,
+				dy = b.y - a.y;
+			return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+		}
+
+		//Find the closest centroid to the point as argument
+		let findClosestCentroid = (point) => {
+			let closest = {i: -1, distance: innerWidth};
+			centroids.forEach(function(d, i) {
+				let distance = euclidianDistance(d, point);
+				// Only update when the centroid is closer
+				if (distance < closest.distance) {
+					closest.i = i;
+					closest.distance = distance;
+				}
+			});
+			return (centroids[closest.i]); 
+		}
+		
+		//All points close to the centroid get the according coloring
+		const colorizePoints = () => {
+			points.forEach(function(d) {
+				let closest = findClosestCentroid(d);
+				d.fill = closest.fill;
+			});
+		}
+	
+		//Computes the center of the cluster by the coordinates
+		let computeClusterCenter = (cluster) => {
+			return [
+				d3.mean(cluster, d => { return d.x; }), 
+				d3.mean(cluster, d => { return d.y; })
+			];
+		}
+		
+		//Move the centroids to the center of cluster
+		const moveCentroids = () => {
+			centroids.forEach(d => {
+				// Get clusters based on their coloring
+				let cluster = points.filter((points) => {
+					return points.fill === d.fill;
+				});
+				// Compute the cluster centers
+				let center = computeClusterCenter(cluster);
+				// Move the centroid
+				d.x = center[0];
+				d.y = center[1];
+			});
+		}
+	
+		//updates the plot
+		function update() {
+		
+			let data = points.concat(centroids);
+
+			console.log(data);
+			// The data join
+			let circle = svg.selectAll("circle")
+				.data(data);
+				
+			// Create new elements as needed
+			circle.enter().append("circle")
+				.attr("id", function(d) { return d.id; })
+				.attr("class", function(d) { return d.type; })
+				.attr("r", 5);
+				
+			// Update old elements as needed
+			circle.transition().delay(100).duration(1000)
+				.attr("cx", function(d) { return xScale(d.x); })
+				.attr("cy", function(d) { return yScale(d.y); })
+				.style("fill", function(d) { return d.fill; });
+			
+			// Remove old nodes
+			circle.exit().remove();
+		}
+	
+		/**
+		 * Updates the text in the label.
+		 */
+		function setText(text) {
+			svg.selectAll(".label").text(text);
+		}
+		
+		/**
+		 * Executes one iteration of the algorithm:
+		 * - Fill the points with the color of the closest centroid (this makes it 
+		 *   part of its cluster)
+		 * - Move the centroids to the center of their cluster.
+		 */
+		function iterate() {
+			
+			// Update label
+			setText("Iteration " + iter + " of " + maxIter);
+	
+			// Colorize the points
+			colorizePoints();
+			
+			// Move the centroids
+			moveCentroids();
+			
+			// Update the chart
+			update();
+		}
+	
+		/** 
+		 * The main function initializes the algorithm and calls an iteration every 
+		 * two seconds.
+		 */
+		function initialize() {
+			
+			// Initialize random and centroids
+			points = initializePoints();
+			centroids = initializeCentroids(numClusters);
+			
+			// initial drawing
+			update();
+			
+			let interval = setInterval(function() {
+				if(iter < maxIter + 1) {
+					iterate();
+					iter++;
+				} else {
+					clearInterval(interval);
+					setText("Done");
+				}
+			}, 2 * 1000);
+		}
+	
+		// Call the main function
+		initialize();
+	}
+
+	Cluster(3, 4);
 }
 
 //Function render
@@ -517,16 +706,3 @@ Promise.all([
 	stimulusName = allVersions[0];
 	render();
 });
-
-/*
-Selects the play button and the checkbox for interactions
-If the checkbox is clicked, then the boolean filter will be flipped
-*/
-var playButton = d3.select('#play-button');
-var checkBox = d3.select("#checkBox_id")
-	checkBox.on('change', function(){ 
-		cumulativeFilter = cumulativeFilter ? false : true;
-	});
-var tooltip = d3.select("#menus").append("div")
-	.attr("class", "tooltip")
-	.style("opacity", 0);
