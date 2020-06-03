@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attention map</title>
+  <link rel="stylesheet" href="css/AttentionVis.css">
+  <script src="https://unpkg.com/d3@5.6.0/dist/d3.min.js"></script>
+  <!-- specific plugin -->
+  <script src="https://d3js.org/d3-contour.v1.min.js"></script>
+</head>
+  <body>
+    <div id="menus"></div>
+    <section class = "vis">
+      <div id ="attentionMap">
+        <svg class = "aperture" width = 960 height = 500 viewBox="0 0 960 500" preserveAspectRatio="none">
+          <svg id = "svgAttention" width = "960" height = "500"></svg>
+          <svg id = "svgLegend"></svg>
+        </svg>
+      </div>
+      <div id="mini">
+        <svg viewBox="0 0 960 500">
+          <use xlink:href="#svgAttention">
+        </svg>
+      </div><!--miniMap-->
+    </section>
+    <script src="js/AttentionVis.js" type="text/javascript"></script>
+  </body>
+</html>

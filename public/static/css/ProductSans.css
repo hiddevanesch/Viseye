@@ -1,0 +1,19 @@
+  @font-face {
+    font-family: 'Product Sans Black';
+    src: url('../fonts/Product Sans Black.ttf') format('truetype');
+  }
+
+  @font-face {
+    font-family: 'Product Sans Bold';
+    src: url('../fonts/Product Sans Bold.ttf') format('truetype');
+  }
+
+  @font-face {
+    font-family: 'Product Sans Regular';
+    src: url('../fonts/Product Sans Regular.ttf') format('truetype');
+  }
+
+  @font-face {
+    font-family: 'Product Sans Light';
+    src: url('../fonts/Product Sans Light.ttf') format('truetype');
+  }

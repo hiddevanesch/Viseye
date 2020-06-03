@@ -21,4 +21,5 @@ export const FilterAOI = (data, x1, x2, y1, y2, i) => {
         }
     })
 
+    return data
 }

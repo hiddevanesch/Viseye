@@ -1,0 +1,20 @@
+body{
+  font-family: "Verdana", "Arial", serif;
+}
+
+#canvas{
+  border-width: 2px;
+  border-style: solid;
+  border-color: black;
+  width: 100%;
+  height: 90%;
+}
+
+#timeLineSlider{
+  width: 100%;
+}
+
+#canvasCase{
+  width: 800px;
+  height: 450px;
+}
