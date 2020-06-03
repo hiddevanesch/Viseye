@@ -290,13 +290,13 @@ const scatterPlot = (selection, props) => {
 
 	//Draw circles for each row of the selected data
 	const circles = g.merge(gEnter)
-		.selectAll('circle').data(dataDrawPlot);
+		.selectAll('circle').data(dataSelected);
 	circles
 		.enter().append('circle')
 			.on('mouseover', d => {
 				d3.select('#tooltip').transition()
 						.duration(200)
-							.style('opacity', .9)
+							.style('opacity', .8)
 							.style('left', (d3.event.pageX + 5) + 'px')
 							.style('top', (d3.event.pageY + 5) + 'px')
 							.style('display', 'block');
@@ -314,8 +314,8 @@ const scatterPlot = (selection, props) => {
 		.transition().duration(1000)
 		.delay((d, i) => i * 2)
 			.attr('r', circleRadius)
-			.attr('cx', d => xScale(xValue(d)))
-			.attr('cy', d => yScale(yValue(d)));
+			.attr('cx', d => {return xScale(xValue(d))})
+			.attr('cy', d => {return yScale(yValue(d))});
 	circles
 		.exit()
 			.transition().duration(1000)
@@ -326,7 +326,41 @@ const scatterPlot = (selection, props) => {
 
 	// Update the data from the timeline scaler
 	function drawPlot(dataDrawPlot) {
-		
+		//Draw circles for each row of the selected data
+		const circles = g.merge(gEnter)
+			.selectAll('circle').data(dataDrawPlot);
+		circles
+			.enter().append('circle')
+				.on('mouseover', d => {
+					d3.select('#tooltip').transition()
+							.duration(200)
+								.style('opacity', .8)
+								.style('left', (d3.event.pageX + 5) + 'px')
+								.style('top', (d3.event.pageY + 5) + 'px')
+								.style('display', 'block');
+					d3.select('#tooltip').html(tooltipformat(d));
+				})
+				.on('mouseout', d => {
+					d3.select('#tooltip')
+						.transition().duration(400)
+						.style('opacity', 0);
+				})
+			.merge(circles)
+				.attr('cx', innerWidth/2)
+				.attr('cy', innerHeight/2)
+				.attr('r', 0)
+			.transition().duration(1000)
+			.delay((i) => i * 2)
+				.attr('r', circleRadius)
+				.attr('cx', d => xScale(xValue(d)))
+				.attr('cy', d => yScale(yValue(d)));
+		circles
+			.exit()
+				.transition().duration(1000)
+					.attr('r', 0)
+					.attr('cx', innerWidth/2)
+					.attr('cy', innerHeight/2)
+				.remove();
 	}
 	
 	function timeSlider() {
@@ -435,14 +469,14 @@ const scatterPlot = (selection, props) => {
 		
 		//Computes the euclidian distane
 		let euclidianDistance = (a, b) => {
-			let dx = b.x - a.x,
-				dy = b.y - a.y;
+			let dx = b.MappedFixationPointX - a.MappedFixationPointX,
+				dy = b.MappedFixationPointY - a.MappedFixationPointY;
 			return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 		}
 
 		//Find the closest centroid to the point as argument
 		let findClosestCentroid = (point) => {
-			let closest = {i: -1, distance: innerWidth};
+			let closest = {i: -1, distance: Math.sqrt(Math.pow(innerWidth, 2) + Math.pow(innerHeight, 2))};
 			centroids.forEach((d, i) => {
 				let distance = euclidianDistance(d, point);
 				// Only update when the centroid is closer
@@ -465,8 +499,8 @@ const scatterPlot = (selection, props) => {
 		//Computes the center of the cluster by the coordinates
 		let computeClusterCenter = (cluster) => {
 			return [
-				d3.mean(cluster, d => { return d.x; }), 
-				d3.mean(cluster, d => { return d.y; })
+				d3.mean(cluster, d => { return d.MappedFixationPointX; }), 
+				d3.mean(cluster, d => { return d.MappedFixationPointY; })
 			];
 		}
 		
@@ -480,8 +514,8 @@ const scatterPlot = (selection, props) => {
 				// Compute the cluster centers
 				let center = computeClusterCenter(cluster);
 				// Move the centroid
-				d.x = center[0];
-				d.y = center[1];
+				d.MappedFixationPointX = center[0];
+				d.MappedFixationPointY = center[1];
 			});
 		}
 	
@@ -490,26 +524,26 @@ const scatterPlot = (selection, props) => {
 			let data = points;
 
 			// The data join
-			const circles = g.merge(gEnter)
+			let circles = g.merge(gEnter)
 				.selectAll('circle').data(data);
-				
+			
 			// Create new elements as needed
 			circles
 				.enter().append('circle')
-					.on('mouseover', d => {
-						d3.select('#tooltip').transition()
-								.duration(200)
-									.style('opacity', .9)
-									.style('left', (d3.event.pageX + 5) + 'px')
-									.style('top', (d3.event.pageY + 5) + 'px')
-									.style('display', 'block');
-						d3.select('#tooltip').html(tooltipformat(d));
-					})
-					.on('mouseout', d => {
-						d3.select('#tooltip')
-							.transition().duration(400)
-							.style('opacity', 0);
-					})
+					// .on('mouseover', d => {
+					// 	d3.select('#tooltip').transition()
+					// 			.duration(200)
+					// 				.style('opacity', .8)
+					// 				.style('left', (d3.event.pageX + 5) + 'px')
+					// 				.style('top', (d3.event.pageY + 5) + 'px')
+					// 				.style('display', 'block');
+					// 	d3.select('#tooltip').html(tooltipformat(d));
+					// })
+					// .on('mouseout', d => {
+					// 	d3.select('#tooltip')
+					// 		.transition().duration(400)
+					// 		.style('opacity', 0);
+					// })
 				.merge(circles)
 					.attr('cx', innerWidth/2)
 					.attr('cy', innerHeight/2)
@@ -518,8 +552,8 @@ const scatterPlot = (selection, props) => {
 				.transition().duration(1000)
 				.delay((i) => i * 2)
 					.attr('r', circleRadius)
-					.attr('cx', d => xScale(d.x))
-					.attr('cy', d => yScale(d.y))
+					.attr('cx', d => {return xScale(xValue(d))})
+					.attr('cy', d => {return yScale(yValue(d))})
 					.style('fill', d => { return d.fill; });	
 			// Remove old nodes
 			circles
@@ -533,7 +567,7 @@ const scatterPlot = (selection, props) => {
 	
 		//Update the text in the label
 		const setText = (text) => {
-			svg.selectAll('.label').text(text);
+			console.log(text);
 		}
 		
 		//Executes iteration of the algorithm
