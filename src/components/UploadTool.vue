@@ -51,6 +51,7 @@ export default {
     },
     openFileBrowse() {
       var vm = this;
+      var reqForLoadScreen = true;
       var input = document.getElementById("filebutton");
       if (input.files[0].type != "application/vnd.ms-excel"){
       alert("You have uploaded a wrong file type. We require a .csv file not a " + input.files[0].type + " file.");
@@ -72,8 +73,9 @@ export default {
           vm.addFiles(jsonData);
         };
         reader.onloadend = function(){
-          console.log("Loading finished, initializing visualization.");
-          if (this.activeVis === 'kak') { router.push({ name: 'Visualization' }); }
+          if (reqForLoadScreen) {
+            router.push({ name: 'Visualization' });
+            }
         };
       reader.readAsText(input.files[0]);
       }
