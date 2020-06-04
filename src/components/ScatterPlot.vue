@@ -240,7 +240,7 @@ export default {
 
       const yScale = d3.scaleLinear()
         .domain([0, imgHeight])
-        .range([innerHeight, 0]);
+        .range([0, innerHeight]);
 
       //Create container for scatterplot
       const g = selection.selectAll('.container').data([null]);
@@ -308,7 +308,7 @@ export default {
           .append('text')
               .attr('class', 'axis-label')
               .attr('y', -50)
-              .attr('x', -innerHeight / 2 )
+              .attr('x', innerHeight / 2 )
               .attr('transform', `rotate(-90)`)
               .style('text-anchor', 'middle')
               .text(yAxisLabel);

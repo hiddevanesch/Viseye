@@ -5,11 +5,15 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    files: []
+    files: [],
+    loading: ''
   },
   mutations: {
     addFiles(state, data) {
       state.files = data;
+    },
+    updateLoader(state, string) {
+      state.loading = string;
     }
   },
   actions: {

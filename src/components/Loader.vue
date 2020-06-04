@@ -6,9 +6,21 @@
       <div class="bounce3"></div>
     </div>
     <h1 class="load-title">Loading</h1>
-    <p class="load-text"><span id="loadText"></span></p>
+    <p class="load-text">{{ loading }}</p>
   </div>
 </template>
+
+<script>
+import { mapState } from "vuex";
+
+export default {
+  computed: {
+    ...mapState([
+      'loading'
+    ])
+  }
+}
+</script>
 
 <style>
 .spinner {

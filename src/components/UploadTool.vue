@@ -28,7 +28,8 @@ export default {
   },
   methods: {
     ...mapMutations([
-      'addFiles'
+      'addFiles',
+      'updateLoader'
     ]),
     tsvJSON(csv) {
       var lines=csv.split("\n");
@@ -51,44 +52,49 @@ export default {
     },
     openFileBrowse() {
       var vm = this;
-      var reqForLoadScreen = true;
       var input = document.getElementById("filebutton");
       if (input.files[0].type != "application/vnd.ms-excel"){
       alert("You have uploaded a wrong file type. We require a .csv file not a " + input.files[0].type + " file.");
       } else {
-        vm.loadingAnimation();
-        var reader = new FileReader();
-        var csvData = "";
-        var jsonData;
-        var iconv = require('iconv-lite');
-        reader.onload = function(){
-          csvData = iconv.decode(reader.result, 'latin1');
-          jsonData = vm.tsvJSON(csvData);
-          for (let i = 0; i < jsonData.length; i++) {
-            if (jsonData[i].StimuliName.includes("ý")) {
-              jsonData[i].StimuliName = jsonData[i].StimuliName.replace("Kýln", "Köln").replace("Brýssel", "Brüssel")
-              .replace("Gýteborg", "Göteborg").replace("Dýsseldorf", "Düsseldorf").replace("Zýrich", "Zürich");
+        //Update loader text
+        vm.updateLoader('Importing Data');
+
+        //Start loadscreen
+        vm.loadingAnimation().then(function () {
+          //Start reading data
+          var reader = new FileReader();
+          var csvData = "";
+          var jsonData;
+          var iconv = require('iconv-lite');
+          reader.onload = function(){
+            csvData = iconv.decode(reader.result, 'latin1');
+            jsonData = vm.tsvJSON(csvData);
+            for (let i = 0; i < jsonData.length; i++) {
+              if (jsonData[i].StimuliName.includes("ý")) {
+                jsonData[i].StimuliName = jsonData[i].StimuliName.replace("Kýln", "Köln").replace("Brýssel", "Brüssel")
+                .replace("Gýteborg", "Göteborg").replace("Dýsseldorf", "Düsseldorf").replace("Zýrich", "Zürich");
+              }
             }
-          }
-          vm.addFiles(jsonData);
-        };
-        reader.onloadend = function(){
-          if (reqForLoadScreen) {
+            vm.addFiles(jsonData);
+          };
+          reader.onloadend = function(){
+            //Go to visualization page
             router.push({ name: 'Visualization' });
-            }
-        };
-      reader.readAsText(input.files[0]);
+          };
+        reader.readAsText(input.files[0]);
+        });
       }
     },
     loadingAnimation() {
-
-      var target = document.getElementById('loadBox');
-      target.classList.remove('hidden')
-      setTimeout(function () {
-      target.classList.remove('visuallyhidden');
-      }, 20);
-      // var targetInside = document.getElementById('loadBoxInside');
-
+      return new Promise(resolve => {
+        //Make loading screen visible with animation
+        var target = document.getElementById('loadBox');
+        target.classList.remove('hidden')
+        setTimeout(function () {
+          target.classList.remove('visuallyhidden');
+          resolve();
+        }, 20);
+      });
     }
   }
 }

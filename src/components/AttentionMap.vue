@@ -101,7 +101,7 @@ export default {
 
         const yScale = d3.scaleLinear()
           .domain([0, imgHeight])
-          .range([innerHeight, 0]);
+          .range([0, innerHeight]);
 
         //Create container for attention map
         const g = selection.selectAll('.containerAttention').data([null]);
@@ -143,7 +143,7 @@ export default {
             .attr('transform', `rotate(-90)`)
             .attr('text-anchor', 'middle')
             .merge(yAxisG.select('.axis-label'))
-                .attr('x', -innerHeight / 2)
+                .attr('x', innerHeight / 2)
                 .text(yAxisLabel);
 
         const xAxisG = g.select('.x-axis');

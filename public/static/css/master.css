@@ -267,9 +267,19 @@ img {
 }
 
 .load-title {
+  text-align: center;
   font-size: 50px;
   font-family: 'Product Sans Bold';
   font-weight: 400;
+  color: #FFFFFF;
+}
+
+
+.load-text {
+  text-align: left;
+  font-family: 'Product Sans Regular';
+  font-weight: 400;
+  font-size: 14px;
   color: #FFFFFF;
 }
 
