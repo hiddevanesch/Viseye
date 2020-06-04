@@ -324,6 +324,7 @@ export default {
             .attr('cx', innerWidth/2)
             .attr('cy', innerHeight/2)
             .attr('r', 0)
+            .attr('class', 'circle')
             .on("mouseover", function(d) {
               tooltip.transition()
                 .duration(200)
@@ -441,6 +442,7 @@ export default {
           .enter().append('circle')
             .merge(circles)
               .attr('r', circleRadius)
+              .attr('class', 'circle')
               .attr('cx', d => xScale(xValue(d)))
               .attr('cy', d => yScale(yValue(d)))
               .on("mouseover", function(d) {
@@ -574,7 +576,7 @@ body {
   color: #ffffff;
 }
 
-circle {
+.circle {
   fill: #498fff;
   opacity: 0.5;
 }
@@ -721,27 +723,6 @@ text {
   font-family: 'Product Sans Regular';
   font-weight: 400;
   font-size: 16px;
-}
-
-.vis {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: nowrap;
-  align-items: center;
-  width: 100vw;
-}
-
-.vis > div {
-  --margin: 1em;
-  margin: var(--margin)
-}
-
-#scatterPlot {
-  flex: 3 0 calc(75% - var(--margin));
-}
-
-#mini {
-  flex: 1 0 calc(25% - var(--margin));
 }
 
 .aperture {

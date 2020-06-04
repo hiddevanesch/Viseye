@@ -141,10 +141,11 @@ img {
   padding-bottom: 20px;
 }
 
-.landingbox h1 {
+.logo-text {
   font-size: 50px;
   font-family: 'Product Sans Black';
   font-weight: 400;
+  color: #000000;
 }
 
 .selectMenu {
@@ -241,12 +242,35 @@ img {
   bottom: 0;
   cursor: wait;
   transition: all .5s ease-out;
+  display: block;
 }
 
-.load-bg-inside {
-  position: relative;
+.hidden {
+  display: none;
+}
+
+.visuallyhidden {
+  opacity: 0;
+}
+
+.load-container {
+  position: fixed;
   width: 100vw;
   height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.load-box {
+  margin: auto;
+}
+
+.load-title {
+  font-size: 50px;
+  font-family: 'Product Sans Bold';
+  font-weight: 400;
+  color: #FFFFFF;
 }
 
 .visualization-container {

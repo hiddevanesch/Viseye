@@ -3,8 +3,12 @@
     <p class="p bmar-small tx-dgray">Please upload your data in the correct file format. We now only support .csv files. For more information about the supported layout of the .csv file, please click here.</p>
     <input type="file" class="uploadbutton" accept=".csv" id="filebutton" name="filein" @change="openFileBrowse()"/>
     <label for="filebutton" class="button button-green inline-block">select file</label>
-    <div class="load-bg bg-dgray" id="loadBox" style="display:none;">
-      <div class="load-bg-inside" id="loadBoxInside"></div>
+    <div class="load-bg bg-dgray hidden visuallyhidden" id="loadBox">
+      <div class="load-container">
+        <div class="load-box">
+          <loader />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -12,8 +16,12 @@
 <script>
 import { mapMutations } from "vuex";
 import router from '../router';
+import Loader from '../components/Loader.vue'
 
 export default {
+  components: {
+    Loader
+  },
   data() {
     return {
     }
@@ -65,7 +73,7 @@ export default {
         };
         reader.onloadend = function(){
           console.log("Loading finished, initializing visualization.");
-          router.push({ name: 'Visualization' });
+          if (this.activeVis === 'kak') { router.push({ name: 'Visualization' }); }
         };
       reader.readAsText(input.files[0]);
       }
@@ -73,7 +81,10 @@ export default {
     loadingAnimation() {
 
       var target = document.getElementById('loadBox');
-      target.style.display = "block";
+      target.classList.remove('hidden')
+      setTimeout(function () {
+      target.classList.remove('visuallyhidden');
+      }, 20);
       // var targetInside = document.getElementById('loadBoxInside');
 
     }

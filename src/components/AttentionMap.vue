@@ -394,27 +394,6 @@ text {
   fill: #8E8883;
 }
 
-.vis {
-  display: flex;
-  justify-content: center;
-  flex-wrap: nowrap;
-  align-items: center;
-  width: 100vw;
-}
-
-.vis > div {
-  --margin: 1em;
-  margin: var(--margin)
-}
-
-#attentionMap {
-  flex: 3 0 calc(75% - var(--margin));
-}
-
-#mini {
-  flex: 1 0 calc(25% - var(--margin));
-}
-
 .aperture {
     /* Occupy the full viewport */
     width: 100%;
