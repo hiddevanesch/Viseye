@@ -28,7 +28,6 @@ export default {
     },
     toAlpPlot() {
       this.state = 'alpplot';
-      console.log('f');
     }
   }
 }
