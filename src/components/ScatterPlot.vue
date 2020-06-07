@@ -1,27 +1,30 @@
 <template>
-  <div>
-    <!-- Color Scale -->
-    <h1 class="plot-title tmar-mini bmar-mini">Scatter plot: Eye tracking data per city</h1>
-    <section class = "vis">
-      <div id ="scatterPlot">
-        <div id="tooltip"></div>
-        <svg class="aperture" viewbox = "0 0 960 500" preserveAspectRatio="none" width="960" height="500">
-          <g>
-            <svg id = "scatterPlotSVG" width = "960" height = "500"></svg><!--scatterPlot-->
-          </g>
-          </svg>
-      </div>
+  <div class="visrow height-fix">
+    <div class="viscol col80">
+      <h1 class="plot-title tmar-mini bmar-mini">Scatter plot: Eye tracking data per city</h1>
+      <section class = "vis">
+        <div id ="scatterPlot">
+          <div id="tooltip"></div>
+          <svg class="aperture" viewbox = "0 0 960 500" preserveAspectRatio="none">
+            <g>
+              <svg id = "scatterPlotSVG" width = "960" height = "500"></svg><!--scatterPlot-->
+            </g>
+            </svg>
+        </div>
+      </section>
+    </div>
+    <div class="viscol col20 bg-ldgray">
       <div id="mini">
         <svg viewBox="0 0 960 500">
           <use xlink:href="#scatterPlotSVG" />
-        </svg>
-      </div><!--miniMap-->
-    </section>
-    <input type="checkbox" id='checkBox_id' class="checkbox" checked='checked'/>
-    <label id='labelCheckBox'>Cumulative</label>
-    <button id="play-button">Play</button>
-    <input type="range" class="slider" id="timeSlider" width="200" />
-    <label id="timeLabel">NO DATA</label>
+        </svg><!--miniMap-->
+      </div>
+      <input type="checkbox" id='checkBox_id' class="checkbox" checked='checked'/>
+      <label id='labelCheckBox'>Cumulative</label>
+      <button id="play-button">Play</button>
+      <input type="range" class="slider" id="timeSlider" width="200" />
+      <label id="timeLabel">NO DATA</label>
+    </div>
   </div>
 </template>
 

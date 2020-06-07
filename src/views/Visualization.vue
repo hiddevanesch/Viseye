@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from "vuex";
+import { mapState } from "vuex";
 import * as d3 from "d3";
 import ScatterPlot from "../components/ScatterPlot.vue";
 import GazeStripesPlot from "../components/GazeStripesPlot.vue";
@@ -46,16 +46,13 @@ export default {
   },
   data() {
     return {
-      activeVis: ''
+      activeVis: 'scatterplot'
     }
   },
   mounted: function() {
     this.setOptions();
   },
   methods: {
-    ...mapMutations([
-      'updateLoader'
-    ]),
     downloadSVG(activeVis) {
       function triggerDownload(imgURL) {
       //both the triggerDownload and the downloadSvg function are
@@ -117,12 +114,8 @@ export default {
       screenShot.src = url;
     },
     setOptions() {
-      let _this = this;
       let data;
       let allVersions = [];
-      
-      //Update loader text
-      _this.updateLoader('inserting stimuli');
 
       //Create options inside the dropdown menu with the corresponding value for the displayed text
       function pushOptions() {
@@ -140,17 +133,6 @@ export default {
         }
         pushOptions();
       });
-
-      //Update loader text
-      _this.updateLoader('loading visualization');
-
-      //Load in scatterplot as first visualization
-      startVis('scatterplot');
-
-      function startVis(visType) {
-        //Set variable to wished visType
-        _this.setActiveVis(visType);
-      }
     },
     setActiveVis(visType) {
       this.activeVis = visType;

@@ -5,20 +5,15 @@
       <div class="bounce2"></div>
       <div class="bounce3"></div>
     </div>
-    <h1 class="load-title">Loading</h1>
-    <p class="load-text">{{ loading }}</p>
+    <div>
+      <h1 class="load-title">Loading</h1>
+      <h1 class="load-text">Importing Data</h1>
+    </div>
   </div>
 </template>
 
 <script>
-import { mapState } from "vuex";
-
 export default {
-  computed: {
-    ...mapState([
-      'loading'
-    ])
-  }
 }
 </script>
 

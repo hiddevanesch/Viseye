@@ -291,6 +291,11 @@ img {
   margin-left: auto;
 }
 
+.height-fix {
+  margin-top: -20px;
+  margin-bottom: -20px;
+}
+
 .visrow {
     display: -webkit-box;
     display: -ms-flexbox;

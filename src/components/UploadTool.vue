@@ -28,8 +28,7 @@ export default {
   },
   methods: {
     ...mapMutations([
-      'addFiles',
-      'updateLoader'
+      'addFiles'
     ]),
     tsvJSON(csv) {
       var lines=csv.split("\n");
@@ -56,9 +55,6 @@ export default {
       if (input.files[0].type != "application/vnd.ms-excel"){
       alert("You have uploaded a wrong file type. We require a .csv file not a " + input.files[0].type + " file.");
       } else {
-        //Update loader text
-        vm.updateLoader('Importing Data');
-
         //Start loadscreen
         vm.loadingAnimation().then(function () {
           //Start reading data
