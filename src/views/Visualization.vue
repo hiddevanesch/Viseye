@@ -8,7 +8,7 @@
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('scatterplot')">scatter plot</button>
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('gazestripes')">gaze stripes</button>
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('attentionmap')">attention map</button>
-        <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('alpscarf')">alp scarf</button>
+        <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('alpscarf')">alp scarf (beta)</button>
         <select class="selectMenu bmar-small full-width" id="selectMenu"></select>
           <div class="bottom-align">
             <button type="button" class="button button-green bmar-small full-width" @click="downloadSVG(activeVis)">screenshot</button>
