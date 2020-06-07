@@ -182,6 +182,7 @@ const scatterPlot = (selection, props) => {
 				.attr('x', timelineScale(currentValue))
 				.text(Math.round(currentValue/10)/100+' sec');
 
+
 //Select the image according to the selected map(version)
 	let imageSelected = allVersions.filter(d => d == stimulusName);
 
@@ -210,11 +211,18 @@ const scatterPlot = (selection, props) => {
 	//Transform the image resolution into range and domain of the axes
 	const xScale = d3.scaleLinear()
 		.domain([0, imgWidth])
-		.range([0, innerWidth]);
+		.range([0, innerWidth])
+		.nice();
+
+	const yScaleAxis = d3.scaleLinear()
+		.domain([0, imgHeight])
+		.range([innerHeight, 0])
+		.nice();
 
 	const yScale = d3.scaleLinear()
-		.domain([0, imgHeight])
-		.range([innerHeight, 0]);
+	.domain([0, imgHeight])
+	.range([0, innerHeight])
+	.nice();
 
 	//Create container for scatterplot
 	const g = selection.selectAll('.containerScatter').data([null]);
@@ -233,7 +241,7 @@ const scatterPlot = (selection, props) => {
 		.tickSize(-innerHeight)
 		.tickPadding(10);
 
-	const yAxis = d3.axisLeft(yScale)
+	const yAxis = d3.axisLeft(yScaleAxis)
 		.tickSize(-innerWidth)
 		.tickPadding(10);
 
@@ -362,9 +370,9 @@ const scatterPlot = (selection, props) => {
 					.attr('cy', innerHeight/2)
 				.remove();
 	}
-	
+
 	function timeSlider() {
-		/*
+			/*
 		Play button on click
 		if the button is on pause, it will change to play
 			then the slider will stop moving
@@ -373,12 +381,12 @@ const scatterPlot = (selection, props) => {
 			then the slider will start moving
 			the command step will be executed every 0.1 seconds
 		*/ 
-		playButton.on('click', function() {
-			let button = d3.select(this);
-			if (button.text() == 'Pause') {
+		playButton.on("click", function() {
+			var button = d3.select(this);
+			if (button.text() == "Pause") {
 			moving = false;
 			clearInterval(timer);
-			button.text('Play');
+			button.text("Play");
 			} else {
 				if (currentValue >= maxTimeSlider){
 					currentValue=minTimeSlider;
@@ -386,16 +394,16 @@ const scatterPlot = (selection, props) => {
 				}
 			moving = true;
 			timer = setInterval(step, 250);
-			button.text('Pause');
+			button.text("Pause");
 			}
 		})
 
 		// Step function for the play button
 		function step() {
 			update(currentValue);
+			const amountSlider = Math.min(data.filter(d => d.StimuliName == stimulusName).length,50);
 
-			const amountOfPoints = data.filter(d => d.StimuliName == stimulusName).length;
-			amountSlider = amountOfPoints;
+			console.log(amountSlider);
 			// Updates the slider by the compensated amount
 			currentValue +=  targetValue/amountSlider;
 			// If the slider is finished, then don't move it anymore, clear the interval and set the value to its start
@@ -404,53 +412,54 @@ const scatterPlot = (selection, props) => {
 			currentValue = minTimeSlider;
 			clearInterval(timer);
 			// timer = 0;
-			playButton.text('Play');
-			}
-
-			sliderLine.call(d3.drag()
-				.on('start.interrupt', function() { slider.interrupt(); })
-				.on('start drag', function() {
-					currentValue = timelineScale.invert(d3.event.x);
-					update(currentValue); 
-					}
-				)
-			);
-				
-			// Update button for the new value
-			function update(h) {
-				// update position and text of label according to slider scale
-				handle.attr('cx', timelineScale(h));
-				label
-				.attr('x', timelineScale(h))
-				.text(Math.round(h/10)/100 + ' sec');
-				// filter data set and redraw plot
-						if(cumulativeFilter){
-						dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h);
-						}
-						else {
-							dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h && d.Timestamp>h-500);
-						}
-			drawPlot(dataSelected);
+			playButton.text("Play");
 			}
 		}
+
+		sliderLine.call(d3.drag()
+			.on("start.interrupt", function() { slider.interrupt(); })
+			.on("start drag", function() {
+				currentValue = timelineScale.invert(d3.event.x);
+				update(currentValue); 
+				}
+			)
+		);
+			
+		// Update button for the new value
+		function update(h) {
+			// update position and text of label according to slider scale
+			handle.attr("cx", timelineScale(h));
+			label
+			.attr("x", timelineScale(h))
+			.text(Math.round(h/10)/100 + ' sec');
+			// filter data set and redraw plot
+					if(cumulativeFilter){
+					dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h);
+					}
+					else{
+						dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h && d.Timestamp>h-500);
+					}
+			drawPlot(dataSelected);
+		}
 	}
-	
+
 	timeSlider();
 
 	const Cluster = (numClusters, maxIter) => {
-		// the current iteration
+		// the current iteration		
 		let iter = 1,
 			centroids = [],
-			points = dataSelected;
+			points = dataSelected,
+			temp = dataSelected.slice();
 
 		const colors = d3.scaleOrdinal(d3.schemeCategory10);
 
 		//Return random centroid points with coloring
 		let randomCentroid = (fill) => {
-			let r = Math.floor(Math.random()*points.length);
-			let centroid = points[r];
+			let r = Math.floor(Math.random()*temp.length);
+			let centroid = Object.assign({}, temp[r]);
 
-			//points.splice(r, 1);
+			temp.splice(r, 1);
 			centroid.fill = fill;
 			return centroid;
 		}
@@ -521,8 +530,8 @@ const scatterPlot = (selection, props) => {
 	
 		//updates the plot
 		const update = () => {
-			let data = points;
-
+			let data = points.concat(centroids);
+		
 			// The data join
 			let circles = g.merge(gEnter)
 				.selectAll('circle').data(data);
@@ -530,38 +539,32 @@ const scatterPlot = (selection, props) => {
 			// Create new elements as needed
 			circles
 				.enter().append('circle')
-					// .on('mouseover', d => {
-					// 	d3.select('#tooltip').transition()
-					// 			.duration(200)
-					// 				.style('opacity', .8)
-					// 				.style('left', (d3.event.pageX + 5) + 'px')
-					// 				.style('top', (d3.event.pageY + 5) + 'px')
-					// 				.style('display', 'block');
-					// 	d3.select('#tooltip').html(tooltipformat(d));
-					// })
-					// .on('mouseout', d => {
-					// 	d3.select('#tooltip')
-					// 		.transition().duration(400)
-					// 		.style('opacity', 0);
-					// })
+					.on('mouseover', d => {
+						d3.select('#tooltip').transition()
+								.duration(200)
+									.style('opacity', .9)
+									.style('left', (d3.event.pageX + 5) + 'px')
+									.style('top', (d3.event.pageY + 5) + 'px')
+									.style('display', 'block');
+						d3.select('#tooltip').html(tooltipformat(d));
+					})
+					.on('mouseout', d => {
+						d3.select('#tooltip')
+							.transition().duration(400)
+							.style('opacity', 0);
+					})
 				.merge(circles)
-					.attr('cx', innerWidth/2)
-					.attr('cy', innerHeight/2)
-					.attr('r', 0)
-				// Update old elements as needed
-				.transition().duration(1000)
-				.delay((i) => i * 2)
-					.attr('r', circleRadius)
 					.attr('cx', d => {return xScale(xValue(d))})
 					.attr('cy', d => {return yScale(yValue(d))})
-					.style('fill', d => { return d.fill; });	
+					.attr('r', 0)
+				// Update old elements as needed
+				.transition().delay(100)
+					.duration(1000)
+						.attr('r', circleRadius)
+						.style('fill', d => { return d.fill; });	
 			// Remove old nodes
 			circles
 				.exit()
-					.transition().duration(1000)
-						.attr('r', 0)
-						.attr('cx', innerWidth/2)
-						.attr('cy', innerHeight/2)
 					.remove();
 		}
 	
@@ -572,7 +575,6 @@ const scatterPlot = (selection, props) => {
 		
 		//Executes iteration of the algorithm
 		const iterate = () => {
-			
 			// Update label
 			setText('Iteration ' + iter + ' of ' + maxIter);
 	
@@ -603,14 +605,14 @@ const scatterPlot = (selection, props) => {
 					clearInterval(interval);
 					setText('Done');
 				}
-			}, 500);
+			}, 1500);
 		}
 	
 		// Call the main function
 		initialize();
 	}
 
-	Cluster(3, 10);
+	Cluster(3, 50);
 
 	const zoom = () => {
 		const main_svg = d3.select('#scatterPlot svg.aperture').attr('class', 'zoom')

@@ -167,7 +167,7 @@ const attentionMap = (selection, props) => {
 			return yScale(d.MappedFixationPointY); 
 		})
 		.size([imgWidth, imgHeight])
-		.bandwidth(15);
+		.bandwidth(5);
 	
 	// Prepare a color palette
 	let color = d3.scaleSequential(d3.interpolateInferno).domain(d3.extent(densityData(dataSelected).map(d => d.value))).nice()
@@ -183,7 +183,7 @@ const attentionMap = (selection, props) => {
 			.attr('fill', d => {
 				return color(d.value);
 			})
-			.attr('opacity', 0.4);
+			.attr('opacity', 0.3);
 	paths
 		.exit().remove();
 	
