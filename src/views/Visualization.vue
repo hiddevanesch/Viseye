@@ -46,7 +46,7 @@ export default {
   },
   data() {
     return {
-      activeVis: 'scatterplot'
+      activeVis: 'attentionmap'
     }
   },
   mounted: function() {

@@ -7,7 +7,7 @@
     </div>
     <div>
       <h1 class="load-title">Loading</h1>
-      <h1 class="load-text">Importing Data</h1>
+      <p class="load-text">Importing Data</p>
     </div>
   </div>
 </template>

@@ -89,7 +89,7 @@ export default {
         setTimeout(function () {
           target.classList.remove('visuallyhidden');
           resolve();
-        }, 100);
+        }, 500);
       });
     }
   }
