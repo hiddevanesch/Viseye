@@ -101,11 +101,18 @@ export default {
         //Transform the image resolution into range and domain of the axes
         const xScale = d3.scaleLinear()
           .domain([0, imgWidth])
-          .range([0, innerWidth]);
+          .range([0, innerWidth])
+          .nice();
 
         const yScale = d3.scaleLinear()
           .domain([0, imgHeight])
-          .range([0, innerHeight]);
+          .range([0, innerHeight])
+          .nice();
+
+        const yScaleAxis = d3.scaleLinear()
+          .domain([0, imgHeight])
+          .range([innerHeight, 0])
+          .nice();
 
         //Create container for attention map
         const g = selection.selectAll('.containerAttention').data([null]);
@@ -125,7 +132,7 @@ export default {
           .tickSize(-innerHeight)
           .tickPadding(10);
 
-        const yAxis = d3.axisLeft(yScale)
+        const yAxis = d3.axisLeft(yScaleAxis)
           .tickSize(-innerWidth)
           .tickPadding(10);
 

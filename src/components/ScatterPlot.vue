@@ -43,7 +43,7 @@ export default {
   },
   methods: {
     visualize() {// Loads the SVG in variable
-    const svg = d3.select('#scatterPlotSVG');
+    let svg = d3.select('#scatterPlotSVG');
 
     /*
     Useful variables for the window 
@@ -51,10 +51,10 @@ export default {
     */
     const margin = { top: 20, right: 20, bottom: 50, left: 60 };
     const widthSlider = 50;
-    const width = +svg.attr('width');
-    const height = +svg.attr('height');
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
+    let width = +svg.attr('width');
+    let height = +svg.attr('height');
+    let innerWidth = width - margin.left - margin.right;
+    let innerHeight = height - margin.top - margin.bottom;
 
 
     //Defining variables for general access
@@ -239,11 +239,18 @@ export default {
       //Transform the data values into positions
       const xScale = d3.scaleLinear()
         .domain([0, imgWidth])
-        .range([0, innerWidth]);
+        .range([0, innerWidth])
+        .nice();
 
       const yScale = d3.scaleLinear()
         .domain([0, imgHeight])
-        .range([0, innerHeight]);
+        .range([0, innerHeight])
+        .nice();
+
+      const yScaleAxis = d3.scaleLinear()
+        .domain([0, imgHeight])
+        .range([innerHeight, 0])
+        .nice();
 
       //Create container for scatterplot
       const g = selection.selectAll('.container').data([null]);
@@ -264,7 +271,7 @@ export default {
         .tickSize(-innerHeight)
         .tickPadding(10);
 
-      const yAxis = d3.axisLeft(yScale)
+      const yAxis = d3.axisLeft(yScaleAxis)
         .tickSize(-innerWidth)
         .tickPadding(10);
       
@@ -355,9 +362,11 @@ export default {
             .attr('cy', innerHeight/2)
           .remove();
 
+
       const main_svg = d3.select("#scatterPlot svg.aperture").attr("class", "zoom");
-      const mini_svg   = d3.select("#mini svg").append("g").attr("class", "zoom");
+      const mini_svg = d3.select("#mini svg").append("g").attr("class", "zoom");
       const viewbox = main_svg.attr("viewbox").split(' ').map(d => +d);
+
       // store the image's initial viewBox
       const extent_1 = [
         [viewbox[0], viewbox[1]]
