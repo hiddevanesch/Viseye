@@ -221,6 +221,21 @@ export default {
           }
         }
 
+
+        // data var missing AOIcolor and AOI_order
+        let AOIlist = ["AOI1", "AOI2", "AOI3", "AOI4", "AOI5", "AOI6", "AOI7", "AOI8", "AOI9", "AOI10"];
+        let AOIcolorlist = ["#e129b8", "#0166cc", "#f4a8a1", "#a652ec", "#3a1b12", "#49464e", "#72b36a", "#d693bf", "#f4fe76", "#2713ca"];
+        data.forEach(function(d) {
+           if (AOIlist.includes(d.AOIName)){
+             for(let i = 0 ; i < AOIlist.length ; i++){
+               if (d.AOIName == AOIlist[i]){
+                 d.AOIcolor = AOIcolorlist[i];
+                 d.AOI_order = i+1;
+               }
+             }
+           }
+          });
+
         console.log(data);
 
         //        d3.csv('aoi_names_pages_seq_sc5.csv'),
