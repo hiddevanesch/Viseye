@@ -26,7 +26,7 @@ export default {
   },
   methods: {
     ...mapMutations([
-      'addFiles'
+      'addFilesAOI'
     ]),
     visualize() { 
       const svg = d3.select('#svgSelectionMap');
@@ -202,7 +202,6 @@ export default {
               alert('These rectangles intersect!');
               intersectingRectangles = false;
             } else {	
-              console.log(nextBox);
               FilterAOI(nextBox)
               SquareArray.push(nextBox);
             }		
@@ -383,8 +382,8 @@ export default {
     },
     toAlpPlot() {
       let vm = this;
-      vm.addFiles(vm.data);
-      this.$emit('to-alp-plot');
+      vm.addFilesAOI(vm.data);
+      vm.$emit('to-alp-plot');
     }
   }
 }

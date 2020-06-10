@@ -1,7 +1,6 @@
 <template>
   <div class="visrow height-fix">
     <div class="viscol col80">
-      <h1 class="plot-title tmar-mini bmar-mini">Scatter plot: Eye tracking data per city</h1>
       <section class = "vis">
         <div id ="scatterPlot">
           <div id="tooltip"></div>
@@ -14,16 +13,31 @@
       </section>
     </div>
     <div class="viscol col20 bg-ldgray">
-      <div id="mini">
-        <svg viewBox="0 0 960 500">
-          <use xlink:href="#scatterPlotSVG" />
-        </svg><!--miniMap-->
+      <div class="vismenurow bmar-tiny">
+        <div id="mini">
+          <svg viewBox="0 0 960 500">
+            <use xlink:href="#scatterPlotSVG" />
+          </svg><!--miniMap-->
+        </div>
       </div>
-      <input type="checkbox" id='checkBox_id' class="checkbox" checked='checked'/>
-      <label id='labelCheckBox'>Cumulative</label>
-      <button id="play-button">Play</button>
-      <input type="range" class="slider" id="timeSlider" width="200" />
-      <label id="timeLabel">NO DATA</label>
+      <div class="vismenurow bmar-tiny">
+        <input type="checkbox" id='checkBox_id' class="checkbox" checked='checked'/>
+        <label class="label">Cumulative</label>
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <button id="play-button" class="full-width">Play</button>
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <input type="range" class="slider" id="timeSlider" width="200" />
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <label id="timeLabel" class="label">NO DATA</label>
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <div class="bottom-align vw17 right-zero">
+          <button type="button" class="button button-green bmar-small full-width">info</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -341,7 +355,7 @@ export default {
                 .style("opacity", 1)
                 .style("left", "calc(" + (d3.event.pageX + 10) + "px - 20vw)")
                 .style("top", "calc(" + (d3.event.pageY + 10) + "px - 15vh)");
-              tooltip.html("Coordinates: " + d.MappedFixationPointX + ", " + d.MappedFixationPointY + "<br/> By user: " + d.user);
+              tooltip.html("Coordinates: " + d.MappedFixationPointX + ", " + (imgHeight - d.MappedFixationPointY) + "<br/> By user: " + d.user);
             })
             .on("mouseout", function() {
               tooltip.transition()
@@ -463,7 +477,7 @@ export default {
                   .style("opacity", 1)
                   .style("left", "calc(" + (d3.event.pageX + 10) + "px - 20vw)")
                   .style("top", "calc(" + (d3.event.pageY + 10) + "px - 15vh)");
-                tooltip.html("Coordinates: " + d.MappedFixationPointX + ", " + d.MappedFixationPointY + "<br/> By user: " + d.user);
+                tooltip.html("Coordinates: " + d.MappedFixationPointX + ", " + (imgHeight - d.MappedFixationPointY) + "<br/> By user: " + d.user);
               })
               .on("mouseout", function() {
                 tooltip.transition()
@@ -580,14 +594,6 @@ export default {
 </script>
 
 <style>
-body {
-  margin: 0px;
-  overflow: hidden;
-  font-family:"avenir next", Arial, sans-serif;
-  font-size: 12px;
-  color: #ffffff;
-}
-
 .circle {
   fill: #498fff;
   opacity: 0.5;
@@ -596,6 +602,7 @@ body {
 div.tooltip {
   position: absolute;
   text-align: center;
+  color: #ffffff;
   /*width: 150px;*/
   padding: 5px;
   background: #498fff;
@@ -658,15 +665,6 @@ text {
   color: white;
   width: 20px;
   height: 20px;
-}
-
-#labelCheckBox {
-  top: 6px;
-  left: 230px;
-  color: #666666;
-  font-family: 'Product Sans Regular';
-  font-weight: 400;
-  font-size: 16px;
 }
 
 #cumulativeCheck-Box {

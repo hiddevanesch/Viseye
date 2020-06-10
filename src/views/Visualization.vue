@@ -1,20 +1,29 @@
 <template>
   <div class="visualization-container">
-    <header class="topbar bg-white">
-      <router-link to="/"><h1 class="tx-dgray">Viseye.</h1></router-link>
+    <header class="topbar bg-white center">
+      <div class="topcol col15">
+        <div>
+          <router-link to="/"><h1 class="topbar-title tx-dgray">Viseye.</h1></router-link>
+        </div>
+      </div>
+      <div class="topcol col85 center">
+        <h1 class="plot-title tmar-mini bmar-mini" v-if="activeVis === 'scatterplot'">Scatter plot: Eye tracking data per city</h1>
+        <h1 class="plot-title tmar-mini bmar-mini" v-if="activeVis === 'gazestripes'">Gaze stripes: Eye tracking data per city</h1>
+        <h1 class="plot-title tmar-mini bmar-mini" v-if="activeVis === 'attentionmap'">Attentionmap: Eye tracking data per city</h1>
+      </div>
     </header>
     <div class="visrow">
-      <div class="menubar viscol col20 bg-ldgray">
+      <div class="menubar viscol col15 bg-ldgray">
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('scatterplot')">scatter plot</button>
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('gazestripes')">gaze stripes</button>
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('attentionmap')">attention map</button>
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('alpscarf')">alp scarf (beta)</button>
         <select class="selectMenu bmar-small full-width" id="selectMenu"></select>
-          <div class="bottom-align">
+          <div class="bottom-align vw15 left-zero">
             <button type="button" class="button button-green bmar-small full-width" @click="downloadSVG(activeVis)">screenshot</button>
           </div>
       </div>
-      <div class="visualizationbox viscol col80 order2 bg-dgray">
+      <div class="visualizationbox viscol col85 order2 bg-dgray">
         <scatter-plot v-if="activeVis === 'scatterplot'" />
         <gaze-stripes-plot v-if="activeVis === 'gazestripes'" />
         <attention-map v-if="activeVis === 'attentionmap'" />

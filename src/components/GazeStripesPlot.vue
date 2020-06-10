@@ -1,7 +1,6 @@
 <template>
   <div class="visrow height-fix">
     <div class="viscol col80">
-      <h1 class="plot-title tmar-mini bmar-mini">Gaze stripes: Eye tracking data per city</h1>
       <div id="canvasCase">
         <svg id="canvas" />
       </div>

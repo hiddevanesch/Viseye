@@ -206,6 +206,17 @@ img {
   display: inline-block;
 }
 
+.label {
+  top: 6px;
+  left: 230px;
+  color: #666666;
+  font-family: 'Product Sans Regular';
+  font-weight: 400;
+  font-size: 16px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
 .p {
   font-family: 'Product Sans Light';
   font-weight: 400;
@@ -229,6 +240,7 @@ img {
   -webkit-box-align: center;
   -ms-flex-align: center;
   align-items: center;
+  justify-content: center;
 }
 
 .load-bg {
@@ -316,6 +328,34 @@ img {
   padding-bottom: 20px;
 }
 
+.vismenurow {
+  width: 100%;
+  text-align: center;
+}
+
+.widebox {
+  margin-left: -15px;
+  margin-right: -15px;
+}
+
+.wideboxcol {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.wide15 {
+  width: 15vw;
+}
+
+.wide85 {
+  width: 85vw;
+}
+
+.col15 {
+  flex: 0 0 15%;
+  max-width: 15%;
+}
+
 .col20 {
     flex: 0 0 20%;
     max-width: 20%;
@@ -326,13 +366,32 @@ img {
     max-width: 80%;
 }
 
+.col85 {
+  flex: 0 0 85%;
+  max-width: 85%;
+}
+
 .bottom-align {
   position: absolute;
   bottom: 0;
-  left: 0;
-  width: 20vw;
   padding-right: 15px;
   padding-left: 15px;
+}
+
+.vw15 {
+  width: 15vw;
+}
+
+.vw17 {
+  width: 17vw;
+}
+
+.left-zero {
+  left: 0;
+}
+
+.right-zero {
+  right: 0;
 }
 
 .order2 {
@@ -342,19 +401,34 @@ img {
 }
 
 .topbar {
-  padding-top: 20px;
-  padding-bottom: 20px;
-  padding-left: 30px;
-  padding-right: 30px;
   height: 15vh;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+.topcol {
+  position: relative;
+  width: 100%;
+  min-height: 1px;
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+.vert-align {
   display: table-cell;
   vertical-align: middle;
 }
 
-.topbar h1 {
+.topbar-title {
   font-size: 50px;
   font-family: 'Product Sans Black';
   font-weight: 400;
+  text-align: center;
 }
 
 .plot-title {
@@ -372,13 +446,11 @@ input[type=range] {
   height: 24px;
   -webkit-appearance: none;
   margin: 10px 0;
-  width: 100%;
 }
 input[type=range]:focus {
   outline: none;
 }
 input[type=range]::-webkit-slider-runnable-track {
-  width: 100%;
   height: 9px;
   cursor: pointer;
   animate: 0.2s;
@@ -402,7 +474,6 @@ input[type=range]:focus::-webkit-slider-runnable-track {
   background: #FFFFFF;
 }
 input[type=range]::-moz-range-track {
-  width: 100%;
   height: 9px;
   cursor: pointer;
   animate: 0.2s;
@@ -421,7 +492,6 @@ input[type=range]::-moz-range-thumb {
   cursor: pointer;
 }
 input[type=range]::-ms-track {
-  width: 100%;
   height: 9px;
   cursor: pointer;
   animate: 0.2s;

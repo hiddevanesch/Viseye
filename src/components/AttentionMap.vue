@@ -1,7 +1,6 @@
 <template>
   <div class = "visrow height-fix">
     <div class="viscol col80">
-      <h1 class="plot-title tmar-mini bmar-mini">Attentionmap: Eye tracking data per city</h1>
       <div id ="attentionMap">
         <svg class = "aperture" width = 960 height = 500 viewBox="0 0 960 500" preserveAspectRatio="none">
           <svg id = "svgAttention" width = "960" height = "500"></svg>
@@ -377,11 +376,6 @@ export default {
 </script>
 
 <style>
-body {
-  margin: 0px;
-  overflow: hidden;
-}
-
 text {
   font-family: sans-serif;
 }

@@ -16,7 +16,9 @@ import * as d3 from "d3";
 
 export default {
   computed: {
-    ...mapState(["files"])
+    ...mapState([
+      'filesAOI'
+      ])
   },
   mounted: function() {
     this.visualize();
@@ -68,51 +70,50 @@ export default {
 
       const vm = this;
 
-      loadAndProcessData().then(loadedData => {
-        const AOIValue = d => d.AOI;
-        const colorValue = d => d.color;
+      let loadedData = loadAndProcessData();
+      const AOIValue = d => d.AOI;
+      const colorValue = d => d.color;
 
-        palette = d3
-          .scaleOrdinal()
-          .domain(loadedData[2].map(AOIValue))
-          .range(loadedData[2].map(colorValue));
+      palette = d3
+        .scaleOrdinal()
+        .domain(loadedData[2].map(AOIValue))
+        .range(loadedData[2].map(colorValue));
 
-        data = loadedData[1];
+      data = loadedData[1];
 
-        // generate list of unique p_name
-        const pName = data.map(d => d.p_name);
-        pNameList = [...new Set(pName)];
+      // generate list of unique p_name
+      const pName = data.map(d => d.p_name);
+      pNameList = [...new Set(pName)];
 
-        alpVizHeight = (height - margin.top - margin.bottom) / pNameList.length;
+      alpVizHeight = (height - margin.top - margin.bottom) / pNameList.length;
 
-        pNameList.forEach((d, i) => {
-          // alpscarf is zoomable
-          alpG[i] = zoomG
-            .append("g")
-            .attr(
-              "transform",
-              `translate(${margin.left}, ${margin.top + alpVizHeight * i})`
-            );
-        });
-
-        render();
-        /*
-          // playground for animation
-          alpVizHeight = height - margin.top - margin.bottom;
-          let pNameListStored = pNameList;
-          const interval = 1500;
-          let increment = 1;
-          //pNameListStored = ['P1', 'P10'];
-          pNameListStored.forEach(d => {
-              const runner = setTimeout(() => {
-                  pNameList = [d];
-                  render();
-                  clearTimeout(runner);
-              }, interval * increment);
-              increment++;
-          });
-      */
+      pNameList.forEach((d, i) => {
+        // alpscarf is zoomable
+        alpG[i] = zoomG
+          .append("g")
+          .attr(
+            "transform",
+            `translate(${margin.left}, ${margin.top + alpVizHeight * i})`
+          );
       });
+
+      render();
+      /*
+        // playground for animation
+        alpVizHeight = height - margin.top - margin.bottom;
+        let pNameListStored = pNameList;
+        const interval = 1500;
+        let increment = 1;
+        //pNameListStored = ['P1', 'P10'];
+        pNameListStored.forEach(d => {
+            const runner = setTimeout(() => {
+                pNameList = [d];
+                render();
+                clearTimeout(runner);
+            }, interval * increment);
+            increment++;
+        });
+    */
 
       //let selectedAOI = null;
       let selectedAOI = [];
@@ -128,7 +129,6 @@ export default {
         } else {
           selectedAOI = selectedAOI.filter(item => item !== aoi);
         }
-
         render();
       };
 
@@ -136,45 +136,47 @@ export default {
       let normalized_view = "normalized";
       let focus_mode = "transition-focus";
 
-      const plot_type_clicked = value => {
-        plot_type = value;
-        render();
-      };
-      const normalized_view_clicked = value => {
-        normalized_view = value;
-        render();
-      };
-      const focus_mode_clicked = value => {
-        focus_mode = value;
-        render();
-      };
+      // const plot_type_clicked = value => {
+      //   plot_type = value;
+      //   render();
+      // };
+      // const normalized_view_clicked = value => {
+      //   normalized_view = value;
+      //   render();
+      // };
+      // const focus_mode_clicked = value => {
+      //   focus_mode = value;
+      //   render();
+      // };
 
-      const render = () => {
-        d3.select("#plot_type-menu").call(dropdownMenu, {
-          //options: data.columns,
-          options: [
-            "alpscarf",
-            "traditional scarf",
-            "mountain only",
-            "valley only"
-          ],
-          onOptionClicked: plot_type_clicked,
-          selectedOption: plot_type
-        });
+      function render() {
+        // d3.select("#plot_type-menu").call(dropdownMenu, {
+        //   //options: data.columns,
+        //   options: [
+        //     "alpscarf",
+        //     "traditional scarf",
+        //     "mountain only",
+        //     "valley only"
+        //   ],
+        //   onOptionClicked: plot_type_clicked,
+        //   selectedOption: plot_type
+        // });
 
-        d3.select("#normalized_view-menu").call(dropdownMenu, {
-          //options: data.columns,
-          options: ["normalized", "unnormalized"],
-          onOptionClicked: normalized_view_clicked,
-          selectedOption: normalized_view
-        });
+        // console.log("ewa makker xD rawr :D uwu owo ome duo");
 
-        d3.select("#focus_mode-menu").call(dropdownMenu, {
-          //options: data.columns,
-          options: ["transition-focus", "duration-focus"],
-          onOptionClicked: focus_mode_clicked,
-          selectedOption: focus_mode
-        });
+        // d3.select("#normalized_view-menu").call(dropdownMenu, {
+        //   //options: data.columns,
+        //   options: ["normalized", "unnormalized"],
+        //   onOptionClicked: normalized_view_clicked,
+        //   selectedOption: normalized_view
+        // });
+
+        // d3.select("#focus_mode-menu").call(dropdownMenu, {
+        //   //options: data.columns,
+        //   options: ["transition-focus", "duration-focus"],
+        //   onOptionClicked: focus_mode_clicked,
+        //   selectedOption: focus_mode
+        // });
 
         pNameList.forEach((d, i) => {
           alpG[i].call(alpGen, {
@@ -202,14 +204,14 @@ export default {
           setSelectedAOI,
           selectedAOI
         });
-      };
+      }
 
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       ///////////////////////////////////////////////////////////////////FORMER loadAndProcessData.js FUNCTION ///////////////////////////////////////////////////////////////////
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       function loadAndProcessData() {
-        let data = vm.files;
+        let data = vm.filesAOI.slice();
 
         console.log(data);
 
@@ -223,18 +225,17 @@ export default {
 
 
         // data var missing AOIcolor and AOI_order
-        let AOIlist = ["AOI1", "AOI2", "AOI3", "AOI4", "AOI5", "AOI6", "AOI7", "AOI8", "AOI9", "AOI10"];
-        let AOIcolorlist = ["#e129b8", "#0166cc", "#f4a8a1", "#a652ec", "#3a1b12", "#49464e", "#72b36a", "#d693bf", "#f4fe76", "#2713ca"];
-        data.forEach(function(d) {
-           if (AOIlist.includes(d.AOIName)){
-             for(let i = 0 ; i < AOIlist.length ; i++){
-               if (d.AOIName == AOIlist[i]){
-                 d.AOIcolor = AOIcolorlist[i];
-                 d.AOI_order = i+1;
-               }
-             }
-           }
-          });
+        // let AOIlist = ["AOI1", "AOI2", "AOI3", "AOI4", "AOI5", "AOI6", "AOI7", "AOI8", "AOI9", "AOI10"];
+        // let AOIcolorlist = ["#e129b8", "#0166cc", "#f4a8a1", "#a652ec", "#3a1b12", "#49464e", "#72b36a", "#d693bf", "#f4fe76", "#2713ca"];
+        // data.forEach(function(d) {
+        //      for(let i = 0 ; i < AOIlist.length ; i++){
+        //        if (d.AOIName == AOIlist[i]){
+        //          console.log('hallo ja ik word gerund :) hjb floris');
+        //          d['AOIcolor'] = AOIcolorlist[i];
+        //          d['AOI_order'] = i+1;
+        //        }
+        //      }
+        //   });
 
         console.log(data);
 
@@ -299,24 +300,38 @@ export default {
         function data_order(data) {
           var result = [];
           data.forEach(function(d) {
-            if (result.some(item => item != d.AOIName)) {
-              result.push({ AOI_order: d.order, AOI: d.AOIName });
+            let boolie = false;
+            for (let i = 0; i < result.length; i++) {
+              if (result[i].AOI == d.AOIName) {
+                boolie = true
+              }
+            }
+            if (!boolie) {
+              result.push({ AOI_order: d.AOI_order, AOI: d.AOIName });
             }
           });
           return result;
         }
 
         function data_systhetic(data) {
-          data.forEach(function(d) {
+          var results = JSON.parse(JSON.stringify(data));
+          results.forEach(function(d) {
             delete d.AOI_order;
             delete d.AOIcolor;
           });
+          return results;
         }
 
         function data_color(data) {
           var result = [];
           data.forEach(function(d) {
-            if (result.some(item => item != d.AOIName)) {
+            let boolie = false;
+            for (let i = 0; i < result.length; i++) {
+              if (result[i].AOI == d.AOIName) {
+                boolie = true
+              }
+            }
+            if (!boolie) {
               result.push({ color: d.AOIcolor, AOI: d.AOIName });
             }
           });
@@ -514,39 +529,39 @@ export default {
               result.push(incoming_dwell);
             }
           });
-
           return result;
         }
+        return loadedData;
       }
 
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       ////////////////////////////////////////////////////////////// FORMER dropdownMenu.js //////////////////////////////////////////////////////////
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-      const dropdownMenu = (selection, props) => {
-        const { options, onOptionClicked, selectedOption } = props;
+      // const dropdownMenu = (selection, props) => {
+      //   const { options, onOptionClicked, selectedOption } = props;
 
-        // create the outer 'select' element
-        let select = selection.selectAll("select").data([null]); //null means one 'select' element as we only need one menu
-        select = select
-          .enter()
-          .append("select")
-          .merge(select)
-          .on("change", function() {
-            //https://www.w3schools.com/jsref/event_onchange.asp
-            onOptionClicked(this.value);
-            //console.log(this.value);
-          });
+      //   // create the outer 'select' element
+      //   let select = selection.selectAll("select").data([null]); //null means one 'select' element as we only need one menu
+      //   select = select
+      //     .enter()
+      //     .append("select")
+      //     .merge(select)
+      //     .on("change", function() {
+      //       //https://www.w3schools.com/jsref/event_onchange.asp
+      //       onOptionClicked(this.value);
+      //       //console.log(this.value);
+      //     });
 
-        const option = select.selectAll("option").data(options);
-        option
-          .enter()
-          .append("option")
-          .merge(option)
-          .attr("value", d => d)
-          .property("selected", d => d === selectedOption)
-          .text(d => d);
-      };
+      //   const option = select.selectAll("option").data(options);
+      //   option
+      //     .enter()
+      //     .append("option")
+      //     .merge(option)
+      //     .attr("value", d => d)
+      //     .property("selected", d => d === selectedOption)
+      //     .text(d => d);
+      // };
 
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       ////////////////////////////////////////////////////////////// FORMER colorLegend.js //////////////////////////////////////////////////////////
