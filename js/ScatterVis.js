@@ -24,6 +24,8 @@ let minTimeSlider;
 let maxTimeSlider;
 let timelineUpdate = false;
 let maxvalueData;
+let globalCluster;
+let globalIterations;
 
 /*
 Selects the play button and the checkbox for interactions
@@ -72,40 +74,40 @@ function createTimeline(){
 		.attr( 'transform', `translate(25,25)`);
 
 	// The bar of the slider is initialized, and its style is corrected
-	sliderLine = slider.append("line")
-		.attr("class", "track")
-		.attr("x1", timelineScale.range()[0])
-		.attr("x2", timelineScale.range()[1])
+	sliderLine = slider.append('line')
+		.attr('class', 'track')
+		.attr('x1', timelineScale.range()[0])
+		.attr('x2', timelineScale.range()[1])
 		.select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-		.attr("class", "track-inset")
+		.attr('class', 'track-inset')
 		.select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-		.attr("class", "track-overlay");
+		.attr('class', 'track-overlay');
 
 	// Add the text to the slider
-	slider.insert("g", ".track-overlay")
-		.attr("class", "ticks")
-		.attr("transform", "translate(0," + 18 + ")")
-		.selectAll("text")
+	slider.insert('g', '.track-overlay')
+		.attr('class', 'ticks')
+		.attr('transform', 'translate(0,' + 18 + ')')
+		.selectAll('text')
 		.data(timelineScale.ticks(10))
 		.enter()
-		.append("text")
-		.attr("x", timelineScale)
-		.attr("y", 10)
-		.attr("text-anchor", "middle")
+		.append('text')
+		.attr('x', timelineScale)
+		.attr('y', 10)
+		.attr('text-anchor', 'middle')
 		.text(function(d) { d.Timestamp });
 
 
 	// Add the circle in the bar at the current value
-	handle = slider.insert("circle", ".track-overlay")
-		.attr("class", "handle")
-		.attr("r", 9);
+	handle = slider.insert('circle', '.track-overlay')
+		.attr('class', 'handle')
+		.attr('r', 9);
 
 	// The amount of the slider above the circle
-	label = slider.append("text")  
-		.attr("class", "label")
-		.attr("text-anchor", "middle")
+	label = slider.append('text')  
+		.attr('class', 'label')
+		.attr('text-anchor', 'middle')
 		.text(minTimeSlider/1000)
-		.attr("transform", "translate("+0+","+ -13 +")")
+		.attr('transform', 'translate('+0+','+ -13 +')')
 }
 
 //Create dropdown menu
@@ -134,7 +136,7 @@ const dropdownMenu = (selection, props) => {
 //Store the selected option
 const onStimulusNameClicked = option => {
 	stimulusName = option;
-	render();
+	render(undefined, undefined);
 }
 
 //plot a scatterplot
@@ -143,8 +145,9 @@ const scatterPlot = (selection, props) => {
 		title,
 		xValue,
 		yValue,
-		circleRadius,
 		margin,
+		clusters,
+		iterations
 	} = props;
 
 	const innerWidth = width - margin.left - margin.right;
@@ -152,6 +155,8 @@ const scatterPlot = (selection, props) => {
 	
 	const yAxisLabel = 'Mapped fixation point y';
 	const xAxisLabel = 'Mapped fixation point x';
+
+	let circleRadius;
 
 	//Filter the data, first it corrects the timeline, then it filters the data
 	currentValue = maxvalueData;
@@ -292,45 +297,55 @@ const scatterPlot = (selection, props) => {
 		.text(title);
 	
 	//Format of tooltip
-	const tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
+	let tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
 		+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
 		+ '<br/>' + 'Description: ' + d['description'];
 
-	//Draw circles for each row of the selected data
-	const circles = g.merge(gEnter)
-		.selectAll('circle').data(dataSelected);
-	circles
-		.enter().append('circle')
-			.on('mouseover', d => {
-				d3.select('#tooltip').transition()
-						.duration(200)
-							.style('opacity', .8)
-							.style('left', (d3.event.pageX + 5) + 'px')
-							.style('top', (d3.event.pageY + 5) + 'px')
-							.style('display', 'block');
-				d3.select('#tooltip').html(tooltipformat(d));
-			})
-			.on('mouseout', d => {
-				d3.select('#tooltip')
-					.transition().duration(400)
-					.style('opacity', 0);
-			})
-		.merge(circles)
-			.attr('cx', innerWidth/2)
-			.attr('cy', innerHeight/2)
-			.attr('r', 0)
-		.transition().duration(1000)
-		.delay((d, i) => i * 2)
-			.attr('r', circleRadius)
-			.attr('cx', d => {return xScale(xValue(d))})
-			.attr('cy', d => {return yScale(yValue(d))});
-	circles
-		.exit()
-			.transition().duration(1000)
-				.attr('r', 0)
+	//Update the plot with the selected circle radius
+	//function updatePlot(radius) {
+		//Draw circles for each row of the selected data
+		const circles = g.merge(gEnter)
+			.selectAll('circle').data(dataSelected);
+		circles
+			.enter().append('circle')
+				.attr('r', 6)
 				.attr('cx', innerWidth/2)
 				.attr('cy', innerHeight/2)
-			.remove();
+			.merge(circles)
+				.style('fill', '#333')
+				.on('mouseover', d => {
+					d3.select('#tooltip').transition()
+							.duration(200)
+								.style('opacity', .7)
+								.style('left', (d3.event.pageX + 5) + 'px')
+								.style('top', (d3.event.pageY + 5) + 'px')
+								.style('display', 'block');
+					d3.select('#tooltip').html(tooltipformat(d));
+				})
+				.on('mouseout', () => {
+					d3.select('#tooltip')
+						.transition().duration(400)
+						.style('opacity', 0);
+				})
+			.transition().duration(1000)
+			.delay((i) => i * 2)
+				.attr('cx', d => {return xScale(xValue(d));})
+				.attr('cy', d => {return yScale(yValue(d));});
+		circles
+			.exit()
+				.transition().duration(1000)
+					.attr('r', 0)
+					.attr('cx', innerWidth/2)
+					.attr('cy', innerHeight/2)
+				.remove();
+	//}
+
+	// updatePlot(+document.getElementById('radiusCircle').value);
+
+	// d3.select("#radiusCircle").on("input", function() {
+	// 	circleRadius = +this.value;
+	// 	updatePlot(+this.value);
+	// });
 
 	// Update the data from the timeline scaler
 	function drawPlot(dataDrawPlot) {
@@ -339,29 +354,29 @@ const scatterPlot = (selection, props) => {
 			.selectAll('circle').data(dataDrawPlot);
 		circles
 			.enter().append('circle')
+				.attr('r', circleRadius)
+				.attr('cx', innerWidth/2)
+				.attr('cy', innerHeight/2)
+				.style('fill', '#333')
 				.on('mouseover', d => {
 					d3.select('#tooltip').transition()
 							.duration(200)
-								.style('opacity', .8)
+								.style('opacity', .7)
 								.style('left', (d3.event.pageX + 5) + 'px')
 								.style('top', (d3.event.pageY + 5) + 'px')
 								.style('display', 'block');
 					d3.select('#tooltip').html(tooltipformat(d));
 				})
-				.on('mouseout', d => {
+				.on('mouseout', () => {
 					d3.select('#tooltip')
 						.transition().duration(400)
 						.style('opacity', 0);
 				})
 			.merge(circles)
-				.attr('cx', innerWidth/2)
-				.attr('cy', innerHeight/2)
-				.attr('r', 0)
 			.transition().duration(1000)
 			.delay((i) => i * 2)
-				.attr('r', circleRadius)
-				.attr('cx', d => xScale(xValue(d)))
-				.attr('cy', d => yScale(yValue(d)));
+				.attr('cx', d => {return xScale(xValue(d));})
+				.attr('cy', d => {return yScale(yValue(d));});
 		circles
 			.exit()
 				.transition().duration(1000)
@@ -381,12 +396,12 @@ const scatterPlot = (selection, props) => {
 			then the slider will start moving
 			the command step will be executed every 0.1 seconds
 		*/ 
-		playButton.on("click", function() {
+		playButton.on('click', function() {
 			var button = d3.select(this);
-			if (button.text() == "Pause") {
+			if (button.text() == 'Pause') {
 			moving = false;
 			clearInterval(timer);
-			button.text("Play");
+			button.text('Play');
 			} else {
 				if (currentValue >= maxTimeSlider){
 					currentValue=minTimeSlider;
@@ -394,7 +409,7 @@ const scatterPlot = (selection, props) => {
 				}
 			moving = true;
 			timer = setInterval(step, 250);
-			button.text("Pause");
+			button.text('Pause');
 			}
 		})
 
@@ -412,13 +427,13 @@ const scatterPlot = (selection, props) => {
 			currentValue = minTimeSlider;
 			clearInterval(timer);
 			// timer = 0;
-			playButton.text("Play");
+			playButton.text('Play');
 			}
 		}
 
 		sliderLine.call(d3.drag()
-			.on("start.interrupt", function() { slider.interrupt(); })
-			.on("start drag", function() {
+			.on('start.interrupt', function() { slider.interrupt(); })
+			.on('start drag', function() {
 				currentValue = timelineScale.invert(d3.event.x);
 				update(currentValue); 
 				}
@@ -428,13 +443,13 @@ const scatterPlot = (selection, props) => {
 		// Update button for the new value
 		function update(h) {
 			// update position and text of label according to slider scale
-			handle.attr("cx", timelineScale(h));
+			handle.attr('cx', timelineScale(h));
 			label
-			.attr("x", timelineScale(h))
+			.attr('x', timelineScale(h))
 			.text(Math.round(h/10)/100 + ' sec');
 			// filter data set and redraw plot
 					if(cumulativeFilter){
-					dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h);
+						dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h);
 					}
 					else{
 						dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h && d.Timestamp>h-500);
@@ -446,13 +461,32 @@ const scatterPlot = (selection, props) => {
 	timeSlider();
 
 	const Cluster = (numClusters, maxIter) => {
+		//Clone the array of objects without dependencies
+		//const clone = require('rfdc')() // Returns the deep copy function
+
 		// the current iteration		
 		let iter = 1,
 			centroids = [],
-			points = dataSelected,
-			temp = dataSelected.slice();
+			points = [],
+			temp = [],
+			intervalTime = 50;
+
+		for (let i = 0; i < dataSelected.length; i++) {
+			points.push(Object.assign({}, dataSelected[i]));
+			temp.push(Object.assign({}, dataSelected[i]));
+		}
 
 		const colors = d3.scaleOrdinal(d3.schemeCategory10);
+
+		//Update iteration text
+		const iterationsText = svg.selectAll('.numberIterations').data([null])
+		iterationsText
+			.enter().append('g')
+			.merge(iterationsText)
+				.append('text')
+					.attr('class', 'numberIterations')
+					.attr('transform', `translate(${innerWidth + margin.left - (1/4 * innerWidth)}, ${55 + innerHeight + margin.top})`)
+					.text('');
 
 		//Return random centroid points with coloring
 		let randomCentroid = (fill) => {
@@ -470,7 +504,8 @@ const scatterPlot = (selection, props) => {
 			for (let i = 0; i < num; i++) {
 				let color = colors(i);
 				let centroid = randomCentroid(color);
-				centroid.id = 'centroid' + '-' + i;
+				centroid.id = 'centroid' + '-' + i + 1;
+				centroid.clusterGroup = i + 1 + ' (centroid)'
 				allCentroids.push(centroid);
 			}
 			return allCentroids;
@@ -502,6 +537,7 @@ const scatterPlot = (selection, props) => {
 			points.forEach(d => {
 				let closest = findClosestCentroid(d);
 				d.fill = closest.fill;
+				d.clusterGroup = closest.clusterGroup.substring(0, 1);
 			});
 		}
 	
@@ -529,16 +565,26 @@ const scatterPlot = (selection, props) => {
 		}
 	
 		//updates the plot
-		const update = () => {
-			let data = points.concat(centroids);
+		const update = (radius) => {
+			let clusterData = points.concat(centroids);
 		
 			// The data join
 			let circles = g.merge(gEnter)
-				.selectAll('circle').data(data);
+				.selectAll('circle').data(clusterData);
+
+			//Reformat of tooltip
+			tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
+				+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
+				+ '<br/>' + 'Description: ' + d['description'] + '<br/>' + 'Cluster Group: ' + d['clusterGroup'];
 			
 			// Create new elements as needed
 			circles
 				.enter().append('circle')
+					.attr('r', radius)
+					.attr('cx', innerWidth/2)
+					.attr('cy', innerHeight/2)
+					.attr('class', d => d.id)
+				.merge(circles)
 					.on('mouseover', d => {
 						d3.select('#tooltip').transition()
 								.duration(200)
@@ -553,24 +599,28 @@ const scatterPlot = (selection, props) => {
 							.transition().duration(400)
 							.style('opacity', 0);
 					})
-				.merge(circles)
-					.attr('cx', d => {return xScale(xValue(d))})
-					.attr('cy', d => {return yScale(yValue(d))})
-					.attr('r', 0)
 				// Update old elements as needed
-				.transition().delay(100)
-					.duration(1000)
-						.attr('r', circleRadius)
-						.style('fill', d => { return d.fill; });	
+					.transition().delay(intervalTime/20).duration(intervalTime/2)
+						.attr('cx', d => {return xScale(xValue(d))})
+						.attr('cy', d => {return yScale(yValue(d))})
+						.style('fill', d => { return d.fill; });
 			// Remove old nodes
 			circles
 				.exit()
 					.remove();
 		}
+
+		//update circleRadius
+		d3.select("#radiusCircle").on("input", () => {
+			if (clusters != undefined && iterations != undefined) {
+				update(circleRadius);
+			}
+		});
+	
 	
 		//Update the text in the label
 		const setText = (text) => {
-			console.log(text);
+			svg.selectAll('.numberIterations').text(text);
 		}
 		
 		//Executes iteration of the algorithm
@@ -595,128 +645,62 @@ const scatterPlot = (selection, props) => {
 			centroids = initializeCentroids(numClusters);
 
 			// initial drawing
-			update();
+			update(circleRadius);
 			
 			let interval = setInterval(() => {
-				if(iter < maxIter + 1) {
+				if(iter <= maxIter) {
 					iterate();
 					iter++;
 				} else {
 					clearInterval(interval);
 					setText('Done');
 				}
-			}, 1500);
+			}, intervalTime);
 		}
-	
-		// Call the main function
-		initialize();
+
+			// Call the main function
+			initialize();
 	}
 
-	Cluster(3, 50);
 
-	const zoom = () => {
-		const main_svg = d3.select('#scatterPlot svg.aperture').attr('class', 'zoom')
-		, mini_svg   = d3.select('#mini svg').append('g').attr('class', 'zoom')
-		, viewbox = main_svg.attr('viewBox').split(' ').map(d => +d)
-		// store the image's initial viewBox
-		, extent_1 = [
-			[viewbox[0], viewbox[1]]
-		, [(viewbox[2] - viewbox[0]), (viewbox[3] - viewbox[1])]
-		]
-		, brush  = d3.brush()
-			.extent(extent_1)
-			.on('brush', brushed)
-		, zoom = d3.zoom()
-			.scaleExtent([0.2, 1])
-			.extent(extent_1)
-			.on('zoom', zoomed)
-		;
-
-		// Apply the brush to the minimap, and also apply the zoom behavior here
-		mini_svg
-			.call(brush)
-			.call(brush.move, brush.extent())
-			.call(zoom)
-		;
-		// Apply the zoom behavior to the main svg
-		main_svg
-			.call(zoom)
-		;
-
-		function brushed() {
-			// Ignore brush-via-zoom
-			if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return;
-			
-			let sel = d3.event.selection
-			, vb = sel
-					? [sel[0][0], sel[0][1], (sel[1][0] - sel[0][0]), (sel[1][1] - sel[0][1])]
-					: viewbox
-			, k = vb[3] / viewbox[3]
-			, t = d3.zoomIdentity.translate(vb[0], vb[1]).scale(k)
-			;
-
-			mini_svg
-				.property('__zoom', t)
-			;
-			main_svg
-				.attr('viewBox', vb.join(' '))
-				.property('__zoom', t)
-			;
-		} // brushed()
-		
-		function zoomed() {
-			// If the zoom input was on the minimap, forward it to the main SVG
-			if(this === mini_svg.node()) {
-				return main_svg.call(zoom.transform, d3.event.transform);
-			}
-
-			// Disable panning on main_svg
-			if(d3.event.sourceEvent.type === 'mousemove') return;
-			// Ignore zoom via brush
-			if(!d3.event.sourceEvent || d3.event.sourceEvent.type === 'brush') return;
-		
-			// Process the zoom event on the main SVG
-			let t = d3.event.transform;
-			
-			t.x = t.x < viewbox[0] ? viewbox[0] : t.x;
-			t.x = t.x > viewbox[2] ? viewbox[2] : t.x;
-			t.y = t.y < viewbox[1] ? viewbox[1] : t.y;
-			t.y = t.y > viewbox[3] ? viewbox[3] : t.y;
-			
-			if(t.k === 1) t.x = t.y = 0;
-		
-			const vb = [t.x, t.y, viewbox[2] * t.k, viewbox[3] * t.k];
-		
-			main_svg.attr('viewBox', vb.join(' '));
-			mini_svg
-				.property('__zoom', t)
-				.call(
-					brush.move
-					, [[t.x, t.y], [t.x + vb[2], t.y + vb[3]]]
-				)
-			;
-		} // zoomed()
+	if (clusters != undefined && iterations != undefined) {
+		Cluster(clusters, iterations);
 	}
-	zoom();
+	console.log(1);
 }
 
 //Function render
-const render = () => {
-//Invoke function dropdownMenu to generate menu
+const render = (clusters, iterations) => {
+	globalCluster = clusters;
+	globalIterations = iterations;
+	
+	const collapsibleTooltipformat = 'Close the collapsible to obtain the unclustered plot :)!';
+
+	//Set tooltip to collapsible when k-means clustering has been applied
+	if (globalCluster != undefined && (globalIterations != undefined)){
+		d3.select('.collapsible')
+			.attr('title', collapsibleTooltipformat);
+	} else {
+		d3.select('.collapsible')
+			.attr('title', null);
+	}
+
+	//Invoke function dropdownMenu to generate menu
 	d3.select('#menus')
-		.call(dropdownMenu, {
-			options: allVersions,
-			onOptionClicked: onStimulusNameClicked
-			}
-		);
+	.call(dropdownMenu, {
+		options: allVersions,
+		onOptionClicked: onStimulusNameClicked
+		}
+	);
 
 	//Invoke function to generate the scatterplot
 	svg.call(scatterPlot, {
 		title: 'Scatterplot: Eye tracking data per city',
 		xValue: d => d.MappedFixationPointX,
-	  	yValue: d => d.MappedFixationPointY,
-	  	circleRadius: 4,
-	  	margin: { top: 50, right: 20, bottom: 80, left: 90 }
+		yValue: d => d.MappedFixationPointY,
+		margin: { top: 50, right: 20, bottom: 80, left: 90 },
+		clusters: clusters,
+		iterations: iterations
 	});
 }
 
@@ -742,5 +726,258 @@ Promise.all([
 	});
 	createTimeline();
 	stimulusName = allVersions[0];
-	render();
+	render(undefined, undefined);
 });
+
+let code;
+
+//Add event handlers to the form of the cluster collapsible.
+const clustersQuantity = () => {
+	const userInputForm = document.getElementById('userInputForm');
+	let preDefinedClusterQuantity;
+	for (let i = 0; i < 5; i++) {
+		if(userInputForm.elements[i].checked == true) {
+			preDefinedClusterQuantity = +userInputForm.elements[i].id;
+			break;
+		};
+	};
+	let customizedClusterQuantity = userInputForm.elements[4].value;
+	let preDefinedIterationQuantity;
+	for (let i = 5; i < 9; i++) {
+		if(userInputForm.elements[i].checked == true) {
+			preDefinedIterationQuantity = +userInputForm.elements[i].id;
+			break;
+		};
+	};
+	let customizedIterationQuantity = userInputForm.elements[9].value;
+
+	//When everything is selected or filled in, choose the customized values
+	//When only the radioboxes are checked, choose the pre-defined values
+	//When nothing is selected, alert the user to select
+	if ((customizedClusterQuantity != '') && (preDefinedClusterQuantity != undefined) && (customizedIterationQuantity != '') && (preDefinedIterationQuantity != undefined)) {
+		if (code != undefined) {
+			clearTimeout(code);
+			code = render(customizedClusterQuantity, customizedIterationQuantity);
+			setTimeout(code, 10000000);
+		} else {
+			code = render(customizedClusterQuantity, customizedIterationQuantity);
+			setTimeout(code, 10000000);
+		}
+	} else if ((customizedClusterQuantity != '') && (preDefinedClusterQuantity != undefined) && (preDefinedIterationQuantity != undefined)) {
+		if (code != undefined) {
+			clearTimeout(code);
+			code = render(customizedClusterQuantity, preDefinedIterationQuantity);
+			setTimeout(code, 10000000);
+		} else {
+			code = render(customizedClusterQuantity, customizedIterationQuantity);
+			setTimeout(code, 10000000);
+		}
+	} else if ((preDefinedClusterQuantity != undefined) && (customizedIterationQuantity != '') && (preDefinedIterationQuantity != undefined)) {
+		if (code != undefined) {
+			clearTimeout(code);
+			code = render(preDefinedClusterQuantity, customizedIterationQuantity);
+			setTimeout(code, 10000000);
+		} else {
+			code = render(preDefinedClusterQuantity, customizedIterationQuantity);
+			setTimeout(code, 10000000);
+		}
+	} else if (customizedClusterQuantity != '' && (customizedIterationQuantity != '')) {
+		if (code != undefined) {
+			clearTimeout(code);
+			code = render(customizedClusterQuantity, customizedIterationQuantity);
+			setTimeout(code, 17000000);
+		} else {
+			code = render(customizedClusterQuantity, customizedIterationQuantity);
+			setTimeout(code, 10000000);
+		}
+	} else if (preDefinedClusterQuantity != undefined && (preDefinedIterationQuantity != undefined)) {
+		if (code != undefined) {
+			clearTimeout(code);
+			code = render(preDefinedClusterQuantity, preDefinedIterationQuantity);
+			setTimeout(code, 10000000);
+		} else {
+			code = render(preDefinedClusterQuantity, preDefinedIterationQuantity);
+			setTimeout(code, 10000000);
+		}
+	} else if (preDefinedClusterQuantity != undefined && (customizedIterationQuantity != '')) {
+		if (code != undefined) {
+			clearTimeout(code);
+			code = render(preDefinedClusterQuantity, customizedIterationQuantity);
+			setTimeout(code, 10000000);
+		} else {
+			code = render(preDefinedClusterQuantity, customizedIterationQuantity);
+			setTimeout(code, 10000000);
+		}
+	} else if (customizedClusterQuantity != '' && (preDefinedIterationQuantity != undefined)) {
+		if (code != undefined) {
+			clearTimeout(code);
+			code = render(customizedClusterQuantity, preDefinedIterationQuantity);
+			setTimeout(code, 10000000);
+		} else {
+			code = render(customizedClusterQuantity, preDefinedIterationQuantity);
+			setTimeout(code, 10000000);
+		}
+	} else {
+		alert('Please select your desired number of iterations and clusters.');
+	}
+}
+
+//uncheck the radio buttons, when something is writen in the user input field for number of clusters
+const uncheckButtonsClusters = () => {
+	const userInputClusters = document.getElementById('userInputClusters');
+	const userInputForm = document.getElementById('userInputForm');
+	if (userInputClusters.value != '') {
+		for (let i = 0; i < 4; i++) {
+			if(userInputForm.elements[i].checked == true) {
+				userInputForm.elements[i].checked = false;
+				break;
+			};
+		};
+	}
+}
+
+//uncheck the radio buttons, when something is writen in the user input field for number of iterations
+const uncheckButtonsIterations = () => {
+	const userInputIteration = document.getElementById('userInputIteration');
+	const userInputForm = document.getElementById('userInputForm');
+
+	if (userInputIteration.value != '') {
+		for (let i = 5; i < 9; i++) {
+			if(userInputForm.elements[i].checked == true) {
+				userInputForm.elements[i].checked = false;
+				break;
+			};
+		};
+	}
+}
+
+//clear the user input field for number of clusters, when the according radio button is selected
+const clearInputFieldClusters = () => {
+	const userInputForm = document.getElementById('userInputForm');
+	const userInputClusters = document.getElementById('userInputClusters');
+	for (let i = 0; i < 4; i++){
+		if (userInputForm.elements[i].checked == true) {
+			userInputClusters.value = '';
+			break;
+		}
+	}
+}
+
+//clear the user input field for number of iterations, when the accroding radio button is selected
+const clearInputFieldIterations = () => {
+	const userInputForm = document.getElementById('userInputForm');
+	const userInputIteration = document.getElementById('userInputIteration');
+	for (let i = 0; i < 4; i++){
+		if (userInputForm.elements[i].checked == true) {
+			userInputIteration.value = '';
+			break;
+		}
+	}
+}
+
+//Create collapsible
+//When closing collapsible while having clustered, the original data set without clustering will be plotted
+const collapsible = () => {
+	let coll = document.getElementsByClassName('collapsible');
+	let i;
+
+	for (i = 0; i < coll.length; i++) {
+		  coll[i].addEventListener('click', function() {
+			this.classList.toggle('active');
+			let content = this.nextElementSibling;
+			if (content.style.display === 'block') {
+				render(undefined, undefined);
+				content.style.display = 'none';
+			} else {
+				content.style.display = 'block';
+			}
+		});
+	}
+};
+
+collapsible();
+
+const zoom = () => {
+	const main_svg = d3.select('#scatterPlot svg.aperture').attr('class', 'zoom')
+	, mini_svg   = d3.select('#mini svg').append('g').attr('class', 'zoom')
+	, viewbox = main_svg.attr('viewBox').split(' ').map(d => +d)
+	// store the image's initial viewBox
+	, extent_1 = [
+		[viewbox[0], viewbox[1]]
+	, [(viewbox[2] - viewbox[0]), (viewbox[3] - viewbox[1])]
+	]
+	, brush  = d3.brush()
+		.extent(extent_1)
+		.on('brush', brushed)
+	, zoom = d3.zoom()
+		.scaleExtent([0.2, 1])
+		.extent(extent_1)
+		.on('zoom', zoomed)
+	;
+
+	// Apply the brush to the minimap, and also apply the zoom behavior here
+	mini_svg
+		.call(brush)
+		.call(brush.move, brush.extent())
+		.call(zoom)
+	;
+	// Apply the zoom behavior to the main svg
+	main_svg
+		.call(zoom)
+	;
+
+	function brushed() {
+		// Ignore brush-via-zoom
+		if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return;
+		
+		let sel = d3.event.selection
+		, vb = sel
+				? [sel[0][0], sel[0][1], (sel[1][0] - sel[0][0]), (sel[1][1] - sel[0][1])]
+				: viewbox
+		, k = vb[3] / viewbox[3]
+		, t = d3.zoomIdentity.translate(vb[0], vb[1]).scale(k)
+		;
+
+		mini_svg
+			.property('__zoom', t)
+		;
+		main_svg
+			.attr('viewBox', vb.join(' '))
+			.property('__zoom', t)
+		;
+	} // brushed()
+	
+	function zoomed() {
+		// If the zoom input was on the minimap, forward it to the main SVG
+		if(this === mini_svg.node()) {
+			return main_svg.call(zoom.transform, d3.event.transform);
+		}
+
+		// Disable panning on main_svg
+		if(d3.event.sourceEvent.type === 'mousemove') return;
+		// Ignore zoom via brush
+		if(!d3.event.sourceEvent || d3.event.sourceEvent.type === 'brush') return;
+	
+		// Process the zoom event on the main SVG
+		let t = d3.event.transform;
+		
+		t.x = t.x < viewbox[0] ? viewbox[0] : t.x;
+		t.x = t.x > viewbox[2] ? viewbox[2] : t.x;
+		t.y = t.y < viewbox[1] ? viewbox[1] : t.y;
+		t.y = t.y > viewbox[3] ? viewbox[3] : t.y;
+		
+		if(t.k === 1) t.x = t.y = 0;
+	
+		const vb = [t.x, t.y, viewbox[2] * t.k, viewbox[3] * t.k];
+	
+		main_svg.attr('viewBox', vb.join(' '));
+		mini_svg
+			.property('__zoom', t)
+			.call(
+				brush.move
+				, [[t.x, t.y], [t.x + vb[2], t.y + vb[3]]]
+			)
+		;
+	} // zoomed()
+}
+zoom();
