@@ -7,9 +7,10 @@
         </div>
       </div>
       <div class="topcol col85 center">
-        <h1 class="plot-title tmar-mini bmar-mini" v-if="activeVis === 'scatterplot'">Scatter plot: Eye tracking data per city</h1>
-        <h1 class="plot-title tmar-mini bmar-mini" v-if="activeVis === 'gazestripes'">Gaze stripes: Eye tracking data per city</h1>
-        <h1 class="plot-title tmar-mini bmar-mini" v-if="activeVis === 'attentionmap'">Attentionmap: Eye tracking data per city</h1>
+        <h1 class="plot-title tmar-mini bmar-mini" v-if="activeVis === 'scatter_plot'">Scatter plot: Eye tracking data per city</h1>
+        <h1 class="plot-title tmar-mini bmar-mini" v-if="activeVis === 'gaze_stripes'">Gaze stripes: Eye tracking data per city</h1>
+        <h1 class="plot-title tmar-mini bmar-mini" v-if="activeVis === 'attention_map'">Attention Map: Eye tracking data per city</h1>
+        <h1 class="plot-title tmar-mini bmar-mini" v-if="activeVis === 'alp_scarf'">Alp Scarf: Eye tracking data per city (BETA)</h1>
       </div>
     </header>
     <div class="visrow">
