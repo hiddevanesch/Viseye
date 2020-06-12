@@ -9,68 +9,64 @@
 </head>
   <body>
     <div id="menus"></div>
-    <input type="checkbox" id='checkBox_id' class="checkbox" checked='checked'/>
-    <label id='labelCheckBox'> Cumulative </label>
-    <button id="play-button">Play</button>
-    <svg id='svgSlider' height='50', width='500'></svg>
+    <header><h2>Circle Radius Slider <span class="customized">(unit in pixels)</span>:</h2></header>
+    <div class="radiusSlider">
+      <input type="range" min="1" max="12" value="6" class="range" id="radiusCircle" name = rangeSlider>
+      <output class="bubble"></output>
+    </div><br>
     <button type="button" class="collapsible">K-means Clustering</button>
     <div class="content">
-      <div>
-        <form id="userInputForm" action="/action_page.php" onsubmit="return customizedQuantity()">
-          </section>
-            <header><h2>Number of clusters:</h2></header>
-            <div class = "line">
-              <label class = "cluster">2 
-                  <input type="radio" id="2" name="radio1" onclick = "clearInputFieldClusters()">
-                  <span class="checkmark"></span>
-              </label>
-              <label class = "cluster">3 
-                <input type="radio" id="3" name="radio1" onclick = "clearInputFieldClusters()">
+      <form action="/action_page.php" id="userInputForm" onsubmit="return customizedQuantity()">
+        </section>
+          <header><h2>Number of clusters:</h2></header>
+          <div class = "line">
+            <label class = "cluster">2 
+                <input type="radio" id="2" name="radio1" onclick = "clearInputFieldClusters()">
                 <span class="checkmark"></span>
-              </label>
-            </div>
-            <div class = "line">
-              <label class = "cluster">4 
-                <input type="radio" id="4" name="radio1" onclick = "clearInputFieldClusters()">
+            </label>
+            <label class = "cluster">3 
+              <input type="radio" id="3" name="radio1" onclick = "clearInputFieldClusters()">
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div class = "line">
+            <label class = "cluster">4 
+              <input type="radio" id="4" name="radio1" onclick = "clearInputFieldClusters()">
+              <span class="checkmark"></span>
+            </label>
+            <label class = "cluster">5 
+              <input type="radio" id="5" name="radio1" onclick = "clearInputFieldClusters()">
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <span class="customized">Customized quantity (between 0 and 11, exclusive):</span> <input type="number" id="userInputClusters" min="2" max="10" onkeyup="uncheckButtonsClusters()"><br>
+        </section>
+        <section>
+          <header><h2>Number of iterations:</h2></header>
+          <div class = "line">
+            <label class = "cluster">25 
+                <input type="radio" id="25" name="radio2" onclick = "clearInputFieldIterations()">
                 <span class="checkmark"></span>
-              </label>
-              <label class = "cluster">5 
-                <input type="radio" id="5" name="radio1" onclick = "clearInputFieldClusters()">
-                <span class="checkmark"></span>
-              </label>
-            </div>
-            <span class="customized">Customized quantity (between 0 and 11, exclusive):</span> <input type="number" id="userInputClusters" min="2" max="10" onkeyup="uncheckButtonsClusters()"><br>
-          </section>
-          <section>
-            <header><h2>Number of iterations:</h2></header>
-            <div class = "line">
-              <label class = "cluster">25 
-                  <input type="radio" id="25" name="radio2" onclick = "clearInputFieldIterations()">
-                  <span class="checkmark"></span>
-              </label>
-              <label class = "cluster">50 (recommended)
-                <input type="radio" id="50" name="radio2" onclick = "clearInputFieldIterations()">
-                <span class="checkmark"></span>
-              </label>
-            </div>
-            <div class = "line">
-              <label class = "cluster">100
-                <input type="radio" id="100" name="radio2" onclick = "clearInputFieldIterations()">
-                <span class="checkmark"></span>
-              </label>
-              <label class = "cluster">200
-                <input type="radio" id="200" name="radio2" onclick = "clearInputFieldIterations()">
-                <span class="checkmark"></span>
-              </label>
-            </div>
-            <span class="customized">Customized quantity:</span> <input type="number" id="userInputIteration" onkeyup="uncheckButtonsIterations()"><br><br>
-          </section>
-          <input type="button" id="submit" value="Start K-means Clustering" onclick="clustersQuantity()">
-        </form>
-      </div>
-    </div>
-    <div class="radiusSlider">
-      <input type="range" min="1" max="12" value="6" class="slider" id="radiusCircle">
+            </label>
+            <label class = "cluster">50 (recommended)
+              <input type="radio" id="50" name="radio2" onclick = "clearInputFieldIterations()">
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div class = "line">
+            <label class = "cluster">100
+              <input type="radio" id="100" name="radio2" onclick = "clearInputFieldIterations()">
+              <span class="checkmark"></span>
+            </label>
+            <label class = "cluster">200
+              <input type="radio" id="200" name="radio2" onclick = "clearInputFieldIterations()">
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <span class="customized">Customized quantity:</span> <input type="number" id="userInputIteration" onkeyup="uncheckButtonsIterations()"><br><br>
+        </section>
+        <input type="submit" id="submit" value="Start K-means Clustering" onclick="clustersQuantity()" style = "font-size:19px">
+      </form>
     </div>
     <section class = "vis">
       <div id ="scatterPlot">

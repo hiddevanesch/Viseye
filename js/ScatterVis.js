@@ -1,114 +1,15 @@
 const svg = d3.select('#svgScatter');
-const svgSlider = d3.select('#svgSlider');
 
 const width = +svg.attr('width');
 const height = +svg.attr('height');
-const widthSlider = +svgSlider.attr('width') - 100;
-const heightSlider = +svgSlider.attr('height');
 
 let data;
 let stimulusName;
 let allVersions = [];
 let dataSelected;
 let resData;
-let slider;
-let timelineScale;
-let handle;
-let label;
-let currentValue;
-let targetValue;
-let cumulativeFilter = true;
-let amountSlider;
-let moving = false;
-let minTimeSlider;
-let maxTimeSlider;
-let timelineUpdate = false;
-let maxvalueData;
 let globalCluster;
 let globalIterations;
-
-/*
-Selects the play button and the checkbox for interactions
-If the checkbox is clicked, then the boolean filter will be flipped
-*/
-let playButton = d3.select('#play-button');
-let checkBox = d3.select('#checkBox_id')
-	checkBox.on('change', function(){ 
-		cumulativeFilter = cumulativeFilter ? false : true;
-	});
-
-/* 
-The timeline slider will be created here
-1. The slider consists of three parts, the slider itself
-2. The circle in the middle that shows the value
-3. The amount of the slider which is  shown above the circle
-*/
-function createTimeline(){
-
-	/*
-	define the axisTimeline for easy access to the timestamps
-	define the mintime of the slider, which is the minimal value of the dataset
-	define the maxtime of the slider, which is the maximal value of the dataset
-	the maximum value of the data  is used later for redrawing
-	the targetValue is needed to make the distribution
-	*/
-	const axisTimeline = data => data.Timestamp;
-	minTimeSlider = +d3.min(data, function(d) {return d.Timestamp || Infinity; });
-	maxTimeSlider = +d3.max(data,axisTimeline);
-	maxvalueData = maxTimeSlider;
-	targetValue = maxTimeSlider - minTimeSlider;
-
-	/*
-	Make the distribution of the timeline
-	the domain is set between the minimum and maximum value of the data
-	the range is set to the width of the slider
-	*/
-	timelineScale = d3.scaleLinear()     
-		.domain([minTimeSlider,maxTimeSlider])
-		.range([0,widthSlider])
-		.clamp(true);
-
-	// The slider is added to its svg and translated to the correct position
-	slider = svgSlider.append('g')
-		.attr('class', 'slider')
-		.attr( 'transform', `translate(25,25)`);
-
-	// The bar of the slider is initialized, and its style is corrected
-	sliderLine = slider.append('line')
-		.attr('class', 'track')
-		.attr('x1', timelineScale.range()[0])
-		.attr('x2', timelineScale.range()[1])
-		.select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-		.attr('class', 'track-inset')
-		.select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-		.attr('class', 'track-overlay');
-
-	// Add the text to the slider
-	slider.insert('g', '.track-overlay')
-		.attr('class', 'ticks')
-		.attr('transform', 'translate(0,' + 18 + ')')
-		.selectAll('text')
-		.data(timelineScale.ticks(10))
-		.enter()
-		.append('text')
-		.attr('x', timelineScale)
-		.attr('y', 10)
-		.attr('text-anchor', 'middle')
-		.text(function(d) { d.Timestamp });
-
-
-	// Add the circle in the bar at the current value
-	handle = slider.insert('circle', '.track-overlay')
-		.attr('class', 'handle')
-		.attr('r', 9);
-
-	// The amount of the slider above the circle
-	label = slider.append('text')  
-		.attr('class', 'label')
-		.attr('text-anchor', 'middle')
-		.text(minTimeSlider/1000)
-		.attr('transform', 'translate('+0+','+ -13 +')')
-}
 
 //Create dropdown menu
 const dropdownMenu = (selection, props) => {
@@ -158,46 +59,19 @@ const scatterPlot = (selection, props) => {
 
 	let circleRadius;
 
-	//Filter the data, first it corrects the timeline, then it filters the data
-	currentValue = maxvalueData;
-	handle.attr('cx', timelineScale(currentValue));
-	label
-		.attr('x', timelineScale(currentValue))
-		.text(Math.round(currentValue/10)/100+ ' sec');
-	
-	//Filter the data
+	//Filter the data on the selected stimulus
 	dataSelected = data.filter(d => d.StimuliName == stimulusName);
 
-	// update the timeline according to the data if a chart has been selected
-		const axisTimeline = dataSelected => dataSelected.Timestamp;
-		/* 
-		update the minimum and maximum value of the selected data
-		update the domain of the slider 
-		update the value above the slider
-		*/
-		minTimeSlider = +d3.min(dataSelected, function(d) {return d.Timestamp || Infinity; });
-		maxTimeSlider = +d3.max(dataSelected,axisTimeline);
-		targetValue = maxTimeSlider - minTimeSlider;
-		timelineScale.domain([minTimeSlider,maxTimeSlider]);
-		slider.selectAll('text')
-			.data(timelineScale.ticks(10))
-			currentValue = maxTimeSlider;
-			handle.attr('cx', timelineScale(currentValue));
-			label
-				.attr('x', timelineScale(currentValue))
-				.text(Math.round(currentValue/10)/100+' sec');
-
-
-//Select the image according to the selected map(version)
+	//Select the image according to the selected map(version)
 	let imageSelected = allVersions.filter(d => d == stimulusName);
 
-//Select the image resolution according to the selected map
+	//Select the image resolution according to the selected map
 	let citySelected = resData.filter(d => stimulusName.includes(d.city));
 
 	let imgWidth = citySelected[0].width;
 	let imgHeight = citySelected[0].height;
 
-//Update image and set background
+	//Update image and set background
 	let background = 'stimuli/' + imageSelected;
 
 	const img = selection.selectAll('image').data([null]);
@@ -295,42 +169,42 @@ const scatterPlot = (selection, props) => {
 		.attr('class', 'title')
   		.attr('y', -15)
 		.text(title);
-	
+
 	//Format of tooltip
 	let tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
 		+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
 		+ '<br/>' + 'Description: ' + d['description'];
 
-	//Update the plot with the selected circle radius
-	//function updatePlot(radius) {
+	//Draw the circles using data join
+	const drawScatterPlot = (radius) => {
 		//Draw circles for each row of the selected data
 		const circles = g.merge(gEnter)
 			.selectAll('circle').data(dataSelected);
 		circles
 			.enter().append('circle')
-				.attr('r', 6)
-				.attr('cx', innerWidth/2)
-				.attr('cy', innerHeight/2)
 			.merge(circles)
-				.style('fill', '#333')
 				.on('mouseover', d => {
 					d3.select('#tooltip').transition()
 							.duration(200)
-								.style('opacity', .7)
+								.style('opacity', .8)
 								.style('left', (d3.event.pageX + 5) + 'px')
 								.style('top', (d3.event.pageY + 5) + 'px')
 								.style('display', 'block');
 					d3.select('#tooltip').html(tooltipformat(d));
 				})
-				.on('mouseout', () => {
+				.on('mouseout', d => {
 					d3.select('#tooltip')
 						.transition().duration(400)
 						.style('opacity', 0);
 				})
+				.attr('r', radius)
+				.attr('cx', innerWidth/2)
+				.attr('cy', innerHeight/2)
+				.style('fill', '#333')
 			.transition().duration(1000)
-			.delay((i) => i * 2)
-				.attr('cx', d => {return xScale(xValue(d));})
-				.attr('cy', d => {return yScale(yValue(d));});
+			.delay((d, i) => i * 2)
+				.attr('cx', d => {return xScale(xValue(d))})
+				.attr('cy', d => {return yScale(yValue(d))});
 		circles
 			.exit()
 				.transition().duration(1000)
@@ -338,45 +212,41 @@ const scatterPlot = (selection, props) => {
 					.attr('cx', innerWidth/2)
 					.attr('cy', innerHeight/2)
 				.remove();
-	//}
+	}
 
-	// updatePlot(+document.getElementById('radiusCircle').value);
+	//Update the plot with the selected circle radius
+	const updateRadius = (radius) => {
+		//Unclustered format of tooltip
+		let tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
+			+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
+			+ '<br/>' + 'Description: ' + d['description'];
 
-	// d3.select("#radiusCircle").on("input", function() {
-	// 	circleRadius = +this.value;
-	// 	updatePlot(+this.value);
-	// });
-
-	// Update the data from the timeline scaler
-	function drawPlot(dataDrawPlot) {
 		//Draw circles for each row of the selected data
 		const circles = g.merge(gEnter)
-			.selectAll('circle').data(dataDrawPlot);
+			.selectAll('circle').data(dataSelected);
 		circles
 			.enter().append('circle')
-				.attr('r', circleRadius)
-				.attr('cx', innerWidth/2)
-				.attr('cy', innerHeight/2)
-				.style('fill', '#333')
+			.merge(circles)
 				.on('mouseover', d => {
 					d3.select('#tooltip').transition()
 							.duration(200)
-								.style('opacity', .7)
+								.style('opacity', .8)
 								.style('left', (d3.event.pageX + 5) + 'px')
 								.style('top', (d3.event.pageY + 5) + 'px')
 								.style('display', 'block');
 					d3.select('#tooltip').html(tooltipformat(d));
 				})
-				.on('mouseout', () => {
+				.on('mouseout', d => {
 					d3.select('#tooltip')
 						.transition().duration(400)
 						.style('opacity', 0);
 				})
-			.merge(circles)
+				.attr('r', radius)
+				.style('fill', '#333')
 			.transition().duration(1000)
-			.delay((i) => i * 2)
-				.attr('cx', d => {return xScale(xValue(d));})
-				.attr('cy', d => {return yScale(yValue(d));});
+			.delay((d, i) => i * 2)
+				.attr('cx', d => {return xScale(xValue(d))})
+				.attr('cy', d => {return yScale(yValue(d))});
 		circles
 			.exit()
 				.transition().duration(1000)
@@ -386,79 +256,15 @@ const scatterPlot = (selection, props) => {
 				.remove();
 	}
 
-	function timeSlider() {
-			/*
-		Play button on click
-		if the button is on pause, it will change to play
-			then the slider will stop moving
-			and the interval will be cleared
-		if the button is on play, it will change to pause
-			then the slider will start moving
-			the command step will be executed every 0.1 seconds
-		*/ 
-		playButton.on('click', function() {
-			var button = d3.select(this);
-			if (button.text() == 'Pause') {
-			moving = false;
-			clearInterval(timer);
-			button.text('Play');
-			} else {
-				if (currentValue >= maxTimeSlider){
-					currentValue=minTimeSlider;
-					update(currentValue);
-				}
-			moving = true;
-			timer = setInterval(step, 250);
-			button.text('Pause');
-			}
-		})
+	circleRadius = +document.getElementById('radiusCircle').value;
 
-		// Step function for the play button
-		function step() {
-			update(currentValue);
-			const amountSlider = Math.min(data.filter(d => d.StimuliName == stimulusName).length,50);
-
-			console.log(amountSlider);
-			// Updates the slider by the compensated amount
-			currentValue +=  targetValue/amountSlider;
-			// If the slider is finished, then don't move it anymore, clear the interval and set the value to its start
-			if (currentValue > maxTimeSlider) {
-			moving = false;
-			currentValue = minTimeSlider;
-			clearInterval(timer);
-			// timer = 0;
-			playButton.text('Play');
-			}
-		}
-
-		sliderLine.call(d3.drag()
-			.on('start.interrupt', function() { slider.interrupt(); })
-			.on('start drag', function() {
-				currentValue = timelineScale.invert(d3.event.x);
-				update(currentValue); 
-				}
-			)
-		);
-			
-		// Update button for the new value
-		function update(h) {
-			// update position and text of label according to slider scale
-			handle.attr('cx', timelineScale(h));
-			label
-			.attr('x', timelineScale(h))
-			.text(Math.round(h/10)/100 + ' sec');
-			// filter data set and redraw plot
-					if(cumulativeFilter){
-						dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h);
-					}
-					else{
-						dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h && d.Timestamp>h-500);
-					}
-			drawPlot(dataSelected);
-		}
-	}
-
-	timeSlider();
+	if (globalCluster == undefined && (globalIterations == undefined)) {
+		drawScatterPlot(circleRadius);
+		d3.select('#radiusCircle').on('input', function() {
+			circleRadius = +this.value;
+			updateRadius(circleRadius);
+		});
+	};
 
 	const Cluster = (numClusters, maxIter) => {
 		//Clone the array of objects without dependencies
@@ -469,7 +275,11 @@ const scatterPlot = (selection, props) => {
 			centroids = [],
 			points = [],
 			temp = [],
-			intervalTime = 50;
+			intervalTime = 50,
+			duringIteration,
+			maxTempIter = maxIter;
+
+		console.log('here');
 
 		for (let i = 0; i < dataSelected.length; i++) {
 			points.push(Object.assign({}, dataSelected[i]));
@@ -576,15 +386,13 @@ const scatterPlot = (selection, props) => {
 			tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
 				+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
 				+ '<br/>' + 'Description: ' + d['description'] + '<br/>' + 'Cluster Group: ' + d['clusterGroup'];
-			
+
 			// Create new elements as needed
 			circles
 				.enter().append('circle')
-					.attr('r', radius)
-					.attr('cx', innerWidth/2)
-					.attr('cy', innerHeight/2)
-					.attr('class', d => d.id)
 				.merge(circles)
+					.attr('r', radius)
+					.attr('class', d => d.id)
 					.on('mouseover', d => {
 						d3.select('#tooltip').transition()
 								.duration(200)
@@ -610,13 +418,16 @@ const scatterPlot = (selection, props) => {
 					.remove();
 		}
 
-		//update circleRadius
-		d3.select("#radiusCircle").on("input", () => {
-			if (clusters != undefined && iterations != undefined) {
+		if (globalCluster != undefined && (globalIterations != undefined)) {
+			//update circleRadius
+			d3.select('#radiusCircle').on('input', function() {
+				circleRadius = +this.value;
 				update(circleRadius);
-			}
-		});
-	
+				if(duringIteration) {
+					maxTempIter -= 1;
+				}
+			});
+		}
 	
 		//Update the text in the label
 		const setText = (text) => {
@@ -633,9 +444,11 @@ const scatterPlot = (selection, props) => {
 			
 			// Move the centroids
 			moveCentroids();
-			
-			// Update the chart
-			update();
+
+			duringIteration = true;
+			// Update the scatter plot
+			update(circleRadius);
+			duringIteration = false;
 		}
 	
 		//Initialization of the algorithm, calls one iteration each 500 ms
@@ -648,7 +461,7 @@ const scatterPlot = (selection, props) => {
 			update(circleRadius);
 			
 			let interval = setInterval(() => {
-				if(iter <= maxIter) {
+				if(iter <= maxTempIter) {
 					iterate();
 					iter++;
 				} else {
@@ -666,7 +479,6 @@ const scatterPlot = (selection, props) => {
 	if (clusters != undefined && iterations != undefined) {
 		Cluster(clusters, iterations);
 	}
-	console.log(1);
 }
 
 //Function render
@@ -674,7 +486,7 @@ const render = (clusters, iterations) => {
 	globalCluster = clusters;
 	globalIterations = iterations;
 	
-	const collapsibleTooltipformat = 'Close the collapsible to obtain the unclustered plot :)!';
+	const collapsibleTooltipformat = 'Close the collapsible to obtain the unclustered plot!';
 
 	//Set tooltip to collapsible when k-means clustering has been applied
 	if (globalCluster != undefined && (globalIterations != undefined)){
@@ -685,7 +497,7 @@ const render = (clusters, iterations) => {
 			.attr('title', null);
 	}
 
-	//Invoke function dropdownMenu to generate menu
+	//Invoke function to generate drop down menu
 	d3.select('#menus')
 	.call(dropdownMenu, {
 		options: allVersions,
@@ -724,7 +536,6 @@ Promise.all([
 		d.width = +d.width;
 		d.height = +d.height
 	});
-	createTimeline();
 	stimulusName = allVersions[0];
 	render(undefined, undefined);
 });
@@ -886,7 +697,9 @@ const collapsible = () => {
 			this.classList.toggle('active');
 			let content = this.nextElementSibling;
 			if (content.style.display === 'block') {
+				if (globalCluster != undefined && (globalIterations != undefined)){
 				render(undefined, undefined);
+				}
 				content.style.display = 'none';
 			} else {
 				content.style.display = 'block';
@@ -981,3 +794,35 @@ const zoom = () => {
 	} // zoomed()
 }
 zoom();
+
+
+//Tooltip for the slider
+const sliderBubble = () => {
+	//const rangeSlider = document.querySelector('.rangeSlider');
+	const range = document.getElementById('radiusCircle');
+	const bubble = document.querySelector('.bubble');
+
+	//event handler for the bubble when the slider moves.
+	range.addEventListener('input', () => {
+		setBubble(range, bubble);
+	});
+
+	setBubble(range, bubble);
+
+	function setBubble(range, bubble) {
+		const val = range.value;
+		const min = range.min;
+		const max = range.max;
+		const newVal = ((val - min) * 100) / (max - min);
+		bubble.innerHTML = val;
+
+		//Get the bubble line up better
+		const offset = -18;
+
+		//Calculation of the tooltip's positioning
+		bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15 + offset}px))`;
+		bubble.style.top  = '47px';
+	}
+};
+
+sliderBubble();
