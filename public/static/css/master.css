@@ -198,6 +198,18 @@ img {
   background-color: #27921d;
 }
 
+.button-orange {
+  background-color: #e66f1a;
+}
+
+.button-orange:hover {
+  background-color: #c96219;
+}
+
+.button-orange:active {
+  background-color: #ad5718;
+}
+
 .uploadbutton {
   display: none;
 }

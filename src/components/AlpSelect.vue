@@ -1,6 +1,5 @@
 <template>
   <div>
-    <h1 class="plot-title tmar-mini bmar-mini">AOI selector-inator</h1>
     <svg id='svgSelectionMap' viewBox="0 0 960 500" width = "960" height = "500"></svg>
     <button type="button" class="button button-blue" id="toAlpPlotButton" @click="toAlpPlot">go to alpscarf</button>
   </div>

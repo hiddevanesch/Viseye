@@ -2,8 +2,11 @@
   <div>
     <div id="menus">
       <span id="plot_type-menu">Visualization Type:</span>
+      <select id="plot_type-select"></select>
       <span id="normalized_view-menu">Visualizations View:</span>
+      <select id="normalized_view-select"></select>
       <span id="focus_mode-menu">Focus Mode:</span>
+      <select id="focus_mode-select"></select>
       <hr />
     </div>
     <svg />
@@ -136,47 +139,78 @@ export default {
       let normalized_view = "normalized";
       let focus_mode = "transition-focus";
 
-      // const plot_type_clicked = value => {
-      //   plot_type = value;
-      //   render();
-      // };
-      // const normalized_view_clicked = value => {
-      //   normalized_view = value;
-      //   render();
-      // };
-      // const focus_mode_clicked = value => {
-      //   focus_mode = value;
-      //   render();
-      // };
+      const plot_type_clicked = value => {
+        plot_type = value;
+        render();
+      };
+      const normalized_view_clicked = value => {
+        normalized_view = value;
+        render();
+      };
+      const focus_mode_clicked = value => {
+        focus_mode = value;
+        render();
+      };
 
       function render() {
-        // d3.select("#plot_type-menu").call(dropdownMenu, {
-        //   //options: data.columns,
-        //   options: [
-        //     "alpscarf",
-        //     "traditional scarf",
-        //     "mountain only",
-        //     "valley only"
-        //   ],
-        //   onOptionClicked: plot_type_clicked,
-        //   selectedOption: plot_type
-        // });
+        // create the outer 'select' element
+        let selectPlotType = d3.select("#plot_type-select"); //null means one 'select' element as we only need one menu
+        selectPlotType = selectPlotType
+          .on("change", function() {
+            //https://www.w3schools.com/jsref/event_onchange.asp
+            plot_type_clicked(this.value);
+            //console.log(this.value);
+          });
 
-        // console.log("ewa makker xD rawr :D uwu owo ome duo");
+        const optionPlotType = selectPlotType.selectAll("option").data([
+            "alpscarf",
+            "traditional scarf",
+            "mountain only",
+            "valley only"
+          ]);
+        optionPlotType
+          .enter()
+          .append("option")
+          .merge(optionPlotType)
+          .attr("value", d => d)
+          .property("selected", d => d === plot_type)
+          .text(d => d);
 
-        // d3.select("#normalized_view-menu").call(dropdownMenu, {
-        //   //options: data.columns,
-        //   options: ["normalized", "unnormalized"],
-        //   onOptionClicked: normalized_view_clicked,
-        //   selectedOption: normalized_view
-        // });
+        // create the outer 'select' element
+        let selectNormalizedView = d3.select("#normalized_view-select"); //null means one 'select' element as we only need one menu
+        selectNormalizedView = selectNormalizedView
+          .on("change", function() {
+            //https://www.w3schools.com/jsref/event_onchange.asp
+            normalized_view_clicked(this.value);
+            //console.log(this.value);
+          });
 
-        // d3.select("#focus_mode-menu").call(dropdownMenu, {
-        //   //options: data.columns,
-        //   options: ["transition-focus", "duration-focus"],
-        //   onOptionClicked: focus_mode_clicked,
-        //   selectedOption: focus_mode
-        // });
+        const optionNormalizedView = selectNormalizedView.selectAll("option").data(["normalized", "unnormalized"]);
+        optionNormalizedView
+          .enter()
+          .append("option")
+          .merge(optionNormalizedView)
+          .attr("value", d => d)
+          .property("selected", d => d === normalized_view)
+          .text(d => d);
+
+        // create the outer 'select' element
+        let selectFocusMode = d3.select("#focus_mode-select"); //null means one 'select' element as we only need one menu
+        selectFocusMode = selectFocusMode
+          .on("change", function() {
+            //https://www.w3schools.com/jsref/event_onchange.asp
+            focus_mode_clicked(this.value);
+            //console.log(this.value);
+          });
+
+        const optionFocusMode = selectFocusMode.selectAll("option").data(["transition-focus", "duration-focus"]);
+        optionFocusMode
+          .enter()
+          .append("option")
+          .merge(optionFocusMode)
+          .attr("value", d => d)
+          .property("selected", d => d === focus_mode)
+          .text(d => d);
 
         pNameList.forEach((d, i) => {
           alpG[i].call(alpGen, {

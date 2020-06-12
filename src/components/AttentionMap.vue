@@ -9,11 +9,18 @@
       </div>
     </div>
     <div class="viscol col20 bg-ldgray">
-      <div id="mini">
-        <svg viewBox="0 0 960 500">
-          <use xlink:href="#svgAttention" />
-        </svg>
-      </div><!--miniMap-->
+      <div class="vismenurow bmar-tiny">
+        <div id="mini">
+          <svg viewBox="0 0 960 500">
+            <use xlink:href="#svgAttention" />
+          </svg>
+        </div><!--miniMap-->
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <div class="bottom-align vw17 right-zero">
+          <button type="button" class="button button-orange bmar-small full-width" @click="info">info</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -153,7 +160,7 @@ export default {
             .attr('transform', `rotate(-90)`)
             .attr('text-anchor', 'middle')
             .merge(yAxisG.select('.axis-label'))
-                .attr('x', innerHeight / 2)
+                .attr('x', -(innerHeight / 2))
                 .text(yAxisLabel);
 
         const xAxisG = g.select('.x-axis');
@@ -370,6 +377,9 @@ export default {
       stimulusName = d3.select("#selectMenu").node().value;
       render();
       });
+    },
+    info() {
+      window.alert("The attention map displays the spatial distribution of the eye tracking data. The attention map is better at recognizing certain patterns than the scatterplot. It is also easier to spot clusters than the scatterplot, however, the attention map does not include a timeline slider. To zoom you can simply scroll with the mouse wheel and you are able to see your exact location on the stimulus on the minimap. It is also possible to drag the 'zoomed field' in the minimap.");
     }
   }
 }
@@ -403,5 +413,10 @@ text {
     /* Occupy the full viewport */
     width: 100%;
     height: 100%;
+}
+
+.zoom {
+  width: 100%;
+  height: 100%;
 }
 </style>

@@ -35,7 +35,7 @@
       </div>
       <div class="vismenurow bmar-tiny">
         <div class="bottom-align vw17 right-zero">
-          <button type="button" class="button button-green bmar-small full-width">info</button>
+          <button type="button" class="button button-orange bmar-small full-width" @click="info">info</button>
         </div>
       </div>
     </div>
@@ -332,7 +332,7 @@ export default {
           .append('text')
               .attr('class', 'axis-label')
               .attr('y', -50)
-              .attr('x', innerHeight / 2 )
+              .attr('x', -(innerHeight / 2))
               .attr('transform', `rotate(-90)`)
               .style('text-anchor', 'middle')
               .text(yAxisLabel);
@@ -588,6 +588,9 @@ export default {
       timelineUpdate = true;
       render();
       });
+    },
+    info() {
+      window.alert("In a scatterplot, the gaze points of a user are plotted. The metro map is the stimulus and can also be seen in the scatterplot. This way, important parts of the metro map can be distinguished.\n\nThere are several interactions for the scatterplot of this website. Between the different metro maps can be filtered. The timestamp slider accommodates the user to filter over time. Pressing the play button results in an animated visualization which plots the gaze points in the correct order in time which shows the general path of the users. When selecting the cumulative filter (which is turned on by default), all gaze points from the time before the time stamp is shown. Hovering over a point in the scatterplot is followed by the appearance of a tooltip which shows the coordinates.");
     }
   }
 }

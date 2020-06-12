@@ -6,7 +6,17 @@
       </div>
     </div>
     <div class="viscol col20 bg-ldgray">
-      <input type="range" min="0" max="10000" value="0" class="slider" id="timeLineSlider" />
+      <div class="vismenurow bmar-tiny">
+        <input type="range" min="0" max="10000" value="0" class="slider" id="timeLineSlider" />
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <input type="range" min="0" max="10000" value="0" class="slider" id="userSlider" />
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <div class="bottom-align vw17 right-zero">
+          <button type="button" class="button button-orange bmar-small full-width" @click="info">info</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -34,9 +44,6 @@ export default {
       var selectUserLine = 0;
       var userLineData = [];
       var pictureZoomFactor = 0.9;
-
-      var mouseX = 0;
-      var mouseY = 0;
 
       var svg = d3.select("#canvas");
 
@@ -81,9 +88,6 @@ export default {
         userLineData = [];
         pictureZoomFactor = 0.9;
 
-        mouseX = 0;
-        mouseY = 0;
-
         uniqueUsers = [];
 
         svg.remove();
@@ -116,7 +120,7 @@ export default {
           userLineData[i].horizontalOffset = 0;
         }
 
-        for (let i = 0; i < height / pictureSize; i++) {
+        for (let i = 0; i < Math.ceil(height / pictureSize); i++) {
           if (userLineData.length > i) {
             loadUserLine(i);
           }
@@ -126,12 +130,11 @@ export default {
         slider.max = userLineData[0].points.length * pictureSize - width;
         slider.value = -userLineData[0].horizontalOffset;
 
-        svg.on("mousemove", function() {
-        var mouseCoords = d3.mouse(this);
-        mouseX = mouseCoords[0];
-        mouseY = mouseCoords[1];
-      });
-      interval = setInterval(main, 10);
+        var userSlider = document.getElementById("userSlider");
+        userSlider.max = (userLineData.length-1) * pictureSize;
+        slider.value = 0;
+
+      interval = setInterval(main, 1);
       }
 
       function filterImageNames(name) {
@@ -373,6 +376,7 @@ export default {
       }
 
       function setLineHeight() {
+        userScroll = -document.getElementById("userSlider").value;
         for (var i = 0; i < uniqueUsers.length; i++) {
           userLineData[i].height = pictureSize * i + userScroll;
 
@@ -390,6 +394,14 @@ export default {
             d3.selectAll("#userText-" + i.toString()).attr("y", () => {
               return userLineData[i].height-pictureSize/2;
             });
+          } else {
+            //changed this
+            d3.selectAll(".userPictures-" + i.toString()).attr("y", () => {
+              return -2*pictureSize;
+            });
+            d3.selectAll("#userText-" + i.toString()).attr("y", () => {
+              return -2*pictureSize;
+            });
           }
         }
       }
@@ -399,12 +411,7 @@ export default {
           //calculate the userline that is closest to the middle
           var closestUserLine = loadedUserLines[0];
           for (var i = 1; i < loadedUserLines.length; i++) {
-            if (
-              Math.pow(
-                userLineData[loadedUserLines[i]].height - height / 2,
-                2
-              ) < Math.pow(userLineData[closestUserLine].height - height / 2, 2)
-            ) {
+            if (Math.pow(userLineData[loadedUserLines[i]].height-pictureSize/2, 2) < Math.pow(userLineData[closestUserLine].height-pictureSize/2, 2)) {
               closestUserLine = loadedUserLines[i];
             }
           }
@@ -457,25 +464,13 @@ export default {
         }
       }
       function main() {
-        //if user wants to scroll up or down
-        //changed this
-        if ( mouseX > width*4/5 && mouseX < width && (
-          0.01 * (height / 2 - mouseY) > 0.75 ||
-          0.01 * (height / 2 - mouseY) < -0.75
-        )) {
-          userScroll += 0.1 * (height / 2 - mouseY);
-        }
-        //sets maximum for vertical scrolling
-        //changed this
-        if (userScroll < -(userLineData.length-1) * pictureSize) {
-          userScroll = -(userLineData.length-1) * pictureSize;
-        } else if (userScroll > 0) {
-          userScroll = 0;
-        }
         //scrolls the user lines up and down
         setLineHeight();
         scrollUserLine();
       }
+    },
+    info() {
+      window.alert("A gaze stripe plot is a series of images with a gaze point in the middle of each image. Each gaze stripe is fixated to a single participant. You are able to scroll through the gaze stripe using the slider below the plot. This shows the focus points of a participant over time. Scrolling through the gaze stripes of the different participants vertically can be done by putting the mouse in the right top or bottom corner of the plot. To select another metro map, you can simply change the city in the left column.");
     }
   }
 };
@@ -487,11 +482,10 @@ export default {
   border-style: solid;
   border-color: black;
   width: 100%;
-  height: 90%;
+  height: 100%;
 }
 
 #canvasCase{
-  width: 800px;
-  height: 450px;
+  height: 100%;
 }
 </style>
