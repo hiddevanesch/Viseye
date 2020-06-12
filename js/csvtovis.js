@@ -19,17 +19,17 @@ const dropdownMenu = (selection, props) => {
 	let select = selection.selectAll('select').data([null]);
 	select = select.enter().append('select')
 		.merge(select)
-			.on('change', function() {
-				onOptionClicked(this.value);
-			});
+		.on('change', function () {
+			onOptionClicked(this.value);
+		});
 
 	//Create options inside the dropdown menu with the corresponding value for the displayed text
 	const option = select.selectAll('option').data(options);
 	option.enter().append('option')
 		.merge(option)
-			.text(d => d)
-			.attr("value", d => d);
-	}
+		.text(d => d)
+		.attr("value", d => d);
+}
 
 //Store the selected option
 const onStimulusNameClicked = option => {
@@ -48,15 +48,15 @@ const scatterPlot = (selection, props) => {
 	} = props;
 
 	const innerWidth = width - margin.left - margin.right;
-  const innerHeight = height - margin.top - margin.bottom;
+	const innerHeight = height - margin.top - margin.bottom;
 
-//Filter the data
+	//Filter the data
 	dataSelected = data.filter(d => d.StimuliName == stimulusName);
 
-//Select the image according to the selected option
+	//Select the image according to the selected option
 	let imageSelected = allVersions.filter(d => d == stimulusName);
 
-//Update image and set background
+	//Update image and set background
 	let background = 'stimuli/' + imageSelected;
 
 	const img = selection.selectAll('image').data([null]);
@@ -64,13 +64,13 @@ const scatterPlot = (selection, props) => {
 
 	imgEnter
 		.merge(img)
-			.attr('xlink:href', background)
-			.attr('preserveAspectRatio', 'none')
-			.attr('width', innerWidth)
-			.attr('height', innerHeight)
-			.attr('transform',
-				`translate(${margin.left},${margin.top})`
-			);
+		.attr('xlink:href', background)
+		.attr('preserveAspectRatio', 'none')
+		.attr('width', innerWidth)
+		.attr('height', innerHeight)
+		.attr('transform',
+			`translate(${margin.left},${margin.top})`
+		);
 
 	//A color scale: one color per data selection
 	const dotColor = d3.scaleOrdinal()
@@ -90,15 +90,15 @@ const scatterPlot = (selection, props) => {
 
 	//Create container for scatterplot
 	const g = selection.selectAll('.container').data([null]);
-  const gEnter = g
-    .enter().append('g')
-      .attr('class', 'container');
+	const gEnter = g
+		.enter().append('g')
+		.attr('class', 'container');
 	//Translating the visualisation to innerposition with the updated data
 	gEnter
 		.merge(g)
-			.attr('transform',
-				`translate(${margin.left},${margin.top})`
-			);
+		.attr('transform',
+			`translate(${margin.left},${margin.top})`
+		);
 
 	//Customizing the axis
 	const xAxis = d3.axisBottom(xScale)
@@ -113,77 +113,77 @@ const scatterPlot = (selection, props) => {
 	const yAxisG = g.select('.y-axis');
 	const yAxisGEnter = gEnter
 		.append('g')
-			.attr('class', 'y-axis');
+		.attr('class', 'y-axis');
 	yAxisG
 		.merge(yAxisGEnter)
-			.call(yAxis)
-			.selectAll('.domain').remove();
+		.call(yAxis)
+		.selectAll('.domain').remove();
 
 	const xAxisG = g.select('.x-axis');
 	const xAxisGEnter = gEnter
 		.append('g')
-				.attr('class', 'x-axis');
+		.attr('class', 'x-axis');
 	xAxisG
 		.merge(xAxisGEnter)
-			.attr('transform', `translate(0,${innerHeight})`)
-			.call(xAxis)
-			.selectAll('.domain').remove();
+		.attr('transform', `translate(0,${innerHeight})`)
+		.call(xAxis)
+		.selectAll('.domain').remove();
 
 	const tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
-	+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
-	+ '<br/>' + 'Description: ' + d['description'];
+		+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
+		+ '<br/>' + 'Description: ' + d['description'];
 
 	//Draw circles for each row of the selected data
 	const circles = g.merge(gEnter)
 		.selectAll('circle').data(dataSelected);
 	circles
 		.enter().append('circle')
-			.on('mouseover', d => {
-				d3.select('#tooltip').transition()
-						.duration(200)
-							.style('opacity', .9)
-							.style('left', (d3.event.pageX + 5) + 'px')
-							.style('top', (d3.event.pageY + 5) + 'px')
-							.style('display', 'block');
-				d3.select('#tooltip').html(tooltipformat(d));
-			})
-			.on('mouseout', d => {
-				d3.select('#tooltip')
-					.transition().duration(400)
-					.style('opacity', 0);
-			})
+		.on('mouseover', d => {
+			d3.select('#tooltip').transition()
+				.duration(200)
+				.style('opacity', .9)
+				.style('left', (d3.event.pageX + 5) + 'px')
+				.style('top', (d3.event.pageY + 5) + 'px')
+				.style('display', 'block');
+			d3.select('#tooltip').html(tooltipformat(d));
+		})
+		.on('mouseout', d => {
+			d3.select('#tooltip')
+				.transition().duration(400)
+				.style('opacity', 0);
+		})
 		.merge(circles)
-			.attr('cx', innerWidth/2)
-			.attr('cy', innerHeight/2)
-			.attr('r', 0)
+		.attr('cx', innerWidth / 2)
+		.attr('cy', innerHeight / 2)
+		.attr('r', 0)
 		.transition().duration(2000)
 		.delay((d, i) => i)
-			.attr('r', circleRadius)
-			.attr('cx', d => xScale(xValue(d)))
-			.attr('cy', d => yScale(yValue(d)));
-		
+		.attr('r', circleRadius)
+		.attr('cx', d => xScale(xValue(d)))
+		.attr('cy', d => yScale(yValue(d)));
+
 	circles
 		.exit()
-			.transition().duration(2000)
-				.attr('r', 0)
-				.attr('cx', innerWidth/2)
-				.attr('cy', innerHeight/2)
-			.remove();
+		.transition().duration(2000)
+		.attr('r', 0)
+		.attr('cx', innerWidth / 2)
+		.attr('cy', innerHeight / 2)
+		.remove();
 
 	g.append('text')
 		.attr('class', 'title')
-  	.attr('y', -15)
+		.attr('y', -15)
 		.text(title);
 }
 
 //Function render
 const render = () => {
-//Invoke function dropdownMenu to generate menu
+	//Invoke function dropdownMenu to generate menu
 	d3.select('#menus')
 		.call(dropdownMenu, {
 			options: allVersions,
 			onOptionClicked: onStimulusNameClicked
-			}
+		}
 		);
 
 
@@ -191,22 +191,22 @@ const render = () => {
 	svg.call(scatterPlot, {
 		title: 'Scatterplot: Eye tracking data per city',
 		xValue: d => d.MappedFixationPointX,
-	  yValue: d => d.MappedFixationPointY,
-	  circleRadius: 4,
-	  margin: { top: 50, right: 20, bottom: 50, left: 60 },
+		yValue: d => d.MappedFixationPointY,
+		circleRadius: 4,
+		margin: { top: 50, right: 20, bottom: 50, left: 60 },
 	})
 }
 
 //(RE-)Render the data according to the selection by filter
 d3.csv('data.csv')
-  .then(loadedData => {
+	.then(loadedData => {
 		data = loadedData;
-  	data.forEach(d => {
-    	d.MappedFixationPointX = +d.MappedFixationPointX;
-    	d.MappedFixationPointY = +d.MappedFixationPointY;
-      if (!allVersions.includes(d.StimuliName)) {
+		data.forEach(d => {
+			d.MappedFixationPointX = +d.MappedFixationPointX;
+			d.MappedFixationPointY = +d.MappedFixationPointY;
+			if (!allVersions.includes(d.StimuliName)) {
 				allVersions.push(d.StimuliName);
-    	}
-    });
-  	render()
-});
+			}
+		});
+		render()
+	});

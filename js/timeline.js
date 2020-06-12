@@ -210,6 +210,7 @@ function visualize(jsonObj) {
       .attr("x", 20)
       .attr("y", userLineData[lineNumber].height - pictureSize / 2)
       .attr("fill", "red")
+      .attr("z-index", 2000)
       .text(userLineData[lineNumber].points[0].user)
   }
   function unloadUserLine(lineNumber) {
