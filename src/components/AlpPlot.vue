@@ -100,7 +100,7 @@ export default {
           );
       });
 
-      render();
+      
       /*
         // playground for animation
         alpVizHeight = height - margin.top - margin.bottom;
@@ -213,32 +213,32 @@ export default {
           .text(d => d);
 
         pNameList.forEach((d, i) => {
-          alpG[i].call(alpGen, {
-            data,
-            palette,
-            pName: d,
-            pNameOffset: 50,
-            alpVizWidth,
-            alpVizHeight: alpVizHeight - alpSpacing,
-            setSelectedAOI,
-            selectedAOI,
-            //alp_en: plot_type == 'alpscarf',
-            plot_type,
-            normalized_view: normalized_view == "normalized",
-            transition_focus_mode: focus_mode == "transition-focus"
-          });
+          alpGen(alpG[i],
+                data,
+                palette,
+                d,
+                50,
+                alpVizWidth,
+                (alpVizHeight-alpSpacing),
+                setSelectedAOI,
+                selectedAOI,
+                plot_type,
+                (normalized_view == "normalized"),
+                (focus_mode == "transition-focus"))
         });
 
-        legendG.call(colorLegend, {
-          colorScale: palette,
-          circleRadius: 10,
-          spacing: 30,
-          textOffset: 30,
-          backgroundRectHeight: 180,
-          setSelectedAOI,
-          selectedAOI
-        });
+        colorLegend(legendG,
+                    palette,
+                    10,
+                    30,
+                    30,
+                    180,
+                    setSelectedAOI,
+                    selectedAOI
+        )
       }
+
+      render();
 
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       ///////////////////////////////////////////////////////////////////FORMER loadAndProcessData.js FUNCTION ///////////////////////////////////////////////////////////////////
@@ -600,17 +600,15 @@ export default {
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       ////////////////////////////////////////////////////////////// FORMER colorLegend.js //////////////////////////////////////////////////////////
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      const colorLegend = (selection, props) => {
-        const {
-          colorScale,
-          circleRadius,
-          spacing,
-          textOffset,
-          backgroundRectHeight,
-          setSelectedAOI,
-          selectedAOI
-        } = props;
-
+      function colorLegend(selection,
+                          colorScale,
+                          circleRadius,
+                          spacing,
+                          textOffset,
+                          backgroundRectHeight,
+                          setSelectedAOI,
+                          selectedAOI)
+      {
         const n = colorScale.domain().length;
         const backgroundRect = selection.selectAll("rect").data([null]);
         backgroundRect
@@ -654,25 +652,23 @@ export default {
           .text(d => d)
           .attr("y", textOffset)
           .attr("transform", `translate(${circleRadius * 2}, 0) rotate(45)`);
-      };
+      }
 
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       ////////////////////////////////////////////////////////////// FORMER alpGeneration.js //////////////////////////////////////////////////////////
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      const alpGen = (selection, props) => {
-        const {
-          data,
-          palette,
-          pName,
-          pNameOffset,
-          alpVizWidth,
-          alpVizHeight,
-          setSelectedAOI,
-          selectedAOI,
-          plot_type,
-          normalized_view,
-          transition_focus_mode
-        } = props;
+      function alpGen(selection,
+                      data,
+                      palette,
+                      pName,
+                      pNameOffset,
+                      alpVizWidth,
+                      alpVizHeight,
+                      setSelectedAOI,
+                      selectedAOI,
+                      plot_type,
+                      normalized_view,
+                      transition_focus_mode) {
 
         // select the data of the participant specified
         const dataVis = data.filter(d => d.p_name === pName);
@@ -756,6 +752,8 @@ export default {
           .duration(1000)
           .attr("x", alpVizWidth)
           .remove();
+
+        console.log(selectedAOI);
 
         groupEnter
           .append("rect")
@@ -848,7 +846,7 @@ export default {
           .attr("x", -10)
           .style("fill-opacity", 1e-6)
           .remove();
-      };
+      }
     }
   }
 };

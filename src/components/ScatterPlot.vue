@@ -599,7 +599,7 @@ export default {
 <style>
 .circle {
   fill: #498fff;
-  opacity: 0.5;
+  opacity: 0.75;
 }
 
 div.tooltip {
