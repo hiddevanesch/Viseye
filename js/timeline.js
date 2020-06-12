@@ -1,7 +1,7 @@
-function useFile(event){
+function useFile(event) {
   var files = event.target.files[0];
   var reader = new FileReader();
-  reader.onload = function(ev) {
+  reader.onload = function (ev) {
     var json = csvJSON(ev.target.result);
     visualize(json);
   };
@@ -9,9 +9,9 @@ function useFile(event){
 }
 
 //var csv is the CSV file with headers
-function csvJSON(csv){
+function csvJSON(csv) {
 
-  var lines=csv.split("\n");
+  var lines = csv.split("\n");
 
   var result = [];
 
@@ -19,18 +19,18 @@ function csvJSON(csv){
   // to deal with those before doing the next step
   // (you might convert them to &&& or something, then covert them back later)
   // jsfiddle showing the issue https://jsfiddle.net/
-  var headers=lines[0].split("	");
+  var headers = lines[0].split("	");
 
-  for(var i=1;i<lines.length;i++){
+  for (var i = 1; i < lines.length; i++) {
 
-      var obj = {};
-      var currentline=lines[i].split("	");
+    var obj = {};
+    var currentline = lines[i].split("	");
 
-      for(var j=0;j<headers.length;j++){
-          obj[headers[j]] = currentline[j];
-      }
+    for (var j = 0; j < headers.length; j++) {
+      obj[headers[j]] = currentline[j];
+    }
 
-      result.push(obj);
+    result.push(obj);
 
   }
 
@@ -55,11 +55,12 @@ function visualize(jsonObj) {
   var uniqueUsers = [];
   var select = d3.select("#selector");
 
-  select.on("change", function() {
+  select.on("change", function () {
     filterImageNames(this.value);
   });
   //changed this
-  var startSelection = select.options(select.selectIndex).innerHTML;
+  //var startSelection = select.options(select.selectIndex).innerHTML;
+  var startSelection = "01_Antwerpen_S1.jpg";
 
   sortImageNames();
   //changed this
@@ -80,7 +81,7 @@ function visualize(jsonObj) {
     }
   }
   function reloadData(json) {
-    for( let i=0; i < uniqueUsers.length; i++){
+    for (let i = 0; i < uniqueUsers.length; i++) {
       d3.selectAll(".userPictures-" + i.toString()).remove();
       d3.selectAll(".userDefs" + i.toString()).remove();
       d3.selectAll("#userText-" + i.toString()).remove();
@@ -119,7 +120,8 @@ function visualize(jsonObj) {
       userLineData[i].height = pictureSize * i;
       userLineData[i].horizontalOffset = 0;
     }
-    for (let i = 0; i < height / pictureSize; i++) {
+    //changed this
+    for (let i = 0; i < math.ceil(height / pictureSize); i++) {
       if (userLineData.length > i) {
         loadUserLine(i);
       }
@@ -128,12 +130,13 @@ function visualize(jsonObj) {
     slider.max = userLineData[0].points.length * pictureSize - width;
     slider.value = -userLineData[0].horizontalOffset;
 
-    svg.on("mousemove", function() {
-      var mouseCoords = d3.mouse(this);
-      mouseX = mouseCoords[0];
-      mouseY = mouseCoords[1];
-    });
-    setInterval(main, 10);
+    //changed this
+    var userSlider = document.getElementById("userSlider");
+    userSlider.max = (userLineData.length-1) * pictureSize;
+    slider.value = 0;
+
+    //changed this
+    setInterval(main, 1);
   }
   function filterImageNames(name) {
     var jsonRet = [];
@@ -166,20 +169,20 @@ function visualize(jsonObj) {
         .attr(
           "x",
           pictureSize / 2 -
-            pictureZoomFactor *
-              userLineData[lineNumber].points[i].MappedFixationPointX
+          pictureZoomFactor *
+          userLineData[lineNumber].points[i].MappedFixationPointX
         )
         .attr(
           "y",
           pictureSize / 2 -
-            pictureZoomFactor *
-              userLineData[lineNumber].points[i].MappedFixationPointY
+          pictureZoomFactor *
+          userLineData[lineNumber].points[i].MappedFixationPointY
         )
         .attr("width", pictureZoomFactor * 1600)
         .attr("height", pictureZoomFactor * 1200)
         .attr(
           "xlink:href",
-          "pictures/" + userLineData[lineNumber].points[i].StimuliName
+          "stimuli/" + userLineData[lineNumber].points[i].StimuliName
         );
       svg
         .insert("rect") // attach a rectangle
@@ -196,18 +199,18 @@ function visualize(jsonObj) {
         .attr(
           "fill",
           "url(#imgpattern-" +
-            lineNumber.toString() +
-            "-" +
-            i.toString() +
-            ")"
+          lineNumber.toString() +
+          "-" +
+          i.toString() +
+          ")"
         );
     }
     svg.append("text")
-        .attr("id", "userText-" + lineNumber.toString())
-        .attr("x", 20)
-        .attr("y", userLineData[lineNumber].height - pictureSize/2)
-        .attr("fill", "red")
-        .text(userLineData[lineNumber].points[0].user)
+      .attr("id", "userText-" + lineNumber.toString())
+      .attr("x", 20)
+      .attr("y", userLineData[lineNumber].height - pictureSize / 2)
+      .attr("fill", "red")
+      .text(userLineData[lineNumber].points[0].user)
   }
   function unloadUserLine(lineNumber) {
     loadedUserLines.splice(loadedUserLines.indexOf(lineNumber));
@@ -242,20 +245,20 @@ function visualize(jsonObj) {
         .attr(
           "x",
           pictureSize / 2 -
-            pictureZoomFactor *
-              userLineData[lineNumber].points[ik].MappedFixationPointX
+          pictureZoomFactor *
+          userLineData[lineNumber].points[ik].MappedFixationPointX
         )
         .attr(
           "y",
           pictureSize / 2 -
-            pictureZoomFactor *
-              userLineData[lineNumber].points[ik].MappedFixationPointY
+          pictureZoomFactor *
+          userLineData[lineNumber].points[ik].MappedFixationPointY
         )
         .attr("width", pictureZoomFactor * 1600)
         .attr("height", pictureZoomFactor * 1200)
         .attr(
           "xlink:href",
-          "pictures/" + userLineData[lineNumber].points[ik].StimuliName
+          "stimuli/" + userLineData[lineNumber].points[ik].StimuliName
         );
       svg
         .insert("rect") // attach a rectangle
@@ -272,21 +275,21 @@ function visualize(jsonObj) {
         .attr(
           "fill",
           "url(#imgpattern-" +
-            lineNumber.toString() +
-            "-" +
-            ik.toString() +
-            ")"
+          lineNumber.toString() +
+          "-" +
+          ik.toString() +
+          ")"
         );
       userLineData[lineNumber].pictureOffset += 1;
     } else {
-      if(userLineData[lineNumber].pictureOffset - 1 >= 0){
+      if (userLineData[lineNumber].pictureOffset - 1 >= 0) {
         d3.select(
           d3.selectAll(".userPictures-" + lineNumber.toString())[
-            "_groups"
+          "_groups"
           ][0][
-            d3.selectAll(".userPictures-" + lineNumber.toString())[
-              "_groups"
-            ][0].length - 1
+          d3.selectAll(".userPictures-" + lineNumber.toString())[
+            "_groups"
+          ][0].length - 1
           ]
         ).remove();
         userLineData[lineNumber].loadedPictures.pop();
@@ -310,28 +313,28 @@ function visualize(jsonObj) {
           .attr(
             "x",
             pictureSize / 2 -
-              pictureZoomFactor *
-                userLineData[lineNumber].points[ij].MappedFixationPointX
+            pictureZoomFactor *
+            userLineData[lineNumber].points[ij].MappedFixationPointX
           )
           .attr(
             "y",
             pictureSize / 2 -
-              pictureZoomFactor *
-                userLineData[lineNumber].points[ij].MappedFixationPointY
+            pictureZoomFactor *
+            userLineData[lineNumber].points[ij].MappedFixationPointY
           )
           .attr("width", pictureZoomFactor * 1600)
           .attr("height", pictureZoomFactor * 1200)
           .attr(
             "xlink:href",
-            "pictures/" + userLineData[lineNumber].points[ij].StimuliName
+            "stimuli/" + userLineData[lineNumber].points[ij].StimuliName
           );
         svg
           .insert(
             "rect",
             "#userPictures-" +
-              lineNumber.toString() +
-              "-" +
-              userLineData[lineNumber].loadedPictures[1].toString()
+            lineNumber.toString() +
+            "-" +
+            userLineData[lineNumber].loadedPictures[1].toString()
           ) // attach a rectangle
           .style("stroke", "black") // colour the rectangle
           .attr(
@@ -346,22 +349,25 @@ function visualize(jsonObj) {
           .attr(
             "fill",
             "url(#imgpattern-" +
-              lineNumber.toString() +
-              "-" +
-              ij.toString() +
-              ")"
+            lineNumber.toString() +
+            "-" +
+            ij.toString() +
+            ")"
           );
         userLineData[lineNumber].pictureOffset -= 1;
       }
     }
   }
   function setLineHeight() {
+    //changed this
+    userScroll = -document.getElementById("userSlider").value;
     for (var i = 0; i < uniqueUsers.length; i++) {
       userLineData[i].height = pictureSize * i + userScroll;
       //if not looked at this line and was looked at this line than unload the points of interest
-      if ((loadedUserLines.includes(i) && userLineData[i].height < -pictureSize) || (loadedUserLines.includes(i) && height+pictureSize < userLineData[i].height)) {
+      //changed this
+      if ((loadedUserLines.includes(i) && userLineData[i].height < -pictureSize) || (loadedUserLines.includes(i) && height + pictureSize < userLineData[i].height)) {
         unloadUserLine(i);
-      } else if (!loadedUserLines.includes(i) &&-pictureSize < userLineData[i].height && userLineData[i].height < height+pictureSize) {
+      } else if (!loadedUserLines.includes(i) && -pictureSize < userLineData[i].height && userLineData[i].height < height + pictureSize) {
         loadUserLine(i);
       }
       //set height of the pictures
@@ -370,7 +376,15 @@ function visualize(jsonObj) {
           return userLineData[i].height;
         });
         d3.selectAll("#userText-" + i.toString()).attr("y", () => {
-          return userLineData[i].height-pictureSize/2;
+          return userLineData[i].height - pictureSize / 2;
+        });
+      } else {
+        //changed this
+        d3.selectAll(".userPictures-" + i.toString()).attr("y", () => {
+          return -2*pictureSize;
+        });
+        d3.selectAll("#userText-" + i.toString()).attr("y", () => {
+          return -2*pictureSize;
         });
       }
     }
@@ -380,7 +394,8 @@ function visualize(jsonObj) {
       //calculate the userline that is closest to the middle
       var closestUserLine = loadedUserLines[0];
       for (var i = 1; i < loadedUserLines.length; i++) {
-        if ( Math.pow(userLineData[loadedUserLines[i]].height, 2) < Math.pow(userLineData[closestUserLine].height, 2)) {
+        //changed this
+        if (Math.pow(userLineData[loadedUserLines[i]].height-pictureSize/2, 2) < Math.pow(userLineData[closestUserLine].height-pictureSize/2, 2)) {
           closestUserLine = loadedUserLines[i];
         }
       }
@@ -392,12 +407,12 @@ function visualize(jsonObj) {
       }
       //add sideways scrolling
       var slide = document.getElementById("timeLineSlider").value;
-      if(-slide + pictureSize * (userLineData[closestUserLine].points.length) > width){
+      if (-slide + pictureSize * (userLineData[closestUserLine].points.length) > width) {
         userLineData[closestUserLine].horizontalOffset = -slide;
       }
 
       //scroll the pictures
-      for (let i = 0; i < d3.selectAll(".userPictures-" + closestUserLine.toString())["_groups"][0].length;i++) {
+      for (let i = 0; i < d3.selectAll(".userPictures-" + closestUserLine.toString())["_groups"][0].length; i++) {
         d3.select(d3.selectAll(".userPictures-" + closestUserLine.toString())["_groups"][0][i]).attr("x", () => {
           return (userLineData[closestUserLine].horizontalOffset + pictureSize * (i + userLineData[closestUserLine].pictureOffset)
           );
@@ -413,20 +428,7 @@ function visualize(jsonObj) {
     }
   }
   function main() {
-    //if user wants to scroll up or down
-    if ( mouseX > width*4/5 && mouseX < width && (
-      0.01 * (height / 2 - mouseY) > 0.75 ||
-      0.01 * (height / 2 - mouseY) < -0.75
-    )) {
-      userScroll += 0.1 * (height / 2 - mouseY);
-    }
-    //sets maximum for vertical scrolling
-    if (userScroll < -(userLineData.length-1) * pictureSize) {
-      userScroll = -(userLineData.length-1) * pictureSize;
-    } else if (userScroll > 0) {
-      userScroll = 0;
-    }
-    //scrolls the user lines up and down
+    //changed this
     setLineHeight();
     scrollUserLine();
   }

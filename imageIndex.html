@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>jQuery HTML Element Screenshot Example</title>
+    <link href="https://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+.container { margin: 150px auto; }
+        .container > div {
+            padding: 20px;
+            border: 5px solid black;
+        }
+
+        h2 {
+            margin: 10px auto;
+        }
+label { margin: 10px auto; }
+        .toPic {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+<div id="divTest">
+    <div id="jquery-script-menu">
+<div class="jquery-script-center">
+<ul>
+<li><a href="https://www.jqueryscript.net/other/Capture-HTML-Elements-Screenshot.html">Download This Plugin</a></li>
+<li><a href="https://www.jqueryscript.net/">Back To jQueryScript.Net</a></li>
+</ul>
+<div class="jquery-script-clear"></div>
+</div>
+</div>
+    <div class="container">
+    <h1>jQuery HTML Element Screenshot Example</h1>
+    <div style="background:red;width: 600px;" class="test">
+        <div style="background:green;">
+            <div style="background:blue;">
+                <div style="background:yellow;">
+                    <div style="background:orange;">
+                        Element To Capture
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h2 class="toCanvas"> <a href="javascript:void(0);" class="btn btn-danger"> To Canvas </a></h2>
+    <h2 class="toPic"><a href="javascript:void(0);" class="btn btn-danger"> To Image </a></h2>
+    <h5>
+       <label for="imgW">Image Width:</label>
+<input type="number" id="imgW" placeholder="Image Width" class="form-control" value="600">
+<label for="imgH">Image Height:</label>
+<input type="number" id="imgH" placeholder="Image Height" class="form-control" value="73">
+<label for="imgFileName">File Name:</label>
+<input type="text" value="a" placeholder="File Name" id="imgFileName" class="form-control">
+<label for="sel">File Type:</label>
+<select id="sel" class="form-control">
+  <option value="png" selected>png</option>
+  <option value="jpeg">jpeg</option>
+  <option value="bmp">bmp</option>
+</select>
+<button id="save" class="btn btn-danger">Save And Download</button>
+    </h5>
+</div>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="html2canvas.min.js"></script>
+    <script type="text/javascript" src="canvas2image.js"></script>
+    <script type="text/javascript">
+        var test = $("#divTest").get(0);
+        // to canvas
+$('.toCanvas').click(function(e) {
+  html2canvas(test).then(function(canvas) {
+    // canvas width
+    var canvasWidth = $('#divTest').width();
+    // canvas height
+    var canvasHeight = $('#divTest').height();
+    // render canvas
+    $('.toCanvas').after(canvas);
+    // show 'to image' button
+    $('.toPic').show(1000);
+    // convert canvas to image
+    $('.toPic').click(function(e) {
+      var img = Canvas2Image.convertToImage(canvas, canvasWidth, canvasHeight);
+      // render image
+      $(".toPic").after(img);
+      // save
+      $('#save').click(function(e) {
+        let type = $('#sel').val(); // image type
+        //let w = $('#imgW').val(); // image width
+        //let h = $('#imgH').val(); // image height
+
+        let w = canvasWidth; // image width
+        let h = canvasHeight; // image height
+        let f = $('#imgFileName').val(); // file name
+        w = (w === '') ? canvasWidth : w;
+        h = (h === '') ? canvasHeight : h;
+        // save as image
+        Canvas2Image.saveAsImage(canvas, w, h, type, f);
+      });
+    });
+  });
+});
+    </script>
+    </div>
+</body>
+</html>

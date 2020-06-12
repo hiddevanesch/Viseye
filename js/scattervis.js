@@ -163,9 +163,6 @@ function storetext(text) {
 
     //from http://bl.ocks.org/Rokotyan/0556f8facbaf344507cdc45dc3622177
     // Set-up the export button
-    d3.select('#saveButton').on('click', function(){
-    	downloadSvg(document.getElementById("svgpainter"), "fun.png");
-    });
 
     //both the triggerDownload and the downloadSvg function are
     //from https://stackoverflow.com/questions/3975499/convert-svg-to-image-jpeg-png-etc-in-the-browser
@@ -187,39 +184,206 @@ function storetext(text) {
       a.dispatchEvent(evt);
     }
 
-    //the svg to download procedure has the structure of going from
-    //svg to canvas to picture to download
-    function downloadSvg(svg, fileName) {
-      //setting up the canvas
-      var canvas = document.createElement("canvas");
-      var bbox = svg.getBBox();
-      canvas.width = bbox.width;
-      canvas.height = bbox.height;
-      var ctx = canvas.getContext("2d");
-      ctx.clearRect(0, 0, bbox.width, bbox.height);
-      //serialize the svg to data so that it can be made into a picture blob
-      var data = (new XMLSerializer()).serializeToString(svg);
-      var DOMURL = window.URL || window.webkitURL || window;
-      var img = new Image();
-      var svgBlob = new Blob([data], {type: "image/svg+xml;charset=utf-8"});
-      var url = DOMURL.createObjectURL(svgBlob);
-      img.onload = function () {
-        ctx.drawImage(img, 0, 0);
-        DOMURL.revokeObjectURL(url);
-        if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob)
-        {
-            var blob = canvas.msToBlob();
-            navigator.msSaveOrOpenBlob(blob, fileName);
+    d3.select("#saveButton").on("click", function() {
+      screenshot();
+    });
+    async function screenshot() {
+      var screenshotJpegBlob = await takeScreenshotJpegBlob()
+
+      // show preview with max size 300 x 300 px
+      var previewCanvas = await blobToCanvas(screenshotJpegBlob, 300, 300)
+      previewCanvas.style.position = 'fixed'
+      document.body.appendChild(previewCanvas)
+
+      // send it to the server
+      let formdata = new FormData()
+      formdata.append("screenshot", screenshotJpegBlob)
+      // await fetch('file:///C:/Users/20191704/Documents/GitHub/Viseye/index.html', {
+      //     method: 'POST',
+      //     body: formdata,
+      //     'Content-Type' : "multipart/form-data",
+      // })
+    }
+
+    function getDisplayMedia(options) {
+        if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+            return navigator.mediaDevices.getDisplayMedia(options)
         }
-        else {
-            var imgURI = canvas
-                .toDataURL("image/png")
-                .replace("image/png", "image/octet-stream");
-            triggerDownload(imgURI, fileName);
+        if (navigator.getDisplayMedia) {
+            return navigator.getDisplayMedia(options)
         }
-        document.removeChild(canvas);
-      };
-      img.src = url;
+        if (navigator.webkitGetDisplayMedia) {
+            return navigator.webkitGetDisplayMedia(options)
+        }
+        if (navigator.mozGetDisplayMedia) {
+            return navigator.mozGetDisplayMedia(options)
+        }
+        throw new Error('getDisplayMedia is not defined')
+    }
+
+    function getUserMedia(options) {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            return navigator.mediaDevices.getUserMedia(options)
+        }
+        if (navigator.getUserMedia) {
+            return navigator.getUserMedia(options)
+        }
+        if (navigator.webkitGetUserMedia) {
+            return navigator.webkitGetUserMedia(options)
+        }
+        if (navigator.mozGetUserMedia) {
+            return navigator.mozGetUserMedia(options)
+        }
+        throw new Error('getUserMedia is not defined')
+    }
+
+    async function takeScreenshotStream() {
+        // see: https://developer.mozilla.org/en-US/docs/Web/API/Window/screen
+        const width = screen.width * (window.devicePixelRatio || 1)
+        const height = screen.height * (window.devicePixelRatio || 1)
+
+        const errors = []
+        let stream
+        try {
+            stream = await getDisplayMedia({
+                audio: false,
+                // see: https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamConstraints/video
+                video: {
+                    width,
+                    height,
+                    frameRate: 1,
+                },
+            })
+        } catch (ex) {
+            errors.push(ex)
+        }
+
+        try {
+            // for electron js
+            stream = await getUserMedia({
+                audio: false,
+                video: {
+                    mandatory: {
+                        chromeMediaSource: 'desktop',
+                        // chromeMediaSourceId: source.id,
+                        minWidth         : width,
+                        maxWidth         : width,
+                        minHeight        : height,
+                        maxHeight        : height,
+                    },
+                },
+            })
+        } catch (ex) {
+            errors.push(ex)
+        }
+
+        if (errors.length) {
+            console.debug(...errors)
+        }
+
+        return stream
+    }
+
+    async function takeScreenshotCanvas() {
+        const stream = await takeScreenshotStream()
+
+        if (!stream) {
+            return null
+        }
+
+        // from: https://stackoverflow.com/a/57665309/5221762
+        const video = document.createElement('video')
+        const result = await new Promise((resolve, reject) => {
+            video.onloadedmetadata = () => {
+                video.play()
+                video.pause()
+
+                // from: https://github.com/kasprownik/electron-screencapture/blob/master/index.js
+                const canvas = document.createElement('canvas')
+                canvas.width = video.videoWidth
+                canvas.height = video.videoHeight
+                const context = canvas.getContext('2d')
+                // see: https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement
+                context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight)
+                resolve(canvas)
+            }
+            video.srcObject = stream
+        })
+
+        stream.getTracks().forEach(function (track) {
+            track.stop()
+        })
+
+        return result
+    }
+
+    // from: https://stackoverflow.com/a/46182044/5221762
+    function getJpegBlob(canvas) {
+        return new Promise((resolve, reject) => {
+            // docs: https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob
+            canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.95)
+        })
+    }
+
+    async function getJpegBytes(canvas) {
+        const blob = await getJpegBlob(canvas)
+        return new Promise((resolve, reject) => {
+            const fileReader = new FileReader()
+
+            fileReader.addEventListener('loadend', function () {
+                if (this.error) {
+                    reject(this.error)
+                    return
+                }
+                resolve(this.result)
+            })
+
+            fileReader.readAsArrayBuffer(blob)
+        })
+    }
+
+    async function takeScreenshotJpegBlob() {
+        const canvas = await takeScreenshotCanvas()
+        if (!canvas) {
+            return null
+        }
+        return getJpegBlob(canvas)
+    }
+
+    async function takeScreenshotJpegBytes() {
+        const canvas = await takeScreenshotCanvas()
+        if (!canvas) {
+            return null
+        }
+        return getJpegBytes(canvas)
+    }
+
+    function blobToCanvas(blob, maxWidth, maxHeight) {
+        return new Promise((resolve, reject) => {
+            const img = new Image()
+            img.onload = function () {
+                const canvas = document.createElement('canvas')
+                const scale = Math.min(
+                    1,
+                    maxWidth ? maxWidth / img.width : 1,
+                    maxHeight ? maxHeight / img.height : 1,
+                )
+                canvas.width = img.width * scale
+                canvas.height = img.height * scale
+                const ctx = canvas.getContext('2d')
+                ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height)
+                resolve(canvas)
+            }
+            img.onerror = () => {
+                reject(new Error('Error load blob to Image'))
+            }
+            img.src = URL.createObjectURL(blob)
+            triggerDownload(URL.createObjectURL(blob), "hello.png");
+        })
+        // var imgURI = canvas
+        //     .toDataURL("image/png")
+        //     .replace("image/png", "image/octet-stream");
+        // triggerDownload(imgURI, fileName);
     }
 
 }
