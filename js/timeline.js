@@ -181,7 +181,7 @@ function visualize(jsonObj) {
           "stimuli/" + userLineData[lineNumber].points[i].StimuliName
         );
       svg
-        .insert("rect") // attach a rectangle
+        .insert("rect", "#userText-" + lineNumber.toString()) // attach a rectangle
         .style("stroke", "black") // colour the rectangle
         .attr(
           "id",
@@ -274,7 +274,7 @@ function visualize(jsonObj) {
           "stimuli/" + userLineData[lineNumber].points[startingPictureID+a].StimuliName
         );
       svg
-        .insert("rect") // attach a rectangle
+        .insert("rect", "#userText-" + lineNumber.toString()) // attach a rectangle
         .style("stroke", "black") // colour the rectangle
         .attr(
           "id",
@@ -331,7 +331,7 @@ function visualize(jsonObj) {
           return userLineData[i].height;
         });
         d3.selectAll("#userText-" + i.toString()).attr("y", () => {
-          return userLineData[i].height - pictureSize / 2;
+          return userLineData[i].height + pictureSize / 2;
         });
         d3.selectAll("#userTextrect-" + i.toString()).attr("y", () => {
           let text = d3.select("#userText-" + i.toString());
