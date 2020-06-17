@@ -265,8 +265,6 @@ export default {
       function loadAndProcessData() {
         let data = vm.filesAOI.slice();
 
-        console.log(data);
-
         //Code for deleting points without AOI
         for (let i = data.length - 1; i >= 0; i--) {
           // eslint-disable-next-line no-prototype-builtins
@@ -288,9 +286,6 @@ export default {
         //        }
         //      }
         //   });
-
-        console.log(data);
-
         //        d3.csv('aoi_names_pages_seq_sc5.csv'),
         //d3.csv('aoi_names_pages_seq_sc5.repeatAOI.csv'),
         //        d3.csv('eye_movement_data_systhetic_sc5_alp.csv'),
@@ -310,7 +305,6 @@ export default {
           data_systhetic(data),
           data_color(data)
         ];
-        console.log(loadedData);
         loadedData[0].forEach(d => {
           d.AOI_order = +d.AOI_order;
         });
@@ -771,8 +765,6 @@ export default {
           .duration(1000)
           .attr("x", alpVizWidth)
           .remove();
-
-        console.log(selectedAOI);
 
         groupEnter
           .append("rect")

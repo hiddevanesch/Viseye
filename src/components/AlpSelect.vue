@@ -8,6 +8,11 @@
         <button type="button" class="button button-blue full-width" id="toAlpPlotButton" @click="toAlpPlot">go to alpscarf</button>
       </div>
     </div>
+    <div class="vismenurow bmar-tiny">
+      <div class="bottom-align vw17 right-zero">
+        <button type="button" class="button button-orange bmar-small full-width" @click="info">info</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -389,12 +394,30 @@ export default {
       let vm = this;
       vm.addFilesAOI(vm.data);
       vm.$emit('to-alp-plot');
+    },
+    info() {
+      window.alert("To use the Alpscarf, you have to define AOI’s first. This can be done with the AOI selector by drawing rectangles with your mouse. You are able to define up to 10 different AOI’s. To remove an AOI simple double click the AOI rectangle. After the AOI’s are defined you are able to go to the Alpscarf itself.");
     }
   }
 }
 </script>
 
 <style>
+rect.selection {
+  cursor: move !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  -khtml-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  stroke: #545454;
+  stroke-width: 2px;
+  stroke-opacity: 1;
+  fill: white;
+  fill-opacity: 0.5;
+}
+
 .svg-selection {
   height: 100%;
   width: 100%;

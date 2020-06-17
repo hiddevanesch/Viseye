@@ -32,6 +32,11 @@ import { mapState } from "vuex";
 import * as d3 from "d3";
 
 export default {
+  data() {
+    return {
+      activeVis: this.$parent.activeVis
+    }
+  },
   computed: {
     ...mapState(["files"])
   },
@@ -40,39 +45,30 @@ export default {
   },
   methods: {
     visualize() {
-      var jsonObj = this.files;
+      const vm = this;
+      var jsonObj = vm.files;
       var imageNames = [];
-
       var pictureSize = 200;
-
       var userScroll = 0;
       var loadedUserLines = [];
       var selectUserLine = 0;
       var userLineData = [];
       var pictureZoomFactor = 0.9;
-
       var svg = d3.select("#canvas");
-
       var svgInfo = document.getElementById("canvas").getBoundingClientRect();
       var width = svgInfo.width;
       var height = svgInfo.height;
-
       var uniqueUsers = [];
-
-      var interval;
-
       var select = d3.select("#selectMenu");
-      select.on("change", function() {
+      var timer;
+
+      select.on("change", function () {
         filterImageNames(this.value);
       });
+      var startSelection = select.node().value;
 
-      // Select current Stimuli
-      var startSelection = d3.select("#selectMenu").node().value;
-      
-      filterImageNames(startSelection);
       sortImageNames();
-
-      console.log("finished");
+      filterImageNames(startSelection);
 
       function sortImageNames() {
         for (const el of jsonObj) {
@@ -80,34 +76,38 @@ export default {
             imageNames.push(el.StimuliName);
           }
         }
+        var x = document.getElementById("selectMenu");
+        for (const el of imageNames) {
+          var option = document.createElement("option");
+          option.text = el;
+          option.value = el;
+          x.add(option);
+        }
       }
-
       function reloadData(json) {
-        for( let i=0; i < uniqueUsers.length; i++) {
+        //changed this
+        for (let i = 0; i < uniqueUsers.length; i++) {
           d3.selectAll(".userPictures-" + i.toString()).remove();
           d3.selectAll(".userDefs" + i.toString()).remove();
           d3.selectAll("#userText-" + i.toString()).remove();
+          d3.selectAll("#userTextrect-" + i.toString()).remove();
         }
 
         userScroll = 0;
         loadedUserLines = [];
         userLineData = [];
         pictureZoomFactor = 0.9;
-
         uniqueUsers = [];
-
         svg.remove();
         svg = d3
           .select("#canvasCase")
           .append("svg")
           .attr("id", "canvas");
-
         for (let i = 0; i < json.length; i++) {
           if (!uniqueUsers.includes(json[i].user)) {
             uniqueUsers.push(json[i].user);
           }
         }
-
         for (let i = 0; i < uniqueUsers.length; i++) {
           var pointsOfInterest = [];
           for (var j = 0; j < json.length; j++) {
@@ -121,17 +121,14 @@ export default {
             pictureOffset: 0
           };
           userLineData.push(currentLineData);
-
           userLineData[i].height = pictureSize * i;
           userLineData[i].horizontalOffset = 0;
         }
-
         for (let i = 0; i < Math.ceil(height / pictureSize); i++) {
           if (userLineData.length > i) {
             loadUserLine(i);
           }
         }
-
         var slider = document.getElementById("timeLineSlider");
         slider.max = userLineData[0].points.length * pictureSize - width;
         slider.value = -userLineData[0].horizontalOffset;
@@ -140,9 +137,8 @@ export default {
         userSlider.max = (userLineData.length-1) * pictureSize;
         slider.value = 0;
 
-      interval = setInterval(main, 1);
+        timer = setInterval(main, 10);
       }
-
       function filterImageNames(name) {
         var jsonRet = [];
         for (var i = 0; i < jsonObj.length; i++) {
@@ -152,16 +148,13 @@ export default {
         }
         reloadData(jsonRet);
       }
-
       function loadUserLine(lineNumber) {
         loadedUserLines.push(lineNumber);
-
         for (var i = 0; i < Math.ceil(width / pictureSize) + 2; i++) {
           userLineData[lineNumber].loadedPictures.push(i);
           var defs = svg
             .append("defs")
             .attr("class", "userDefs" + lineNumber.toString());
-
           var pattern = defs
             .append("pattern")
             .attr(
@@ -172,20 +165,19 @@ export default {
             .attr("width", 1)
             .attr("x", 0)
             .attr("y", 0);
-
           pattern
             .append("svg:image")
             .attr(
               "x",
               pictureSize / 2 -
-                pictureZoomFactor *
-                  userLineData[lineNumber].points[i].MappedFixationPointX
+              pictureZoomFactor *
+              userLineData[lineNumber].points[i].MappedFixationPointX
             )
             .attr(
               "y",
               pictureSize / 2 -
-                pictureZoomFactor *
-                  userLineData[lineNumber].points[i].MappedFixationPointY
+              pictureZoomFactor *
+              userLineData[lineNumber].points[i].MappedFixationPointY
             )
             .attr("width", pictureZoomFactor * 1600)
             .attr("height", pictureZoomFactor * 1200)
@@ -193,9 +185,8 @@ export default {
               "xlink:href",
               "static/jpg/" + userLineData[lineNumber].points[i].StimuliName
             );
-
           svg
-            .append("rect") // attach a rectangle
+            .insert("rect", "#userText-" + lineNumber.toString()) // attach a rectangle
             .style("stroke", "black") // colour the rectangle
             .attr(
               "id",
@@ -209,187 +200,134 @@ export default {
             .attr(
               "fill",
               "url(#imgpattern-" +
-                lineNumber.toString() +
-                "-" +
-                i.toString() +
-                ")"
+              lineNumber.toString() +
+              "-" +
+              i.toString() +
+              ")"
             );
         }
-        svg.append("text")
-            .attr("id", "userText-" + lineNumber.toString())
-            .attr("x", 20)
-            .attr("y", userLineData[lineNumber].height - pictureSize/2)
-            .attr("fill", "red")
-            .text(userLineData[lineNumber].points[0].user)
+        let text = svg.append("text")
+          .attr("id", "userText-" + lineNumber.toString())
+          .attr("x", 20)
+          .attr("y", userLineData[lineNumber].height - pictureSize / 2)
+          .text(userLineData[lineNumber].points[0].user)
+          .style("fill", "white");
+
+        let bbox = text.node().getBBox();
+        let padding = 6;
+        svg.insert("rect", "#userText-" + lineNumber.toString())
+            .attr("id", "userTextrect-" + lineNumber.toString())
+            .attr("x", bbox.x - padding)
+            .attr("y", bbox.y - padding)
+            .attr("width", bbox.width + (padding*2))
+            .attr("height", bbox.height + (padding*2))
+            .style("fill", "black");
       }
       function unloadUserLine(lineNumber) {
+        //changed this
         loadedUserLines.splice(loadedUserLines.indexOf(lineNumber));
         d3.selectAll(".userPictures-" + lineNumber.toString()).remove();
         d3.selectAll(".userDefs" + lineNumber.toString()).remove();
         d3.selectAll("#userText-" + lineNumber.toString()).remove();
+        d3.selectAll("#userTextrect-" + lineNumber.toString()).remove();
       }
 
-      function overLoadPicture(lineNumber, forwards) {
-        if (forwards) {
-          d3.select(d3.selectAll(".userPictures-" + lineNumber.toString())["_groups"][0][0]).remove();
-          userLineData[lineNumber].loadedPictures.shift();
+      function overLoadPicture(lineNumber) {
+        //changed this
+        d3.selectAll(".userPictures-" + lineNumber.toString()).remove();
+        d3.selectAll(".userDefs" + lineNumber.toString()).remove();
+        userLineData[lineNumber].loadedPictures = [];
+        d3.selectAll("#userText-" + lineNumber.toString()).remove();
+        d3.selectAll("#userTextrect-" + lineNumber.toString()).remove();
 
-          var ik =
-            Math.ceil(width / pictureSize) +
-            userLineData[lineNumber].pictureOffset;
-          userLineData[lineNumber].loadedPictures.push(ik);
+        let startingPictureID = Math.floor(-userLineData[lineNumber].horizontalOffset/pictureSize);
+        let startingPictureOffset = userLineData[lineNumber].horizontalOffset % pictureSize;
 
+        for( let a=0; a < Math.floor(width/pictureSize)+1; a++){
+          userLineData[lineNumber].loadedPictures.push(startingPictureID+a);
           let defs = svg
             .append("defs")
             .attr("class", "userDefs" + lineNumber.toString());
-
           let pattern = defs
             .append("pattern")
             .attr(
               "id",
-              "imgpattern-" + lineNumber.toString() + "-" + ik.toString()
+              "imgpattern-" + lineNumber.toString() + "-" + (startingPictureID+a).toString()
             )
             .attr("height", 1)
             .attr("width", 1)
             .attr("x", 0)
             .attr("y", 0);
-
           pattern
             .append("svg:image")
             .attr(
               "x",
               pictureSize / 2 -
-                pictureZoomFactor *
-                  userLineData[lineNumber].points[ik].MappedFixationPointX
+              pictureZoomFactor *
+              userLineData[lineNumber].points[startingPictureID+a].MappedFixationPointX
             )
             .attr(
               "y",
               pictureSize / 2 -
-                pictureZoomFactor *
-                  userLineData[lineNumber].points[ik].MappedFixationPointY
+              pictureZoomFactor *
+              userLineData[lineNumber].points[startingPictureID+a].MappedFixationPointY
             )
             .attr("width", pictureZoomFactor * 1600)
             .attr("height", pictureZoomFactor * 1200)
             .attr(
               "xlink:href",
-              "static/jpg/" + userLineData[lineNumber].points[ik].StimuliName
+              "static/jpg/" + userLineData[lineNumber].points[startingPictureID+a].StimuliName
             );
-
           svg
-            .append("rect") // attach a rectangle
+            .insert("rect", "#userText-" + lineNumber.toString()) // attach a rectangle
             .style("stroke", "black") // colour the rectangle
             .attr(
               "id",
-              "userPictures-" + lineNumber.toString() + "-" + ik.toString()
+              "userPictures-" + lineNumber.toString() + "-" + (startingPictureID+a).toString()
             )
             .attr("class", "userPictures-" + lineNumber.toString()) // the rectangle for each picture of a single user
-            .attr("x", pictureSize * ik) // x position of the left and up most point of the rectangle
+            .attr("x", pictureSize * a + startingPictureOffset) // x position of the left and up most point of the rectangle
             .attr("y", userLineData[lineNumber].height) // y position of the left and up most point of the rectangle
             .attr("width", pictureSize)
             .attr("height", pictureSize)
             .attr(
               "fill",
               "url(#imgpattern-" +
-                lineNumber.toString() +
-                "-" +
-                ik.toString() +
-                ")"
+              lineNumber.toString() +
+              "-" +
+              (startingPictureID+a).toString() +
+              ")"
             );
-
-          userLineData[lineNumber].pictureOffset += 1;
-        } else {
-          if (userLineData[lineNumber].pictureOffset - 1 >= 0) {
-            d3.select(
-              d3.selectAll(".userPictures-" + lineNumber.toString())[
-                "_groups"
-              ][0][
-                d3.selectAll(".userPictures-" + lineNumber.toString())[
-                  "_groups"
-                ][0].length - 1
-              ]
-            ).remove();
-            userLineData[lineNumber].loadedPictures.pop();
-
-            var ij = userLineData[lineNumber].pictureOffset - 1;
-            userLineData[lineNumber].loadedPictures.unshift(ij);
-
-            let defs = svg
-              .append("defs")
-              .attr("class", "userDefs" + lineNumber.toString());
-
-            let pattern = defs
-              .append("pattern")
-              .attr(
-                "id",
-                "imgpattern-" + lineNumber.toString() + "-" + ij.toString()
-              )
-              .attr("height", 1)
-              .attr("width", 1)
-              .attr("x", 0)
-              .attr("y", 0);
-
-            pattern
-              .append("svg:image")
-              .attr(
-                "x",
-                pictureSize / 2 -
-                  pictureZoomFactor *
-                    userLineData[lineNumber].points[ij].MappedFixationPointX
-              )
-              .attr(
-                "y",
-                pictureSize / 2 -
-                  pictureZoomFactor *
-                    userLineData[lineNumber].points[ij].MappedFixationPointY
-              )
-              .attr("width", pictureZoomFactor * 1600)
-              .attr("height", pictureZoomFactor * 1200)
-              .attr(
-                "xlink:href",
-                "static/jpg/" + userLineData[lineNumber].points[ij].StimuliName
-              );
-
-            svg
-              .insert(
-                "rect",
-                "#userPictures-" +
-                  lineNumber.toString() +
-                  "-" +
-                  userLineData[lineNumber].loadedPictures[1].toString()
-              ) // attach a rectangle
-              .style("stroke", "black") // colour the rectangle
-              .attr(
-                "id",
-                "userPictures-" + lineNumber.toString() + "-" + ij.toString()
-              )
-              .attr("class", "userPictures-" + lineNumber.toString()) // the rectangle for each picture of a single user
-              .attr("x", pictureSize * ij) // x position of the left and up most point of the rectangle
-              .attr("y", userLineData[lineNumber].height) // y position of the left and up most point of the rectangle
-              .attr("width", pictureSize)
-              .attr("height", pictureSize)
-              .attr(
-                "fill",
-                "url(#imgpattern-" +
-                  lineNumber.toString() +
-                  "-" +
-                  ij.toString() +
-                  ")"
-              );
-
-            userLineData[lineNumber].pictureOffset -= 1;
-          }
         }
+        // now load the text of the user
+
+        let text = svg.append("text")
+          .attr("id", "userText-" + lineNumber.toString())
+          .attr("x", 20)
+          .attr("y", userLineData[lineNumber].height - pictureSize / 2)
+          .text(userLineData[lineNumber].points[0].user)
+          .style("fill", "white");
+
+        let bbox = text.node().getBBox();
+        let padding = 6;
+        svg.insert("rect", "#userText-" + lineNumber.toString())
+            .attr("id", "userTextrect-" + lineNumber.toString())
+            .attr("x", bbox.x - padding)
+            .attr("y", bbox.y - padding)
+            .attr("width", bbox.width + (padding*2))
+            .attr("height", bbox.height + (padding*2))
+            .style("fill", "black");
+
       }
 
       function setLineHeight() {
         userScroll = -document.getElementById("userSlider").value;
         for (var i = 0; i < uniqueUsers.length; i++) {
           userLineData[i].height = pictureSize * i + userScroll;
-
           //if not looked at this line and was looked at this line than unload the points of interest
-          if ((loadedUserLines.includes(i) && userLineData[i].height < -pictureSize) || (loadedUserLines.includes(i) && height+pictureSize < userLineData[i].height)) {
+          if ((loadedUserLines.includes(i) && userLineData[i].height < -pictureSize) || (loadedUserLines.includes(i) && height + pictureSize < userLineData[i].height)) {
             unloadUserLine(i);
-          } else if (!loadedUserLines.includes(i) &&-pictureSize < userLineData[i].height && userLineData[i].height < height+pictureSize) {
+          } else if (!loadedUserLines.includes(i) && -pictureSize < userLineData[i].height && userLineData[i].height < height + pictureSize) {
             loadUserLine(i);
           }
           //set height of the pictures
@@ -398,20 +336,30 @@ export default {
               return userLineData[i].height;
             });
             d3.selectAll("#userText-" + i.toString()).attr("y", () => {
-              return userLineData[i].height-pictureSize/2;
+              return userLineData[i].height + pictureSize / 2;
+            });
+            d3.selectAll("#userTextrect-" + i.toString()).attr("y", () => {
+              let text = d3.select("#userText-" + i.toString());
+              let bbox = text.node().getBBox();
+              let padding = 6;
+              return bbox.y - padding;
             });
           } else {
-            //changed this
             d3.selectAll(".userPictures-" + i.toString()).attr("y", () => {
               return -2*pictureSize;
             });
             d3.selectAll("#userText-" + i.toString()).attr("y", () => {
               return -2*pictureSize;
             });
+            d3.selectAll("#userTextrect-" + i.toString()).attr("y", () => {
+              let text = d3.select("#userText-" + i.toString());
+              let bbox = text.node().getBBox();
+              let padding = 6;
+              return bbox.y - padding;
+            });
           }
         }
       }
-
       function scrollUserLine() {
         if (loadedUserLines.length > 0) {
           //calculate the userline that is closest to the middle
@@ -421,62 +369,55 @@ export default {
               closestUserLine = loadedUserLines[i];
             }
           }
-
           if (closestUserLine != selectUserLine) {
             selectUserLine = closestUserLine;
             var slider = document.getElementById("timeLineSlider");
             slider.max = userLineData[closestUserLine].points.length * pictureSize - width;
             slider.value = -userLineData[closestUserLine].horizontalOffset;
           }
-
           //add sideways scrolling
-          try {
-            var slide = document.getElementById("timeLineSlider").value;
-          }
-          catch {
-            clearInterval(interval);
-          }
-          if(-slide + pictureSize * (userLineData[closestUserLine].points.length) > width){
+          var slide = document.getElementById("timeLineSlider").value;
+          if (-slide + pictureSize * (userLineData[closestUserLine].points.length) > width) {
             userLineData[closestUserLine].horizontalOffset = -slide;
           }
 
           //scroll the pictures
-          for (
-            let i = 0;
-            i <
-            d3.selectAll(".userPictures-" + closestUserLine.toString())[
-              "_groups"
-            ][0].length;
-            i++
-          ) {
-            d3.select(
-              d3.selectAll(".userPictures-" + closestUserLine.toString())[
-                "_groups"
-              ][0][i]
-            ).attr("x", () => {
-              return (
-                userLineData[closestUserLine].horizontalOffset +
-                pictureSize * (i + userLineData[closestUserLine].pictureOffset)
+          for (let i = 0; i < d3.selectAll(".userPictures-" + closestUserLine.toString())["_groups"][0].length; i++) {
+            d3.select(d3.selectAll(".userPictures-" + closestUserLine.toString())["_groups"][0][i]).attr("x", () => {
+              return (userLineData[closestUserLine].horizontalOffset + pictureSize * (i + userLineData[closestUserLine].pictureOffset)
               );
             });
           }
+          //changed this
           //update the pictures if one goes out of bounds
-          var max = d3.selectAll(".userPictures-" + closestUserLine.toString())["_groups"][0].length - 1;
-          if (max >= 0 && d3.select(d3.selectAll(".userPictures-" + closestUserLine.toString())["_groups"][0][0]).attr("x") < -pictureSize * 1.5) {
-            overLoadPicture(closestUserLine, true);
-          } else if (max >= 0 && d3.select(d3.selectAll(".userPictures-" + closestUserLine.toString())["_groups"][0][max]).attr("x") > width + pictureSize * 2) {
-            overLoadPicture(closestUserLine, false);
+          let needReload = false;
+          for (let i = 0; i < d3.selectAll(".userPictures-" + closestUserLine.toString())["_groups"][0].length; i++) {
+            if(width < d3.select(d3.selectAll(".userPictures-" + closestUserLine.toString())["_groups"][0][i]).attr("x") < -pictureSize){
+              needReload = true;
+              break;
+            }
+          }
+          //changed this
+          if (needReload === true) {
+            overLoadPicture(closestUserLine);
           }
         }
       }
       function main() {
-        //scrolls the user lines up and down
+        vm.updateActiveVis();
+        if (vm.activeVis === "gaze_stripes") {
         setLineHeight();
         scrollUserLine();
+        } else {
+          clearInterval(timer);
+        }
       }
     },
     info() {
-      window.alert("A gaze stripe plot is a series of images with a gaze point in the middle of each image. Each gaze stripe is fixated to a single participant. You are able to scroll through the gaze stripe using the slider below the plot. This shows the focus points of a participant over time. Scrolling through the gaze stripes of the different participants vertically can be done by putting the mouse in the right top or bottom corner of the plot. To select another metro map, you can simply change the city in the left column.");
+      window.alert("A gaze stripe plot is a series of images with a gaze point in the middle of each image. Each gaze stripe is fixated to a single participant. You are able to scroll through the gaze stripe using the upper slider in the right column. This shows the focus points of a participant over time. Scrolling through the gaze stripes of the different participants vertically can be done with the bottom slider. To select another metro map, you can simply change the city in the left column.");
+    },
+    updateActiveVis() {
+      this.activeVis = this.$parent.activeVis;
     }
   }
 };

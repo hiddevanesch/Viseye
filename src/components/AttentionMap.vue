@@ -379,7 +379,7 @@ export default {
       });
     },
     info() {
-      window.alert("The attention map displays the spatial distribution of the eye tracking data. The attention map is better at recognizing certain patterns than the scatterplot. It is also easier to spot clusters than the scatterplot, however, the attention map does not include a timeline slider. To zoom you can simply scroll with the mouse wheel and you are able to see your exact location on the stimulus on the minimap. It is also possible to drag the 'zoomed field' in the minimap.");
+      window.alert("The attention map displays the spatial distribution of the eye tracking data. The attention map is better at recognizing certain patterns than the scatterplot. It is also easier to spot clusters than the scatterplot, however, the attention map does not include a timeline slider. To zoom you can simply scroll with the mouse wheel and you are able to see your exact location on the stimulus on the minimap. It is also possible to drag the “zoomed field” in the minimap.  Other interactions include changing the opacity of the visualization and changing the bandwidth used for the calculations by using the two sliders.");
     }
   }
 }
