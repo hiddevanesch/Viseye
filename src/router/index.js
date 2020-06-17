@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Upload from '../views/Upload.vue'
 import Visualization from '../views/Visualization.vue'
+import Requirements from '../views/Requirements.vue'
 
 Vue.use(VueRouter)
 
@@ -21,6 +22,11 @@ Vue.use(VueRouter)
     path: '/visualization',
     name: 'Visualization',
     component: Visualization
+  },
+  {
+    path: '/requirements',
+    name: 'Requirements',
+    component: Requirements
   }
 ]
 
