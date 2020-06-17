@@ -52,7 +52,7 @@ export default {
     openFileBrowse() {
       var vm = this;
       var input = document.getElementById("filebutton");
-      if (input.files[0].type != "application/vnd.ms-excel"){
+      if ((input.files[0].type != "application/vnd.ms-excel") &&(input.files[0].type != ".csv")){
       alert("You have uploaded a wrong file type. We require a .csv file not a " + input.files[0].type + " file.");
       } else {
         //Start loadscreen
