@@ -1,7 +1,13 @@
 <template>
-  <div>
-    <svg id='svgSelectionMap' viewBox="0 0 960 500" width = "960" height = "500"></svg>
-    <button type="button" class="button button-blue" id="toAlpPlotButton" @click="toAlpPlot">go to alpscarf</button>
+  <div class="visrow height-fix">
+    <div class="viscol col80">
+      <svg class="svg-selection" id='svgSelectionMap' viewBox="0 0 960 500" width = "960" height = "500"></svg>
+    </div>
+    <div class="viscol col20 bg-ldgray">
+      <div class="vismenurow bmar-tiny">
+        <button type="button" class="button button-blue full-width" id="toAlpPlotButton" @click="toAlpPlot">go to alpscarf</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -387,3 +393,10 @@ export default {
   }
 }
 </script>
+
+<style>
+.svg-selection {
+  height: 100%;
+  width: 100%;
+}
+</style>

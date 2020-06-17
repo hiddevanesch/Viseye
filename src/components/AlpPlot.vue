@@ -1,15 +1,33 @@
 <template>
-  <div>
-    <div id="menus">
-      <span id="plot_type-menu">Visualization Type:</span>
-      <select id="plot_type-select"></select>
-      <span id="normalized_view-menu">Visualizations View:</span>
-      <select id="normalized_view-select"></select>
-      <span id="focus_mode-menu">Focus Mode:</span>
-      <select id="focus_mode-select"></select>
-      <hr />
+  <div class="visrow height-fix">
+    <div class="viscol col80">
+      <svg class="alp-plot" id="alpPlot"/>
     </div>
-    <svg />
+    <div class="viscol col20 bg-ldgray">
+      <div class="vismenurow bmar-tiny">
+        <label class="label">Visualization type</label>
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <select class="selectMenu full-width" id="plot_type-select"></select>
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <label class="label">Visualizations view</label>
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <select class="selectMenu full-width" id="normalized_view-select"></select>
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <label class="label">Focus mode</label>
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <select class="selectMenu full-width" id="focus_mode-select"></select>
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <div class="bottom-align vw17 right-zero">
+          <button type="button" class="button button-orange bmar-small full-width" @click="info">info</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -35,9 +53,9 @@ export default {
       const xWidth = d => d.dwell_duration_log;
 
       const height = document.body.clientHeight - 50;
-      const width = document.body.clientWidth;
+      const width = document.body.clientWidth * 0.68;
       const svg = d3
-        .select("svg")
+        .select("#alpPlot")
         .attr("width", width)
         .attr("height", height);
 
@@ -628,7 +646,7 @@ export default {
         const groupEnter = groups
           .enter()
           .append("g") // make a function for enter so that circles can re-use
-          .attr("class", "tick");
+          .attr("class", "plot-tick");
         groupEnter
           .merge(groups)
           .attr("transform", (d, i) => `translate(${i * spacing}, 0)`)
@@ -651,7 +669,8 @@ export default {
           .merge(groups.select("text"))
           .text(d => d)
           .attr("y", textOffset)
-          .attr("transform", `translate(${circleRadius * 2}, 0) rotate(45)`);
+          .attr("transform", `translate(${circleRadius * 2}, 0) rotate(45)`)
+          .attr("class", "AOI-text");
       }
 
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -729,7 +748,7 @@ export default {
         const groupEnter = groups
           .enter()
           .append("g")
-          .attr("class", "tick"); // make a function for enter so that circles can re-use
+          .attr("class", "plot-tick"); // make a function for enter so that circles can re-use
         groupEnter
           .attr("transform", `translate(${pNameOffset}, 0)`)
           .merge(groups)
@@ -836,7 +855,8 @@ export default {
           .transition()
           .duration(1000)
           .attr("x", 0)
-          .style("fill-opacity", 1);
+          .style("fill-opacity", 1)
+          .attr("class", "user-text");
 
         // todo: fade-out of text (p_name) doesn't work
         groupText
@@ -847,22 +867,15 @@ export default {
           .style("fill-opacity", 1e-6)
           .remove();
       }
+    },
+    info() {
+      window.alert("The Alpscarf is an extension of scarf plots on several topics. Scarf plots are used to show the transition of the view of a user between multiple AOI’s which is done by defining the AOI’s and giving each of them a unique color. Then, for each user, a horizontal line is drawn which consists of intervals of color which correspond with the AOI that the user is looking at in that time. An Alpscarf is an extension of scarf plots on the color palette, the visual components and the modes of the scarf width. In this version of the Alpscarf, the user can choose the visualization type (alpscarf, traditional scarf plot, mountain only or valley only), the visualization view (normalized or not), and the focus mode (transition-focused or duration-focused). The Alpscarf makes use of three visual components: mountains, valleys and creeks. The mountain height indicates AOI visits confirming to an expected order. The valley depth indicates occurrences of revisiting. Short mountains and shallow valleys are visually distinguishable by creeks, which are gaps. These components can be made clearer by zooming in. By selecting an AOI or a part of the plot that indicates an AOI, this AOI is highlighted in the rest of the plot.");
     }
   }
 };
 </script>
 
 <style>
-/* line {
-    stroke: red;
-}
-
-path {
-    stroke: green;
-    stroke-width: 2px;
-    fill: none;
-}
-
 g.x-axis-hidden {
     display: none;
 }
@@ -871,40 +884,35 @@ g.y-axis-hidden {
     display: none;
 }
 
-.tick text {
-    font-size: 1em;
-    fill: black;
-    font-family: sans-serif;
-}
-
-.domain,
-g.tick line {
-    stroke: #C0C0BB;
-}
-
-
 .bars:hover {
-    stroke-dasharray: 2;
     stroke-width: 2px;
-    stroke: black;
+    stroke: #FFFFFF;
 }
 
-.tick {
+.plot-tick {
     cursor: pointer;
 }
 
 .highlighted {
-    stroke: black;
-    stroke-width: 1px;
+    stroke: #FFFFFF;
+    stroke-width: 0px;
 }
 
-text {
-    font-size: 1.5em;
-    fill: black;
-    font-family: sans-serif;
+.alp-plot {
+  width: 100%;
+  height: 100%;
 }
-#menus {
-    font-size: 2em;
-    text-align: left;
-} */
+
+.user-text {
+  fill: #666666;
+  font-family: 'Product Sans Regular';
+  font-weight: 400;
+}
+
+.AOI-text {
+  fill: #666666;
+  font-family: 'Product Sans Bold';
+  font-weight: 400;
+  font-size: 20px;
+}
 </style>

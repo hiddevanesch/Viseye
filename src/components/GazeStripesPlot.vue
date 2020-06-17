@@ -7,7 +7,13 @@
     </div>
     <div class="viscol col20 bg-ldgray">
       <div class="vismenurow bmar-tiny">
+        <label class="label">Horizontal slider</label>
+      </div>
+      <div class="vismenurow bmar-tiny">
         <input type="range" min="0" max="10000" value="0" class="slider" id="timeLineSlider" />
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <label class="label">Vertical slider</label>
       </div>
       <div class="vismenurow bmar-tiny">
         <input type="range" min="0" max="10000" value="0" class="slider" id="userSlider" />
