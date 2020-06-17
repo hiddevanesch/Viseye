@@ -9,15 +9,20 @@
 </head>
   <body>
     <div id="menus"></div>
+    <header><h2>Circle Opacity Slider:</h2></header>
+    <div class="opacitySlider">
+      <input type="range" min="0" max="10" value="5" class="range" id="opacityCircle" name = rangeSlider>
+      <output class="bubbleOpacity"></output>
+    </div><br><br>
     <header><h2>Circle Radius Slider <span class="customized">(unit in pixels)</span>:</h2></header>
     <div class="radiusSlider">
-      <input type="range" min="1" max="12" value="6" class="range" id="radiusCircle" name = rangeSlider>
-      <output class="bubble"></output>
+      <input type="range" min="0" max="12" value="6" class="range" id="radiusCircle" name = rangeSlider>
+      <output class="bubbleRadius"></output>
     </div><br>
     <button type="button" class="collapsible">K-means Clustering</button>
     <div class="content">
-      <form action="/action_page.php" id="userInputForm" onsubmit="return customizedQuantity()">
-        </section>
+      <form action="/action_page.php" id="userInputForm">
+        <section>
           <header><h2>Number of clusters:</h2></header>
           <div class = "line">
             <label class = "cluster">2 
@@ -65,7 +70,7 @@
           </div>
           <span class="customized">Customized quantity:</span> <input type="number" id="userInputIteration" onkeyup="uncheckButtonsIterations()"><br><br>
         </section>
-        <input type="submit" id="submit" value="Start K-means Clustering" onclick="clustersQuantity()" style = "font-size:19px">
+        <input type="button" id="submit" value="Start K-means Clustering" onclick="clustersQuantity()" style = "font-size:19px">
       </form>
     </div>
     <section class = "vis">

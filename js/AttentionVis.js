@@ -159,115 +159,70 @@ const attentionMap = (selection, props) => {
 		.text(title);
 
 	// compute the density data
-	const densityData = d3.contourDensity()
-		.x(d => { 
-			return xScale(d.MappedFixationPointX); 
-		})
-		.y(d => { 
-			return yScale(d.MappedFixationPointY); 
-		})
-		.size([imgWidth, imgHeight])
-		.bandwidth(5);
-	
-	// Prepare a color palette
-	let color = d3.scaleSequential(d3.interpolateInferno).domain(d3.extent(densityData(dataSelected).map(d => d.value))).nice()
-	;
-
-	// Plot the attentio map
-	const paths = g.merge(gEnter)
-		.selectAll('path').data(densityData(dataSelected));
-	paths
-		.enter().append('path')
-		.merge(paths)
-			.attr('d', d3.geoPath())
-			.attr('fill', d => {
-				return color(d.value);
+	const density = (bandWidth) => {
+		let densityData = d3.contourDensity()
+			.x(d => { 
+				return xScale(d.MappedFixationPointX); 
 			})
-			.attr('opacity', 0.3);
-	paths
-		.exit().remove();
-	
-	const main_svg = d3.select('#attentionMap svg.aperture').attr('class', 'zoom')
-		, mini_svg   = d3.select('#mini svg').append('g').attr('class', 'zoom')
-		, viewbox = main_svg.attr('viewBox').split(' ').map(d => +d)
-		// store the image's initial viewBox
-		, extent_1 = [
-			[viewbox[0], viewbox[1]]
-		  , [(viewbox[2] - viewbox[0]), (viewbox[3] - viewbox[1])]
-		]
-		, brush  = d3.brush()
-			.extent(extent_1)
-			.on('brush', brushed)
-		, zoom = d3.zoom()
-			.scaleExtent([0.2, 1])
-			.extent(extent_1)
-			.on('zoom', zoomed)
-	;
-	
-	// Apply the brush to the minimap, and also apply the zoom behavior here
-	mini_svg
-		.call(brush)
-		.call(brush.move, brush.extent())
-		.call(zoom)
-	;
-	// Apply the zoom behavior to the main svg
-	main_svg
-		.call(zoom)
+			.y(d => { 
+				return yScale(d.MappedFixationPointY); 
+			})
+			.size([imgWidth, imgHeight])
+			.bandwidth(bandWidth);
+		return densityData;
+	}
+
+	const plotAtt = (opacity, density) => {
+		const paths = g.merge(gEnter)
+			.selectAll('path').data(density(bandWidth)(dataSelected));
+		paths
+			.enter().append('path')
+			.merge(paths)
+				.attr('d', d3.geoPath())
+				.attr('fill', d => {
+					return color(d.value);
+				})
+				.attr('opacity', opacity);
+		paths
+			.exit().remove();
+	}
+
+	// Plot the attention map
+	const updateAtt = (opacity, density) => {
+		const paths = g.merge(gEnter)
+			.selectAll('path').data(density(bandWidth)(dataSelected));
+		paths
+			.enter().append('path')
+			.merge(paths)
+				.attr('d', d3.geoPath())
+				.attr('fill', d => {
+					return color(d.value);
+				})
+				.attr('opacity', opacity)
+		paths
+			.exit().remove();
+	}
+
+	let opacity = +document.getElementById('opacityAtt').value*0.1;
+	let bandWidth = +document.getElementById('bandwidthContour').value;
+
+	// Prepare a color palette
+	let color = d3.scaleSequential(d3.interpolateInferno).domain(d3.extent(density(bandWidth)(dataSelected).map(d => d.value))).nice()
 	;
 
-	function brushed() {
-		// Ignore brush-via-zoom
-		if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return;
-		
-		let sel = d3.event.selection
-			, vb = sel
-				? [sel[0][0], sel[0][1], (sel[1][0] - sel[0][0]), (sel[1][1] - sel[0][1])]
-				: viewbox
-			, k = vb[3] / viewbox[3]
-			, t = d3.zoomIdentity.translate(vb[0], vb[1]).scale(k)
-		;
+	plotAtt(opacity, density);
 
-		mini_svg
-			.property('__zoom', t)
-		;
-		main_svg
-			.attr('viewBox', vb.join(' '))
-			.property('__zoom', t)
-		;
-	} // brushed()
-	
-	function zoomed() {
-		// If the zoom input was on the minimap, forward it to the main SVG
-		if(this === mini_svg.node()) {
-			return main_svg.call(zoom.transform, d3.event.transform);
-		}
+	//update bandwidth
+	d3.select('#bandwidthContour').on('input', function() {
+		bandWidth = +this.value;
+		updateAtt(opacity, density);
+	});
 
-		// Disable panning on main_svg
-		if(d3.event.sourceEvent.type === 'mousemove') return;
-		// Ignore zoom via brush
-		if(!d3.event.sourceEvent || d3.event.sourceEvent.type === 'brush') return;
-	
-		// Process the zoom event on the main SVG
-		let t = d3.event.transform;
-		
-		t.x = t.x < viewbox[0] ? viewbox[0] : t.x;
-		t.x = t.x > viewbox[2] ? viewbox[2] : t.x;
-		t.y = t.y < viewbox[1] ? viewbox[1] : t.y;
-		t.y = t.y > viewbox[3] ? viewbox[3] : t.y;
-		
-		if(t.k === 1) t.x = t.y = 0;
-	
-		const vb = [t.x, t.y, viewbox[2] * t.k, viewbox[3] * t.k];
-	
-		main_svg.attr('viewBox', vb.join(' '));
-		mini_svg
-			.property('__zoom', t)
-			.call(
-				brush.move
-			, [[t.x, t.y], [t.x + vb[2], t.y + vb[3]]]
-			)
-		;
-	} // zoomed()
+	//update circleOpacity
+	d3.select('#opacityAtt').on('input', function() {
+		opacity = +this.value*0.1;
+		updateAtt(opacity, density);
+	});
 
 	//Color gradient legend
 	const legend = d3.select('#svgLegend');
@@ -362,3 +317,138 @@ Promise.all([
 	stimulusName = allVersions[0];
 	render();
 });
+
+//Tooltip for the slider
+const sliderBubble = () => {
+	//const rangeSlider = document.querySelector('.rangeSlider');
+	const bandwidthContour = document.getElementById('bandwidthContour');
+	const opacityAtt = document.getElementById('opacityAtt');
+	const bubbleOpacity = document.querySelector('.bubbleOpacity');
+	const bubbleBandwidth = document.querySelector('.bubbleBandwidth');
+
+	//event handler for the bubble when the slider moves.
+	bandwidthContour.addEventListener('input', () => {
+		setBubbleB(bandwidthContour, bubbleBandwidth);
+	});
+
+	opacityAtt.addEventListener('input', () => {
+		setBubbleO(opacityAtt, bubbleOpacity);
+	});
+
+	setBubbleB(bandwidthContour, bubbleBandwidth);
+	setBubbleO(opacityAtt, bubbleOpacity);
+
+	function setBubbleB(range, bubble) {
+		const val = range.value;
+		const min = range.min;
+		const max = range.max;
+		const newVal = ((val - min) * 100) / (max - min);
+		bubble.innerHTML = val;
+
+		//Get the bubble line up better
+		const offset = -18;
+
+		//Calculation of the tooltip's positioning
+		bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15 + offset}px))`;
+		bubble.style.top  = '170px';
+	}
+
+	function setBubbleO(range, bubble) {
+		const val = range.value * 0.1;
+		const min = range.min * 0.1;
+		const max = range.max * 0.1;
+		const newVal = ((val - min) * 100) / (max - min);
+		bubble.innerHTML = val;
+
+		//Get the bubble line up better
+		const offset = -18;
+
+		//Calculation of the tooltip's positioning
+		bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15 + offset}px))`;
+		bubble.style.top  = '63px';
+	}
+};
+
+sliderBubble();
+
+const main_svg = d3.select('#attentionMap svg.aperture').attr('class', 'zoom')
+		, mini_svg   = d3.select('#mini svg').append('g').attr('class', 'zoom')
+		, viewbox = main_svg.attr('viewBox').split(' ').map(d => +d)
+		// store the image's initial viewBox
+		, extent_1 = [
+			[viewbox[0], viewbox[1]]
+		  , [(viewbox[2] - viewbox[0]), (viewbox[3] - viewbox[1])]
+		]
+		, brush  = d3.brush()
+			.extent(extent_1)
+			.on('brush', brushed)
+		, zoom = d3.zoom()
+			.scaleExtent([0.2, 1])
+			.extent(extent_1)
+			.on('zoom', zoomed)
+	;
+	
+	// Apply the brush to the minimap, and also apply the zoom behavior here
+	mini_svg
+		.call(brush)
+		.call(brush.move, brush.extent())
+		.call(zoom)
+	;
+	// Apply the zoom behavior to the main svg
+	main_svg
+		.call(zoom)
+	;
+
+	function brushed() {
+		// Ignore brush-via-zoom
+		if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return;
+		
+		let sel = d3.event.selection
+			, vb = sel
+				? [sel[0][0], sel[0][1], (sel[1][0] - sel[0][0]), (sel[1][1] - sel[0][1])]
+				: viewbox
+			, k = vb[3] / viewbox[3]
+			, t = d3.zoomIdentity.translate(vb[0], vb[1]).scale(k)
+		;
+
+		mini_svg
+			.property('__zoom', t)
+		;
+		main_svg
+			.attr('viewBox', vb.join(' '))
+			.property('__zoom', t)
+		;
+	} // brushed()
+	
+	function zoomed() {
+		// If the zoom input was on the minimap, forward it to the main SVG
+		if(this === mini_svg.node()) {
+			return main_svg.call(zoom.transform, d3.event.transform);
+		}
+
+		// Disable panning on main_svg
+		if(d3.event.sourceEvent.type === 'mousemove') return;
+		// Ignore zoom via brush
+		if(!d3.event.sourceEvent || d3.event.sourceEvent.type === 'brush') return;
+	
+		// Process the zoom event on the main SVG
+		let t = d3.event.transform;
+		
+		t.x = t.x < viewbox[0] ? viewbox[0] : t.x;
+		t.x = t.x > viewbox[2] ? viewbox[2] : t.x;
+		t.y = t.y < viewbox[1] ? viewbox[1] : t.y;
+		t.y = t.y > viewbox[3] ? viewbox[3] : t.y;
+		
+		if(t.k === 1) t.x = t.y = 0;
+	
+		const vb = [t.x, t.y, viewbox[2] * t.k, viewbox[3] * t.k];
+	
+		main_svg.attr('viewBox', vb.join(' '));
+		mini_svg
+			.property('__zoom', t)
+			.call(
+				brush.move
+			, [[t.x, t.y], [t.x + vb[2], t.y + vb[3]]]
+			)
+		;
+	} // zoomed()

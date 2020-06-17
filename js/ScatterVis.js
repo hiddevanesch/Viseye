@@ -176,7 +176,7 @@ const scatterPlot = (selection, props) => {
 		+ '<br/>' + 'Description: ' + d['description'];
 
 	//Draw the circles using data join
-	const drawScatterPlot = (radius) => {
+	const drawScatterPlot = (radius, opacity) => {
 		//Draw circles for each row of the selected data
 		const circles = g.merge(gEnter)
 			.selectAll('circle').data(dataSelected);
@@ -201,8 +201,8 @@ const scatterPlot = (selection, props) => {
 				.attr('cx', innerWidth/2)
 				.attr('cy', innerHeight/2)
 				.style('fill', '#333')
+				.attr('fill-opacity', opacity)
 			.transition().duration(1000)
-			.delay((d, i) => i * 2)
 				.attr('cx', d => {return xScale(xValue(d))})
 				.attr('cy', d => {return yScale(yValue(d))});
 		circles
@@ -215,7 +215,7 @@ const scatterPlot = (selection, props) => {
 	}
 
 	//Update the plot with the selected circle radius
-	const updateRadius = (radius) => {
+	const updateRadius = (radius, opacity) => {
 		//Unclustered format of tooltip
 		let tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
 			+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
@@ -243,8 +243,8 @@ const scatterPlot = (selection, props) => {
 				})
 				.attr('r', radius)
 				.style('fill', '#333')
+				.attr('fill-opacity', opacity)
 			.transition().duration(1000)
-			.delay((d, i) => i * 2)
 				.attr('cx', d => {return xScale(xValue(d))})
 				.attr('cy', d => {return yScale(yValue(d))});
 		circles
@@ -256,13 +256,21 @@ const scatterPlot = (selection, props) => {
 				.remove();
 	}
 
+	let opacity = +document.getElementById('opacityCircle').value * 0.1;
 	circleRadius = +document.getElementById('radiusCircle').value;
 
 	if (globalCluster == undefined && (globalIterations == undefined)) {
-		drawScatterPlot(circleRadius);
+		drawScatterPlot(circleRadius, opacity);
+		//update circleRadius
 		d3.select('#radiusCircle').on('input', function() {
 			circleRadius = +this.value;
-			updateRadius(circleRadius);
+			updateRadius(circleRadius, opacity);
+		});
+
+		//update circleOpacity
+		d3.select('#opacityCircle').on('input', function() {
+			opacity = +this.value * 0.1;
+			updateRadius(circleRadius, opacity);
 		});
 	};
 
@@ -278,8 +286,6 @@ const scatterPlot = (selection, props) => {
 			intervalTime = 50,
 			duringIteration,
 			maxTempIter = maxIter;
-
-		console.log('here');
 
 		for (let i = 0; i < dataSelected.length; i++) {
 			points.push(Object.assign({}, dataSelected[i]));
@@ -375,7 +381,7 @@ const scatterPlot = (selection, props) => {
 		}
 	
 		//updates the plot
-		const update = (radius) => {
+		const update = (radius, opacity) => {
 			let clusterData = points.concat(centroids);
 		
 			// The data join
@@ -422,7 +428,15 @@ const scatterPlot = (selection, props) => {
 			//update circleRadius
 			d3.select('#radiusCircle').on('input', function() {
 				circleRadius = +this.value;
-				update(circleRadius);
+				update(circleRadius, opacity);
+				if(duringIteration) {
+					maxTempIter -= 1;
+				}
+			});
+			//update circleOpacity
+			d3.select('#opacityCircle').on('input', function() {
+				circleRadius = +this.value;
+				update(circleRadius, opacity);
 				if(duringIteration) {
 					maxTempIter -= 1;
 				}
@@ -478,7 +492,7 @@ const scatterPlot = (selection, props) => {
 
 	if (clusters != undefined && iterations != undefined) {
 		Cluster(clusters, iterations);
-	}
+	};
 }
 
 //Function render
@@ -562,37 +576,9 @@ const clustersQuantity = () => {
 	};
 	let customizedIterationQuantity = userInputForm.elements[9].value;
 
-	//When everything is selected or filled in, choose the customized values
-	//When only the radioboxes are checked, choose the pre-defined values
-	//When nothing is selected, alert the user to select
-	if ((customizedClusterQuantity != '') && (preDefinedClusterQuantity != undefined) && (customizedIterationQuantity != '') && (preDefinedIterationQuantity != undefined)) {
-		if (code != undefined) {
-			clearTimeout(code);
-			code = render(customizedClusterQuantity, customizedIterationQuantity);
-			setTimeout(code, 10000000);
-		} else {
-			code = render(customizedClusterQuantity, customizedIterationQuantity);
-			setTimeout(code, 10000000);
-		}
-	} else if ((customizedClusterQuantity != '') && (preDefinedClusterQuantity != undefined) && (preDefinedIterationQuantity != undefined)) {
-		if (code != undefined) {
-			clearTimeout(code);
-			code = render(customizedClusterQuantity, preDefinedIterationQuantity);
-			setTimeout(code, 10000000);
-		} else {
-			code = render(customizedClusterQuantity, customizedIterationQuantity);
-			setTimeout(code, 10000000);
-		}
-	} else if ((preDefinedClusterQuantity != undefined) && (customizedIterationQuantity != '') && (preDefinedIterationQuantity != undefined)) {
-		if (code != undefined) {
-			clearTimeout(code);
-			code = render(preDefinedClusterQuantity, customizedIterationQuantity);
-			setTimeout(code, 10000000);
-		} else {
-			code = render(preDefinedClusterQuantity, customizedIterationQuantity);
-			setTimeout(code, 10000000);
-		}
-	} else if (customizedClusterQuantity != '' && (customizedIterationQuantity != '')) {
+	//When user input field is filled in, choose the customized values.
+	//When the radio boxes are checked, choose the pre-defined values.
+	if (customizedClusterQuantity != '' && (customizedIterationQuantity != '')) {
 		if (code != undefined) {
 			clearTimeout(code);
 			code = render(customizedClusterQuantity, customizedIterationQuantity);
@@ -629,7 +615,7 @@ const clustersQuantity = () => {
 			setTimeout(code, 10000000);
 		}
 	} else {
-		alert('Please select your desired number of iterations and clusters.');
+		alert('Please select the desired number of iterations and clusters for k-means clustering.');
 	}
 }
 
@@ -698,7 +684,7 @@ const collapsible = () => {
 			let content = this.nextElementSibling;
 			if (content.style.display === 'block') {
 				if (globalCluster != undefined && (globalIterations != undefined)){
-				render(undefined, undefined);
+					render(undefined, undefined);
 				}
 				content.style.display = 'none';
 			} else {
@@ -723,7 +709,7 @@ const zoom = () => {
 		.extent(extent_1)
 		.on('brush', brushed)
 	, zoom = d3.zoom()
-		.scaleExtent([0.2, 1])
+		.scaleExtent([0.05, 1])
 		.extent(extent_1)
 		.on('zoom', zoomed)
 	;
@@ -793,26 +779,49 @@ const zoom = () => {
 		;
 	} // zoomed()
 }
+
 zoom();
 
 
 //Tooltip for the slider
 const sliderBubble = () => {
 	//const rangeSlider = document.querySelector('.rangeSlider');
-	const range = document.getElementById('radiusCircle');
-	const bubble = document.querySelector('.bubble');
+	const rangeRadius = document.getElementById('radiusCircle');
+	const opacityCircle = document.getElementById('opacityCircle');
+	const bubbleOpacity = document.querySelector('.bubbleOpacity');
+	const bubbleRadius = document.querySelector('.bubbleRadius');
 
 	//event handler for the bubble when the slider moves.
-	range.addEventListener('input', () => {
-		setBubble(range, bubble);
+	rangeRadius.addEventListener('input', () => {
+		setBubbleR(rangeRadius, bubbleRadius);
 	});
 
-	setBubble(range, bubble);
+	opacityCircle.addEventListener('input', () => {
+		setBubbleO(opacityCircle, bubbleOpacity);
+	});
 
-	function setBubble(range, bubble) {
+	setBubbleR(rangeRadius, bubbleRadius);
+	setBubbleO(opacityCircle, bubbleOpacity);
+
+	function setBubbleR(range, bubble) {
 		const val = range.value;
 		const min = range.min;
 		const max = range.max;
+		const newVal = ((val - min) * 100) / (max - min);
+		bubble.innerHTML = val;
+
+		//Get the bubble line up better
+		const offset = -18;
+
+		//Calculation of the tooltip's positioning
+		bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15 + offset}px))`;
+		bubble.style.top  = '170px';
+	}
+
+	function setBubbleO(range, bubble) {
+		const val = range.value * 0.1;
+		const min = range.min * 0.1;
+		const max = range.max * 0.1;
 		const newVal = ((val - min) * 100) / (max - min);
 		bubble.innerHTML = val;
 

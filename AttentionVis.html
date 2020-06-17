@@ -10,7 +10,17 @@
   <script src="https://d3js.org/d3-contour.v1.min.js"></script>
 </head>
   <body>
-    <div id="menus"></div>
+    <div id="menus"></div><br>
+    <header><h2>Attention Map Opacity Slider:</h2></header>
+    <div class="opacitySlider">
+      <input type="range" min="0" max="10" value="5" class="range" id="opacityAtt" name = rangeSlider>
+      <output class="bubbleOpacity"></output>
+    </div><br>
+    <header><h2>Attention Map Bandwidth Slider:</h2></header>
+    <div class="bandwidthSlider">
+      <input type="range" min="0" max="20" value="10" class="range" id="bandwidthContour" name = rangeSlider>
+      <output class="bubbleBandwidth"></output>
+    </div><br>
     <section class = "vis">
       <div id ="attentionMap">
         <svg class = "aperture" width = 960 height = 500 viewBox="0 0 960 500" preserveAspectRatio="none">
