@@ -18,6 +18,7 @@ let xScale;
 let yScale;
 let intersectingRectangles = false;
 let possibleAoiNames = [];
+let currentNumberAoi = 0;
 
 // Fills the possible AOI numbers into the array, according to the max amount which is given.
 for(let k = 0; k<maxAmountOfAOI ;k++){
@@ -73,6 +74,7 @@ var selectionRect = {
 	// It updates the size, the x, the y, the height and width.
 	// If someone double clicked on the rectangle, then it calls the function removelement
     init: function(newX, newY) {
+		
         var rectElement = svg.append("rect")
                 .attr('rx',4)
                 .attr('ry',4)
@@ -102,8 +104,9 @@ var selectionRect = {
 	},
 	// Selects the color of the rectangle.
     focus: function() {
+		console.log(SquareArray.length);
         this.element
-            .style("stroke", "#DE695B")
+            .style("stroke", AOIcolorlist[SquareArray[SquareArray.length-1].numberBox])
             .style("stroke-width", "2.5");
 	},
 	// If the remove function is called, then it removes the element
@@ -147,7 +150,6 @@ function dragEnd() {
 		if(finalAttributes.x2 - finalAttributes.x1 > 1 && finalAttributes.y2 - finalAttributes.y1 > 1){
 			// range selected
 			d3.event.sourceEvent.preventDefault();
-			selectionRect.focus();
 			possibleAoiNames = sortArray(possibleAoiNames);
 			var nextBox = {
 				DatasetStartX : xScale.invert(Math.min(selectionRect.originX,selectionRect.currentX)),
@@ -169,7 +171,11 @@ function dragEnd() {
 			} else {	
 				FilterAOI(nextBox)
 				SquareArray.push(nextBox);
-			}		
+				currentNumberAoi=SquareArray.length;
+				selectionRect.focus();		
+
+			}
+			// Adds the color to the rectangle
 		} else {
 			// single point selected
 			selectionRect.remove();
@@ -188,8 +194,7 @@ function removeElement(d) {
 	d3.select(this).remove();
 	for(let i=0 ; i < SquareArray.length ; i++){
 		if(Math.round(xScale(SquareArray[i].DatasetStartX)) == this.x.baseVal.value && 
-		  (Math.round(yScale(SquareArray[i].DatasetEndY)) == this.y.baseVal.value || 
-		   Math.round(yScale(SquareArray[i].DatasetStartY)) == this.y.baseVal.value)){
+		  Math.round(yScale(SquareArray[i].DatasetEndY)) == this.y.baseVal.value ) {
 			possibleAoiNames.push(SquareArray[i].numberBox);
 			data.forEach(function(d) {
 				if (d.MappedFixationPointX > SquareArray[i].DatasetStartX && 
