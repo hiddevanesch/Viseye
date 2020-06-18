@@ -19,6 +19,8 @@ let yScale;
 let intersectingRectangles = false;
 let possibleAoiNames = [];
 let currentNumberAoi = 0;
+let textList = [];
+let labelMultiplier = 0.2;
 
 // Fills the possible AOI numbers into the array, according to the max amount which is given.
 for(let k = 0; k<maxAmountOfAOI ;k++){
@@ -85,6 +87,7 @@ var selectionRect = {
                 .attr('class', 'rectangle')
 				.classed("selection", true)
 				.on("dblclick", removeElement);
+
         this.setElement(rectElement);
         this.originX = newX;
         this.originY = newY;
@@ -104,10 +107,40 @@ var selectionRect = {
 	},
 	// Selects the color of the rectangle.
     focus: function() {
-		console.log(SquareArray.length);
+		console.log(currentNumberAoi);
         this.element
             .style("stroke", AOIcolorlist[SquareArray[SquareArray.length-1].numberBox])
-            .style("stroke-width", "2.5");
+			.style("stroke-width", "2.5");
+			console.log(SquareArray);
+		let myText = svg.append('text')
+				.attr('text-anchor', 'middle')
+				.text(AOIlist[currentNumberAoi-1])
+				.attr("x", function(){
+					return (0.5*(Math.round(xScale(SquareArray[currentNumberAoi-1].DatasetEndX))
+					 		+ Math.round(xScale(SquareArray[currentNumberAoi-1].DatasetStartX))))
+					})
+				.attr("y", function(){
+					return (0.5*(Math.round(yScale(SquareArray[currentNumberAoi-1].DatasetEndY))
+							+ Math.round(yScale(SquareArray[currentNumberAoi-1].DatasetStartY))))
+					})
+				.attr("font-size", function(){
+					return Math.round(
+								Math.min( labelMultiplier*
+									Math.abs(
+										Math.round(yScale(SquareArray[currentNumberAoi-1].DatasetEndY)) -
+										Math.round(yScale(SquareArray[currentNumberAoi-1].DatasetStartY))
+									),
+									Math.abs(
+										Math.round(xScale(SquareArray[currentNumberAoi-1].DatasetEndX)) -
+										Math.round(xScale(SquareArray[currentNumberAoi-1].DatasetStartX))
+									)
+								)	
+							)
+				})
+				.attr("font-family", "monospace")
+				.attr("fill", "black")
+				.style("fill", AOIcolorlist[SquareArray[SquareArray.length-1].numberBox]);
+		textList.push(myText); 
 	},
 	// If the remove function is called, then it removes the element
     remove: function() {
@@ -172,8 +205,7 @@ function dragEnd() {
 				FilterAOI(nextBox)
 				SquareArray.push(nextBox);
 				currentNumberAoi=SquareArray.length;
-				selectionRect.focus();		
-
+				selectionRect.focus();
 			}
 			// Adds the color to the rectangle
 		} else {
@@ -208,9 +240,13 @@ function removeElement(d) {
 			});
 			if(SquareArray.length == 1){
 				SquareArray = [];
+				textList[i].remove();
+				textList = [];
 			}
 			else{
 				SquareArray.splice(i,1);
+				textList[i].remove();
+				textList.splice(i,1);
 			}
 		}
 	}
