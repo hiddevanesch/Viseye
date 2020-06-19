@@ -20,6 +20,7 @@ let intersectingRectangles = false;
 let possibleAoiNames = [];
 let currentNumberAoi = 0;
 let textList = [];
+let rectangleList = [];
 let labelMultiplier = 0.2;
 
 // Fills the possible AOI numbers into the array, according to the max amount which is given.
@@ -106,40 +107,32 @@ var selectionRect = {
         
 	},
 	// Selects the color of the rectangle.
+	// Also makes the stroke width to 2.5 with the correct color.
     focus: function() {
-		console.log(currentNumberAoi);
-        this.element
-            .style("stroke", AOIcolorlist[SquareArray[SquareArray.length-1].numberBox])
+        let currentRectangleElement = this.element
+            .style("stroke", AOIcolorlist[currentNumberAoi])
 			.style("stroke-width", "2.5");
-			console.log(SquareArray);
+		// Variables for easy access 
+		let boxStartX = Math.round(xScale(SquareArray[SquareArray.length-1].DatasetStartX));
+		let boxEndX   = Math.round(xScale(SquareArray[SquareArray.length-1].DatasetEndX));
+		let boxStartY = Math.round(yScale(SquareArray[SquareArray.length-1].DatasetStartY));
+		let boxEndY   = Math.round(yScale(SquareArray[SquareArray.length-1].DatasetEndY));
 		let myText = svg.append('text')
 				.attr('text-anchor', 'middle')
-				.text(AOIlist[currentNumberAoi-1])
+				.text(AOIlist[currentNumberAoi])
 				.attr("x", function(){
-					return (0.5*(Math.round(xScale(SquareArray[currentNumberAoi-1].DatasetEndX))
-					 		+ Math.round(xScale(SquareArray[currentNumberAoi-1].DatasetStartX))))
+					return (0.5*(boxEndX  + boxStartX))
 					})
 				.attr("y", function(){
-					return (0.5*(Math.round(yScale(SquareArray[currentNumberAoi-1].DatasetEndY))
-							+ Math.round(yScale(SquareArray[currentNumberAoi-1].DatasetStartY))))
+					return (0.5*( boxStartY + boxEndY))
 					})
 				.attr("font-size", function(){
-					return Math.round(
-								Math.min( labelMultiplier*
-									Math.abs(
-										Math.round(yScale(SquareArray[currentNumberAoi-1].DatasetEndY)) -
-										Math.round(yScale(SquareArray[currentNumberAoi-1].DatasetStartY))
-									),
-									Math.abs(
-										Math.round(xScale(SquareArray[currentNumberAoi-1].DatasetEndX)) -
-										Math.round(xScale(SquareArray[currentNumberAoi-1].DatasetStartX))
-									)
-								)	
-							)
+					return Math.round(labelMultiplier*Math.min(Math.abs( boxEndY - boxStartY),Math.abs( boxEndX - boxStartX)))
 				})
 				.attr("font-family", "monospace")
 				.attr("fill", "black")
 				.style("fill", AOIcolorlist[SquareArray[SquareArray.length-1].numberBox]);
+		rectangleList.push(currentRectangleElement);
 		textList.push(myText); 
 	},
 	// If the remove function is called, then it removes the element
@@ -191,7 +184,7 @@ function dragEnd() {
 				DatasetEndY : yScale.invert(Math.min(selectionRect.currentY,selectionRect.originY)),
 				numberBox : possibleAoiNames[0]
 			}
-			possibleAoiNames.splice(0,1);
+			currentNumberAoi = possibleAoiNames[0];
 			for (var i=0; i<SquareArray.length;i++){
 				if(rectanglesIntersect(SquareArray[i],nextBox)){
 					intersectingRectangles = true;
@@ -201,10 +194,10 @@ function dragEnd() {
 				selectionRect.remove();
 				alert('These rectangles intersect!');
 				intersectingRectangles = false;
-			} else {	
+			} else {
+				possibleAoiNames.splice(0,1);	
 				FilterAOI(nextBox)
 				SquareArray.push(nextBox);
-				currentNumberAoi=SquareArray.length;
 				selectionRect.focus();
 			}
 			// Adds the color to the rectangle
@@ -222,31 +215,31 @@ function sortArray(numbers){
 	return numbers;
 }
 function removeElement(d) {
-	// need to remove this object from data
-	d3.select(this).remove();
-	for(let i=0 ; i < SquareArray.length ; i++){
-		if(Math.round(xScale(SquareArray[i].DatasetStartX)) == this.x.baseVal.value && 
-		  Math.round(yScale(SquareArray[i].DatasetEndY)) == this.y.baseVal.value ) {
+	for( let i=0 ; i<rectangleList.length;i++){
+		if(rectangleList[i]._groups[0][0]==this){
+			d3.select(this).remove();
 			possibleAoiNames.push(SquareArray[i].numberBox);
 			data.forEach(function(d) {
 				if (d.MappedFixationPointX > SquareArray[i].DatasetStartX && 
 					d.MappedFixationPointX < SquareArray[i].DatasetEndX   &&
 					d.MappedFixationPointY > SquareArray[i].DatasetStartY && 
 					d.MappedFixationPointY < SquareArray[i].DatasetEndY   ){
-					delete d.AOIName;
-					delete d.AOIcolor;
-					delete d.AOI_order;
-				}
-			});
+						delete d.AOIName;
+						delete d.AOIcolor;
+						delete d.AOI_order;
+					}	
+				});
 			if(SquareArray.length == 1){
 				SquareArray = [];
 				textList[i].remove();
 				textList = [];
+				rectangleList = [];
 			}
 			else{
 				SquareArray.splice(i,1);
 				textList[i].remove();
 				textList.splice(i,1);
+				rectangleList.splice(i,1);	
 			}
 		}
 	}
