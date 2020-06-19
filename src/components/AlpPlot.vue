@@ -22,10 +22,8 @@
       <div class="vismenurow bmar-tiny">
         <select class="selectMenu full-width" id="focus_mode-select"></select>
       </div>
-      <div class="vismenurow bmar-tiny">
-        <div class="bottom-align vw17 right-zero">
-          <button type="button" class="button button-orange bmar-small full-width" @click="info">info</button>
-        </div>
+      <div class="bottom-align vw17 right-zero">
+        <button type="button" class="button button-orange bmar-small full-width" @click="info">info</button>
       </div>
     </div>
   </div>

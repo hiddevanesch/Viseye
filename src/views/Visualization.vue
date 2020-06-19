@@ -10,7 +10,7 @@
         <h1 class="plot-title tmar-mini bmar-mini" v-if="activeVis === 'scatter_plot'">Scatter plot: Eye tracking data per city</h1>
         <h1 class="plot-title tmar-mini bmar-mini" v-if="activeVis === 'gaze_stripes'">Gaze stripes: Eye tracking data per city</h1>
         <h1 class="plot-title tmar-mini bmar-mini" v-if="activeVis === 'attention_map'">Attention Map: Eye tracking data per city</h1>
-        <h1 class="plot-title tmar-mini bmar-mini" v-if="activeVis === 'alp_scarf'">Alp Scarf: Eye tracking data per city (BETA)</h1>
+        <h1 class="plot-title tmar-mini bmar-mini" v-if="activeVis === 'alp_scarf'">Alpscarf: Eye tracking data per city</h1>
       </div>
     </header>
     <div class="visrow">
@@ -18,7 +18,7 @@
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('scatter_plot')">scatter plot</button>
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('gaze_stripes')">gaze stripes</button>
         <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('attention_map')">attention map</button>
-        <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('alp_scarf')">alp scarf (beta)</button>
+        <button type="button" class="button button-blue bmar-small full-width" @click="setActiveVis('alp_scarf')">alpscarf</button>
         <select class="selectMenu bmar-small full-width" id="selectMenu"></select>
           <div class="bottom-align vw15 left-zero">
             <button type="button" class="button button-green bmar-small full-width" @click="downloadScreenshot">screenshot</button>

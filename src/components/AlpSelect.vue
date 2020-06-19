@@ -8,10 +8,8 @@
         <button type="button" class="button button-blue full-width" id="toAlpPlotButton" @click="toAlpPlot">go to alpscarf</button>
       </div>
     </div>
-    <div class="vismenurow bmar-tiny">
-      <div class="bottom-align vw17 right-zero">
-        <button type="button" class="button button-orange bmar-small full-width" @click="info">info</button>
-      </div>
+    <div class="bottom-align vw17 right-zero">
+      <button type="button" class="button button-orange bmar-small full-width" @click="info">info</button>
     </div>
   </div>
 </template>
@@ -53,17 +51,20 @@ export default {
       let data;
       let stimulusName;
       let allVersions = [];
+      //let dataSelected;
       let SquareArray = [];
       let xScale;
       let yScale;
       let intersectingRectangles = false;
       let possibleAoiNames = [];
-      let AOIlist;
-      let AOIcolorlist;
-      let resData;
+      let currentNumberAoi = 0;
+      let textList = [];
+      let rectangleList = [];
+      let labelMultiplier = 0.2;
       let vm = this;
-      //let dataSelected;
-
+      let AOIcolorlist;
+      let AOIlist;
+      let resData;
 
       // Fills the possible AOI numbers into the array, according to the max amount which is given.
       for(let k = 0; k<maxAmountOfAOI ;k++){
@@ -119,6 +120,7 @@ export default {
         // It updates the size, the x, the y, the height and width.
         // If someone double clicked on the rectangle, then it calls the function removelement
           init: function(newX, newY) {
+          
               var rectElement = svg.append("rect")
                       .attr('rx',4)
                       .attr('ry',4)
@@ -129,6 +131,7 @@ export default {
                       .attr('class', 'rectangle')
               .classed("selection", true)
               .on("dblclick", removeElement);
+
               this.setElement(rectElement);
               this.originX = newX;
               this.originY = newY;
@@ -147,10 +150,33 @@ export default {
               
         },
         // Selects the color of the rectangle.
+        // Also makes the stroke width to 2.5 with the correct color.
           focus: function() {
-              this.element
-                  .style("stroke", "#DE695B")
-                  .style("stroke-width", "2.5");
+              let currentRectangleElement = this.element
+                  .style("stroke", AOIcolorlist[currentNumberAoi])
+            .style("stroke-width", "2.5");
+          // Variables for easy access 
+          let boxStartX = Math.round(xScale(SquareArray[SquareArray.length-1].DatasetStartX));
+          let boxEndX   = Math.round(xScale(SquareArray[SquareArray.length-1].DatasetEndX));
+          let boxStartY = Math.round(yScale(SquareArray[SquareArray.length-1].DatasetStartY));
+          let boxEndY   = Math.round(yScale(SquareArray[SquareArray.length-1].DatasetEndY));
+          let myText = svg.append('text')
+              .attr('text-anchor', 'middle')
+              .text(AOIlist[currentNumberAoi])
+              .attr("x", function(){
+                return (0.5*(boxEndX  + boxStartX))
+                })
+              .attr("y", function(){
+                return (0.5*( boxStartY + boxEndY))
+                })
+              .attr("font-size", function(){
+                return Math.round(labelMultiplier*Math.min(Math.abs( boxEndY - boxStartY),Math.abs( boxEndX - boxStartX)))
+              })
+              .attr("font-family", "monospace")
+              .attr("fill", "black")
+              .style("fill", AOIcolorlist[SquareArray[SquareArray.length-1].numberBox]);
+          rectangleList.push(currentRectangleElement);
+          textList.push(myText); 
         },
         // If the remove function is called, then it removes the element
           remove: function() {
@@ -192,7 +218,6 @@ export default {
           if(finalAttributes.x2 - finalAttributes.x1 > 1 && finalAttributes.y2 - finalAttributes.y1 > 1){
             // range selected
             d3.event.sourceEvent.preventDefault();
-            selectionRect.focus();
             possibleAoiNames = sortArray(possibleAoiNames);
             var nextBox = {
               DatasetStartX : xScale.invert(Math.min(selectionRect.originX,selectionRect.currentX)),
@@ -201,7 +226,7 @@ export default {
               DatasetEndY : yScale.invert(Math.min(selectionRect.currentY,selectionRect.originY)),
               numberBox : possibleAoiNames[0]
             }
-            possibleAoiNames.splice(0,1);
+            currentNumberAoi = possibleAoiNames[0];
             for (var i=0; i<SquareArray.length;i++){
               if(rectanglesIntersect(SquareArray[i],nextBox)){
                 intersectingRectangles = true;
@@ -211,10 +236,13 @@ export default {
               selectionRect.remove();
               alert('These rectangles intersect!');
               intersectingRectangles = false;
-            } else {	
+            } else {
+              possibleAoiNames.splice(0,1);	
               FilterAOI(nextBox)
               SquareArray.push(nextBox);
-            }		
+              selectionRect.focus();
+            }
+            // Adds the color to the rectangle
           } else {
             // single point selected
             selectionRect.remove();
@@ -229,30 +257,32 @@ export default {
         return numbers;
       }
       function removeElement() {
-        // need to remove this object from data
-        d3.select(this).remove();
-        for(let i=0 ; i < SquareArray.length ; i++){
-          if(Math.round(xScale(SquareArray[i].DatasetStartX)) == this.x.baseVal.value && 
-            (Math.round(yScale(SquareArray[i].DatasetEndY)) == this.y.baseVal.value || 
-            Math.round(yScale(SquareArray[i].DatasetStartY)) == this.y.baseVal.value)){
+        for( let i=0 ; i<rectangleList.length;i++){
+          if(rectangleList[i]._groups[0][0]==this){
+            d3.select(this).remove();
             possibleAoiNames.push(SquareArray[i].numberBox);
             data.forEach(function(d) {
               if (d.MappedFixationPointX > SquareArray[i].DatasetStartX && 
                 d.MappedFixationPointX < SquareArray[i].DatasetEndX   &&
                 d.MappedFixationPointY > SquareArray[i].DatasetStartY && 
-                d.MappedFixationPointY < SquareArray[i].DatasetEndY  &&
-                d.StimuliName == stimulusName ){
-                delete d.AOIName;
-                delete d.AOIcolor;
-                delete d.AOI_order;
-              }
-            });
-            vm.data = data;
+                d.MappedFixationPointY < SquareArray[i].DatasetEndY   ){
+                  delete d.AOIName;
+                  delete d.AOIcolor;
+                  delete d.AOI_order;
+                }	
+              });
+              vm.data = data;
             if(SquareArray.length == 1){
               SquareArray = [];
+              textList[i].remove();
+              textList = [];
+              rectangleList = [];
             }
             else{
               SquareArray.splice(i,1);
+              textList[i].remove();
+              textList.splice(i,1);
+              rectangleList.splice(i,1);	
             }
           }
         }
@@ -269,8 +299,7 @@ export default {
           if (d.MappedFixationPointX > RectangleBox.DatasetStartX && 
             d.MappedFixationPointX < RectangleBox.DatasetEndX   &&
             d.MappedFixationPointY > RectangleBox.DatasetStartY && 
-            d.MappedFixationPointY < RectangleBox.DatasetEndY &&
-            d.StimuliName == stimulusName  ){
+            d.MappedFixationPointY < RectangleBox.DatasetEndY   ){
             // above if statements checks if a point is in the created AOI for all points
             // add columns to the data containing the aoi info.
             // x1,y1 is left lower corner, x2,y2 is right upper corner
@@ -315,7 +344,7 @@ export default {
 
       //plot a scatterplot
       const scatterPlot = (selection) => {
-        //dataSelected = data.filter(d => (d.StimuliName == stimulusName));
+          //dataSelected = data.filter(d => (d.StimuliName == stimulusName));
 
 
       //Select the image according to the selected map(version)
@@ -349,15 +378,6 @@ export default {
               .domain([0, imgHeight])
               .range([innerHeight, 0])
               .nice();
-
-        //Customizing the axis
-        d3.axisBottom(xScale)
-          .tickSize(-innerHeight)
-          .tickPadding(10);
-
-        d3.axisLeft(yScale)
-          .tickSize(-innerWidth)
-          .tickPadding(10);
       }
 
       //Function render
@@ -368,26 +388,25 @@ export default {
         SquareArray = [];
       }
 
-      d3.csv('static/csv/resolution.csv')
-      .then(loadedData => {
-      resData = loadedData;
+      Promise.all([
+          d3.csv('static/csv/resolution.csv')
+      ]).then(loadedData => {
+          data = this.files;
+          resData = loadedData[0];
 
-      data = this.files;
-      data.forEach(d => {
-        d.MappedFixationPointX = +d.MappedFixationPointX;
-        d.MappedFixationPointY = +d.MappedFixationPointY;
-        if (!allVersions.includes(d.StimuliName)) {
-          allVersions.push(d.StimuliName);
-        }
-      });
-
-      resData.forEach(d => {
-        d.width = +d.width;
-        d.height = +d.height
-      });
-
-      stimulusName = d3.select("#selectMenu").node().value;
-      render();
+          data.forEach(d => {
+          d.MappedFixationPointX = +d.MappedFixationPointX;
+          d.MappedFixationPointY = +d.MappedFixationPointY;
+              if (!allVersions.includes(d.StimuliName)) {
+                  allVersions.push(d.StimuliName);
+              }
+          });
+          resData.forEach(d => {
+              d.width = +d.width;
+              d.height = +d.height
+          })
+          stimulusName = d3.select("#selectMenu").node().value;
+          render();
       });
     },
     toAlpPlot() {
@@ -399,7 +418,6 @@ export default {
       window.alert("To use the Alpscarf, you have to define AOI’s first. This can be done with the AOI selector by drawing rectangles with your mouse. You are able to define up to 10 different AOI’s. To remove an AOI simple double click the AOI rectangle. After the AOI’s are defined you are able to go to the Alpscarf itself.");
     }
   }
-}
 </script>
 
 <style>

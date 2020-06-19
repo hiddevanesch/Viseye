@@ -12,7 +12,10 @@
         </div>
       </section>
     </div>
-    <div class="viscol col20 bg-ldgray">
+    <div class="viscol col20 bg-ldgray" style="overflow-y: scroll">
+      <div class="vismenurow bmar-tiny">
+        <label class="label">Minimap</label>
+      </div>
       <div class="vismenurow bmar-tiny">
         <div id="mini">
           <svg viewBox="0 0 960 500">
@@ -21,17 +24,34 @@
         </div>
       </div>
       <div class="vismenurow bmar-tiny">
-        <input type="checkbox" id='checkBox_id' class="checkbox" checked='checked'/>
         <label class="label">Cumulative</label>
       </div>
       <div class="vismenurow bmar-tiny">
+        <input type="checkbox" id='checkBox_id' class="checkbox" checked='checked'/>
+      </div>
+      <div class="vismenurow bmar-tiny">
         <button id="play-button" class="full-width">Play</button>
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <label class="label">Time slider</label>
       </div>
       <div class="vismenurow bmar-tiny">
         <input type="range" class="slider" id="timeSlider" width="200" />
       </div>
       <div class="vismenurow bmar-tiny">
         <label id="timeLabel" class="label">NO DATA</label>
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <label class="label">Opacity slider</label>
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <input type="range" min="0" max="10" value="5" class="range full-width" id="opacityAtt" name = rangeSlider>
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <label class="label">Circle radius slider</label>
+      </div>
+      <div class="vismenurow bmar-tiny">
+        <input type="range" min="0" max="12" value="6" class="range full-width" id="radiusCircle">
       </div>
       <div class="vismenurow bmar-tiny">
         <div class="bottom-align vw17 right-zero">
@@ -90,8 +110,8 @@ export default {
     let maxvalueData;
     let firstLoad = true;
     let resData;
-    const yAxisLabel = 'y coordinate';
-    const xAxisLabel = 'x coordinate';
+    const yAxisLabel = 'Mapped fixation point y';
+    const xAxisLabel = 'Mapped fixation point x';
 
     /*
     Selects the play button and the checkbox for interactions
