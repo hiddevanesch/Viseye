@@ -57,7 +57,7 @@ export default {
       let data;
       let stimulusName;
       let allVersions = [];
-      let dataSelected;
+      //let dataSelected;
       let SquareArray = [];
       let xScale;
       let yScale;
@@ -68,6 +68,10 @@ export default {
       let rectangleList = [];
       let labelMultiplier = 0.2;
       const vm = this;
+			let AOIcolorlist;
+			let AOIlist;
+			let resData;
+
 
       // Fills the possible AOI numbers into the array, according to the max amount which is given.
       for (let k = 0; k < maxAmountOfAOI; k++) {
@@ -167,15 +171,15 @@ export default {
             .attr('text-anchor', 'middle')
             .text(AOIlist[currentNumberAoi])
             .attr("x", function() {
-              return (0.5 * (boxEndX + boxStartX))
+              return (0.5 * (boxEndX + boxStartX));
             })
             .attr("y", function() {
-              return (0.5 * (boxStartY + boxEndY))
+              return (0.5 * (boxStartY + boxEndY));
             })
             .attr("font-size", function() {
-              return Math.round(labelMultiplier * Math.min(Math.abs(boxEndY - boxStartY), Math.abs(boxEndX - boxStartX)))
+              return Math.round(labelMultiplier * Math.min(Math.abs(boxEndY - boxStartY), Math.abs(boxEndX - boxStartX)));
             })
-            .attr("font-family", "monospace")
+            .attr("class", "aoi-text")
             .attr("fill", "black")
             .style("fill", AOIcolorlist[SquareArray[SquareArray.length - 1].numberBox]);
           rectangleList.push(currentRectangleElement);
@@ -194,7 +198,6 @@ export default {
         }
       };
 
-      var clickTime = d3.select("#clicktime");
       var attributesText = d3.select("#attributestext");
 
       function dragStart() {
@@ -228,7 +231,7 @@ export default {
               DatasetEndX: xScale.invert(Math.max(selectionRect.currentX, selectionRect.originX)),
               DatasetEndY: yScale.invert(Math.min(selectionRect.currentY, selectionRect.originY)),
               numberBox: possibleAoiNames[0]
-            }
+            };
             currentNumberAoi = possibleAoiNames[0];
             for (var i = 0; i < SquareArray.length; i++) {
               if (rectanglesIntersect(SquareArray[i], nextBox)) {
@@ -241,7 +244,7 @@ export default {
               intersectingRectangles = false;
             } else {
               possibleAoiNames.splice(0, 1);
-              FilterAOI(nextBox)
+              FilterAOI(nextBox);
               SquareArray.push(nextBox);
               selectionRect.focus();
             }
@@ -260,7 +263,7 @@ export default {
         return numbers;
       }
 
-      function removeElement(d) {
+      function removeElement() {
         for (let i = 0; i < rectangleList.length; i++) {
           if (rectangleList[i]._groups[0][0] == this) {
             d3.select(this).remove();
@@ -315,7 +318,7 @@ export default {
         });
 
         vm.data = data;
-      }
+      };
 
       var dragBehavior = d3.drag()
         .on("drag", dragMove)
@@ -346,11 +349,11 @@ export default {
       const onStimulusNameClicked = option => {
         stimulusName = option;
         render();
-      }
+      };
 
       //plot a scatterplot
-      const scatterPlot = (selection, props) => {
-        dataSelected = data.filter(d => (d.StimuliName == stimulusName));
+      const scatterPlot = (selection) => {
+        //dataSelected = data.filter(d => (d.StimuliName == stimulusName));
 
 
         //Select the image according to the selected map(version)
@@ -379,7 +382,7 @@ export default {
         //Transform the image resolution into range and domain of the axes
         xScale = d3.scaleLinear()
           .domain([0, imgWidth])
-          .range([0, innerWidth])
+          .range([0, innerWidth]);
 
         yScale = d3.scaleLinear()
           .domain([0, imgHeight])
@@ -387,26 +390,36 @@ export default {
           .nice();
 
         //Customizing the axis
-        const xAxis = d3.axisBottom(xScale)
+        d3.axisBottom(xScale)
           .tickSize(-innerHeight)
           .tickPadding(10);
 
-        const yAxis = d3.axisLeft(yScale)
+        d3.axisLeft(yScale)
           .tickSize(-innerWidth)
           .tickPadding(10);
-      }
+      };
 
       //Function render
       const render = () => {
         svg.call(scatterPlot)
         svg.selectAll('.rectangle').remove();
+        for (let i = 0; i < textList.length; i++) {
+          rectangleList[i].remove();
+          textList[i].remove();
+        }
+        rectangleList=[];
+        textList=[];
         SquareArray = [];
+        possibleAoiNames=[];
+        for (let k = 0; k < maxAmountOfAOI; k++) {
+          possibleAoiNames.push(k);
+        }
       }
 
       
       d3.csv('static/csv/resolution.csv')
       .then(loadedData => {
-        resData = loadedData[0];
+        resData = loadedData;
         data = vm.files;
 
         data.forEach(d => {
@@ -433,6 +446,7 @@ export default {
       window.alert("To use the Alpscarf, you have to define AOI’s first. This can be done with the AOI selector by drawing rectangles with your mouse. You are able to define up to 10 different AOI’s. To remove an AOI simple double click the AOI rectangle. After the AOI’s are defined you are able to go to the Alpscarf itself.");
     }
   }
+}
 </script>
 
 <style>
@@ -454,5 +468,9 @@ rect.selection {
 .svg-selection {
   height: 100%;
   width: 100%;
+}
+
+.aoi-text {
+  font-family: Product Sans Bold;
 }
 </style>

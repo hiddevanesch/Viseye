@@ -462,6 +462,9 @@ input[type="range"] {
   height: 20px;
   cursor: pointer;
   border-radius: 3px; /* iOS */
+  -webkit-box-shadow: 0px 0px 0px 1px rgba(26,26,26,1);
+  -moz-box-shadow: 0px 0px 0px 1px rgba(26,26,26,1);
+  box-shadow: 0px 0px 0px 1px rgba(26,26,26,1);
 }
 
 ::-webkit-slider-runnable-track {
@@ -517,11 +520,6 @@ input[type="range"] {
   color: transparent;
   height: 20px;
   border: none;
-}
-
-::-webkit-scrollbar {
-  width: 0px;  /* Remove scrollbar space */
-  background: transparent;  /* Optional: just make scrollbar invisible */
 }
 
 ::-ms-tooltip { 

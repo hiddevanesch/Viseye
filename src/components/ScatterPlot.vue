@@ -12,46 +12,122 @@
         </div>
       </section>
     </div>
-    <div class="viscol col20 bg-ldgray" style="overflow-y: scroll">
-      <div class="vismenurow bmar-tiny">
-        <label class="label">Minimap</label>
-      </div>
-      <div class="vismenurow bmar-tiny">
-        <div id="mini">
-          <svg viewBox="0 0 960 500">
-            <use xlink:href="#scatterPlotSVG" />
-          </svg><!--miniMap-->
+    <div class="viscol col20 bg-ldgray">
+      <div class="accordionWrapper">
+        <div class="accordionItem accClosed">
+          <h2 class="accordionItemTitle">Basic controls</h2>
+          <div class="accordionItemContent">
+            <div class="vismenurow bmar-tiny">
+              <label class="label">Minimap</label>
+            </div>
+            <div class="vismenurow bmar-tiny">
+              <div id="mini">
+                <svg viewBox="0 0 960 500">
+                  <use xlink:href="#scatterPlotSVG" />
+                </svg><!--miniMap-->
+              </div>
+            </div>
+            <div class="vismenurow bmar-tiny">
+              <label class="label">Cumulative</label>
+            </div>
+            <div class="vismenurow bmar-tiny">
+              <input type="checkbox" id='checkBox_id' class="checkbox" checked='checked'/>
+            </div>
+            <div class="vismenurow bmar-tiny">
+              <button id="play-button" class="full-width">Play</button>
+            </div>
+            <div class="vismenurow bmar-tiny">
+              <label class="label">Time slider</label>
+            </div>
+            <div class="vismenurow bmar-tiny">
+              <input type="range" class="slider" id="timeSlider" width="200" />
+            </div>
+            <div class="vismenurow bmar-tiny">
+              <label id="timeLabel" class="label">NO DATA</label>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="vismenurow bmar-tiny">
-        <label class="label">Cumulative</label>
-      </div>
-      <div class="vismenurow bmar-tiny">
-        <input type="checkbox" id='checkBox_id' class="checkbox" checked='checked'/>
-      </div>
-      <div class="vismenurow bmar-tiny">
-        <button id="play-button" class="full-width">Play</button>
-      </div>
-      <div class="vismenurow bmar-tiny">
-        <label class="label">Time slider</label>
-      </div>
-      <div class="vismenurow bmar-tiny">
-        <input type="range" class="slider" id="timeSlider" width="200" />
-      </div>
-      <div class="vismenurow bmar-tiny">
-        <label id="timeLabel" class="label">NO DATA</label>
-      </div>
-      <div class="vismenurow bmar-tiny">
-        <label class="label">Opacity slider</label>
-      </div>
-      <div class="vismenurow bmar-tiny">
-        <input type="range" min="0" max="10" value="5" class="range full-width" id="opacityAtt" name = rangeSlider>
-      </div>
-      <div class="vismenurow bmar-tiny">
-        <label class="label">Circle radius slider</label>
-      </div>
-      <div class="vismenurow bmar-tiny">
-        <input type="range" min="0" max="12" value="6" class="range full-width" id="radiusCircle">
+        <div class="accordionItem accClosed">
+          <h2 class="accordionItemTitle">Circle settings</h2>
+          <div class="accordionItemContent">
+            <div class="vismenurow bmar-tiny">
+              <label class="label">Opacity slider</label>
+            </div>
+            <div class="vismenurow bmar-tiny">
+              <input type="range" min="0" max="10" value="5" class="range full-width" id="opacityAtt">
+            </div>
+            <div class="vismenurow bmar-tiny">
+              <label class="label">Circle radius slider</label>
+            </div>
+            <div class="vismenurow bmar-tiny">
+              <input type="range" min="0" max="12" value="6" class="range full-width" id="radiusCircle">
+            </div>
+          </div>
+        </div>
+        <div class="accordionItem accClosed">
+          <h2 class="accordionItemTitle">K-means clustering</h2>
+          <div class="accordionItemContent">
+            <form action="/action_page.php" id="userInputForm">
+                <div class="vismenurow bmar-tiny">
+                  <label class="label">Number of clusters</label>
+                </div>
+                <div class = "vismenurow bmar-tiny">
+                  <label class = "cluster">2 
+                      <input type="radio" id="2" name="radio1" onclick = "clearInputFieldClusters()">
+                      <span class="checkmark"></span>
+                  </label>
+                  <label class = "cluster">3 
+                    <input type="radio" id="3" name="radio1" onclick = "clearInputFieldClusters()">
+                    <span class="checkmark"></span>
+                  </label>
+                  <label class = "cluster">4 
+                    <input type="radio" id="4" name="radio1" onclick = "clearInputFieldClusters()">
+                    <span class="checkmark"></span>
+                  </label>
+                  <label class = "cluster">5 
+                    <input type="radio" id="5" name="radio1" onclick = "clearInputFieldClusters()">
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+                <div class="vismenurow bmar-tiny">
+                <label class="label">Customized quantity<br>(1-10)</label>
+                </div>
+                <div class="vismenurow bmar-tiny">
+                <input type="number" id="userInputClusters" min="2" max="10" onkeyup="uncheckButtonsClusters()">
+                </div>
+                <div class="vismenurow bmar-tiny">
+                <label class="label">Number of iterations</label>
+                </div>
+                <div class="vismenurow bmar-tiny">
+                  <label class = "cluster">25 
+                      <input type="radio" id="25" name="radio2" onclick = "clearInputFieldIterations()">
+                      <span class="checkmark"></span>
+                  </label>
+                  <label class = "cluster">50 (recommended)
+                    <input type="radio" id="50" name="radio2" onclick = "clearInputFieldIterations()">
+                    <span class="checkmark"></span>
+                  </label>
+                  <label class = "cluster">100
+                    <input type="radio" id="100" name="radio2" onclick = "clearInputFieldIterations()">
+                    <span class="checkmark"></span>
+                  </label>
+                  <label class = "cluster">200
+                    <input type="radio" id="200" name="radio2" onclick = "clearInputFieldIterations()">
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+                <div class="vismenurow bmar-tiny">
+                <label class="label">Customized quantity</label>
+                </div>
+                <div class="vismenurow bmar-tiny">
+                <input type="number" id="userInputIteration" onkeyup="uncheckButtonsIterations()">
+                </div>
+                <div class="vismenurow">
+                <input type="button" id="submit" value="Start" onclick="clustersQuantity()" class="button button-blue full-width">
+                </div>
+            </form>
+          </div>
+        </div>
       </div>
       <div class="vismenurow bmar-tiny">
         <div class="bottom-align vw17 right-zero">
@@ -74,9 +150,27 @@ export default {
   },
   mounted: function() {
     this.visualize();
+    this.accordion();
   },
   methods: {
-    visualize() {// Loads the SVG in variable
+    accordion() {
+        var accItem = document.getElementsByClassName('accordionItem');
+        var accHD = document.getElementsByClassName('accordionItemTitle');
+        for (let i = 0; i < accHD.length; i++) {
+            accHD[i].addEventListener('click', toggleItem, false);
+        }
+        function toggleItem() {
+            var itemClass = this.parentNode.className;
+            for (let i = 0; i < accItem.length; i++) {
+                accItem[i].className = 'accordionItem accClosed';
+            }
+            if (itemClass == 'accordionItem accClosed') {
+                this.parentNode.className = 'accordionItem accOpened';
+            }
+        }
+    },
+    visualize() {
+    // Loads the SVG in variable
     let svg = d3.select('#scatterPlotSVG');
 
     /*
@@ -763,4 +857,90 @@ text {
     width: 100%;
     height: 100%;
 }
+
+.accordionItem{
+    float:left;
+    display:block;
+    width:100%;
+    box-sizing: border-box;
+    font-family:'Open-sans',Arial,sans-serif;
+}
+.accordionItemTitle{
+    cursor:pointer;
+    margin:0px 0px 20px 0px;
+    padding:10px;
+    background:#498fff;
+    color:#fff;
+    font-size: 18px;
+    font-family: 'Product Sans Bold';
+    font-weight: 400;
+    text-transform: uppercase;
+    width:100%;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.accordionItemTitle:hover {
+  background-color: #3978dd;
+}
+
+.accordionItemTitle:active {
+  background-color: #2b67c7;
+}
+
+.accClosed .accordionItemContent{
+    height:0px;
+    transition:height 1s ease-out;
+    -webkit-transform: scaleY(0);
+	-o-transform: scaleY(0);
+	-ms-transform: scaleY(0);
+	transform: scaleY(0);
+    float:left;
+    display:block;
+    
+    
+}
+.accOpened .accordionItemContent{
+        padding: 20px;
+    background-color: #fff;
+    width: 100%;
+    margin: 0px 0px 20px 0px;
+    display:block;
+    -webkit-transform: scaleY(1);
+	-o-transform: scaleY(1);
+	-ms-transform: scaleY(1);
+	transform: scaleY(1);
+    -webkit-transform-origin: top;
+	-o-transform-origin: top;
+	-ms-transform-origin: top;
+	transform-origin: top;
+
+	-webkit-transition: -webkit-transform 0.4s ease-out;
+	-o-transition: -o-transform 0.4s ease;
+	-ms-transition: -ms-transform 0.4s ease;
+	transition: transform 0.4s ease;
+        box-sizing: border-box;
+}
+
+.accOpened .accordionItemTitle{
+    margin:0px;
+        -webkit-border-top-left-radius: 3px;
+    -webkit-border-top-right-radius: 3px;
+    -moz-border-radius-topleft: 3px;
+    -moz-border-radius-topright: 3px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    -webkit-border-bottom-right-radius: 0px;
+    -webkit-border-bottom-left-radius: 0px;
+    -moz-border-radius-bottomright: 0px;
+    -moz-border-radius-bottomleft: 0px;
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+    background-color: #bdc3c7;
+    color: #7f8c8d;
+}
+
 </style>
