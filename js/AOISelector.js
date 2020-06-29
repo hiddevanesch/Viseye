@@ -372,7 +372,49 @@ const render = () => {
 			}
 		);
 	svg.call(scatterPlot)
-	svg.selectAll('.rectangle').remove();
+	svg.selectAll('.rectangle').remove(); 
+	/*
+	function removeElement(d) {
+		for( let i=0 ; i<rectangleList.length;i++){
+			if(rectangleList[i]._groups[0][0]==this){
+				d3.select(this).remove();
+				possibleAoiNames.push(SquareArray[i].numberBox);
+				data.forEach(function(d) {
+					if (d.MappedFixationPointX > SquareArray[i].DatasetStartX && 
+						d.MappedFixationPointX < SquareArray[i].DatasetEndX   &&
+						d.MappedFixationPointY > SquareArray[i].DatasetStartY && 
+						d.MappedFixationPointY < SquareArray[i].DatasetEndY   ){
+							delete d.AOIName;
+							delete d.AOIcolor;
+							delete d.AOI_order;
+						}	
+					});
+				if(SquareArray.length == 1){
+					SquareArray = [];
+					textList[i].remove();
+					textList = [];
+					rectangleList = [];
+				}
+				else{
+					SquareArray.splice(i,1);
+					textList[i].remove();
+					textList.splice(i,1);
+					rectangleList.splice(i,1);	
+				}
+			}
+		}
+	}
+	*/
+	possibleAoiNames=[];
+	for(let k = 0; k<maxAmountOfAOI ;k++){
+		possibleAoiNames.push(k);
+	}
+	for(let i = 0; i < textList.length; i++){
+		rectangleList[i].remove();
+		textList[i].remove();
+	}
+	rectangleList=[];
+	textList=[];
 	SquareArray = [];
 }
 
