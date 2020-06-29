@@ -350,59 +350,6 @@ export default {
       render();
       });
 
-      //Tooltip for the slider
-      // const sliderBubble = () => {
-      //   //const rangeSlider = document.querySelector('.rangeSlider');
-      //   const bandwidthContour = document.getElementById('bandwidthContour');
-      //   const opacityAtt = document.getElementById('opacityAtt');
-      //   const bubbleOpacity = document.querySelector('.bubbleOpacity');
-      //   const bubbleBandwidth = document.querySelector('.bubbleBandwidth');
-
-      //   //event handler for the bubble when the slider moves.
-      //   bandwidthContour.addEventListener('input', () => {
-      //     setBubbleB(bandwidthContour, bubbleBandwidth);
-      //   });
-
-      //   opacityAtt.addEventListener('input', () => {
-      //     setBubbleO(opacityAtt, bubbleOpacity);
-      //   });
-
-      //   setBubbleB(bandwidthContour, bubbleBandwidth);
-      //   setBubbleO(opacityAtt, bubbleOpacity);
-
-      //   function setBubbleB(range) {
-      //     const val = range.value;
-      //     const min = range.min;
-      //     const max = range.max;
-      //     const newVal = ((val - min) * 100) / (max - min);
-      //     bubble.innerHTML = val;
-
-      //     // Get the bubble line up better
-      //     const offset = -18;
-
-      //     // Calculation of the tooltip's positioning
-      //     bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15 + offset}px))`;
-      //     bubble.style.top  = '170px';
-      //   }
-
-      //   function setBubbleO(range) {
-      //     const val = range.value * 0.1;
-      //     const min = range.min * 0.1;
-      //     const max = range.max * 0.1;
-      //     const newVal = ((val - min) * 100) / (max - min);
-      //     bubble.innerHTML = val;
-
-      //     // Get the bubble line up better
-      //     const offset = -18;
-
-      //     // Calculation of the tooltip's positioning
-      //     bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15 + offset}px))`;
-      //     bubble.style.top  = '63px';
-      //   }
-      // };
-
-      // sliderBubble();
-
       const main_svg = d3.select('#attentionMap svg.aperture').attr('class', 'zoom')
           , mini_svg   = d3.select('#mini svg').append('g').attr('class', 'zoom')
           , viewbox = main_svg.attr('viewBox').split(' ').map(d => +d)

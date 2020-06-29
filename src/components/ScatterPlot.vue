@@ -73,19 +73,19 @@
                 </div>
                 <div class = "vismenurow bmar-tiny">
                   <label class = "cluster">2 
-                      <input type="radio" id="2" name="radio1" onclick = "clearInputFieldClusters()">
+                      <input type="radio" id="2" name="radio1" @click="clearInputFieldClusters">
                       <span class="checkmark"></span>
                   </label>
                   <label class = "cluster">3 
-                    <input type="radio" id="3" name="radio1" onclick = "clearInputFieldClusters()">
+                    <input type="radio" id="3" name="radio1" @click="clearInputFieldClusters">
                     <span class="checkmark"></span>
                   </label>
                   <label class = "cluster">4 
-                    <input type="radio" id="4" name="radio1" onclick = "clearInputFieldClusters()">
+                    <input type="radio" id="4" name="radio1" @click="clearInputFieldClusters">
                     <span class="checkmark"></span>
                   </label>
                   <label class = "cluster">5 
-                    <input type="radio" id="5" name="radio1" onclick = "clearInputFieldClusters()">
+                    <input type="radio" id="5" name="radio1" @click="clearInputFieldClusters">
                     <span class="checkmark"></span>
                   </label>
                 </div>
@@ -93,28 +93,28 @@
                 <label class="label">Customized quantity</label>
                 </div>
                 <div class="vismenurow bmar-tiny">
-                <input class="full-width" type="number" id="userInputClusters" min="2" max="10" onkeyup="uncheckButtonsClusters()">
+                <input class="full-width" type="number" id="userInputClusters" min="2" max="10" v-on:change="uncheckButtonsClusters">
                 </div>
                 <div class="vismenurow bmar-tiny">
                 <label class="label">Number of iterations</label>
                 </div>
                 <div class="vismenurow bmar-tiny">
                   <label class = "cluster">25 
-                      <input type="radio" id="25" name="radio2" onclick = "clearInputFieldIterations()">
+                      <input type="radio" id="25" name="radio2" @click="clearInputFieldIterations">
                       <span class="checkmark"></span>
                   </label>
                   <label class = "cluster">50
-                    <input type="radio" id="50" name="radio2" onclick = "clearInputFieldIterations()">
+                    <input type="radio" id="50" name="radio2" @click="clearInputFieldIterations" checked="checked">
                     <span class="checkmark"></span>
                   </label>
                   </div>
                   <div class="vismenurow bmar-tiny">
                   <label class = "cluster">100
-                    <input type="radio" id="100" name="radio2" onclick = "clearInputFieldIterations()">
+                    <input type="radio" id="100" name="radio2" @click="clearInputFieldIterations">
                     <span class="checkmark"></span>
                   </label>
                   <label class = "cluster">200
-                    <input type="radio" id="200" name="radio2" onclick = "clearInputFieldIterations()">
+                    <input type="radio" id="200" name="radio2" @click="clearInputFieldIterations">
                     <span class="checkmark"></span>
                   </label>
                 </div>
@@ -122,7 +122,7 @@
                 <label class="label">Customized quantity</label>
                 </div>
                 <div class="vismenurow bmar-tiny">
-                <input type="number" class="full-width" id="userInputIteration" onkeyup="uncheckButtonsIterations()">
+                <input type="number" class="full-width" id="userInputIteration" v-on:change="uncheckButtonsIterations">
                 </div>
                 <div class="vismenurow">
                 <input type="button" id="submit" value="Start" onclick="clustersQuantity()" class="button button-blue full-width">
@@ -707,6 +707,51 @@ export default {
     },
     info() {
       window.alert("In a scatterplot, the gaze points of a user are plotted. The metro map is the stimulus and can also be seen in the scatterplot. This way, important parts of the metro map can be distinguished.\n\nThere are several interactions for the scatterplot of this website. Between the different metro maps can be filtered. The timestamp slider accommodates the user to filter over time. Pressing the play button results in an animated visualization which plots the gaze points in the correct order in time which shows the general path of the users. When selecting the cumulative filter (which is turned on by default), all gaze points from the time before the time stamp is shown. Hovering over a point in the scatterplot is followed by the appearance of a tooltip which shows the coordinates. It is also possible to find clusters with k-means clustering by defining the number of clusters and the number of iterations. Other interactions include changing the opacity and circle radius of the points using the two sliders as to make it easier to understand the data.");
+    },
+    clearInputFieldClusters() {
+      const userInputForm = document.getElementById('userInputForm');
+      const userInputClusters = document.getElementById('userInputClusters');
+      for (let i = 0; i < 4; i++){
+        if (userInputForm.elements[i].checked == true) {
+          userInputClusters.value = '';
+          break;
+        }
+      }
+    },
+    uncheckButtonsClusters() {
+      const userInputClusters = document.getElementById('userInputClusters');
+      const userInputForm = document.getElementById('userInputForm');
+      if (userInputClusters.value != '') {
+        for (let i = 0; i < 4; i++) {
+          if(userInputForm.elements[i].checked == true) {
+            userInputForm.elements[i].checked = false;
+            break;
+          }
+        }
+      }
+    },
+    clearInputFieldIterations() {
+      const userInputForm = document.getElementById('userInputForm');
+      const userInputIteration = document.getElementById('userInputIteration');
+      for (let i = 5; i < 9; i++){
+        if (userInputForm.elements[i].checked == true) {
+          userInputIteration.value = '';
+          break;
+        }
+      }
+    },
+    uncheckButtonsIterations() {
+      const userInputIteration = document.getElementById('userInputIteration');
+      const userInputForm = document.getElementById('userInputForm');
+
+      if (userInputIteration.value != '') {
+        for (let i = 5; i < 9; i++) {
+          if(userInputForm.elements[i].checked == true) {
+            userInputForm.elements[i].checked = false;
+            break;
+          }
+        }
+      }
     }
   }
 }
