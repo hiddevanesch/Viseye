@@ -219,8 +219,8 @@ img {
 }
 
 .label {
-  top: 6px;
-  left: 230px;
+  /* top: 6px;
+  left: 230px; */
   color: #666666;
   font-family: 'Product Sans Regular';
   font-weight: 400;

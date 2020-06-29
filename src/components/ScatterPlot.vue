@@ -90,10 +90,10 @@
                   </label>
                 </div>
                 <div class="vismenurow bmar-tiny">
-                <label class="label">Customized quantity<br>(1-10)</label>
+                <label class="label">Customized quantity</label>
                 </div>
                 <div class="vismenurow bmar-tiny">
-                <input type="number" id="userInputClusters" min="2" max="10" onkeyup="uncheckButtonsClusters()">
+                <input class="full-width" type="number" id="userInputClusters" min="2" max="10" onkeyup="uncheckButtonsClusters()">
                 </div>
                 <div class="vismenurow bmar-tiny">
                 <label class="label">Number of iterations</label>
@@ -103,10 +103,12 @@
                       <input type="radio" id="25" name="radio2" onclick = "clearInputFieldIterations()">
                       <span class="checkmark"></span>
                   </label>
-                  <label class = "cluster">50 (recommended)
+                  <label class = "cluster">50
                     <input type="radio" id="50" name="radio2" onclick = "clearInputFieldIterations()">
                     <span class="checkmark"></span>
                   </label>
+                  </div>
+                  <div class="vismenurow bmar-tiny">
                   <label class = "cluster">100
                     <input type="radio" id="100" name="radio2" onclick = "clearInputFieldIterations()">
                     <span class="checkmark"></span>
@@ -120,7 +122,7 @@
                 <label class="label">Customized quantity</label>
                 </div>
                 <div class="vismenurow bmar-tiny">
-                <input type="number" id="userInputIteration" onkeyup="uncheckButtonsIterations()">
+                <input type="number" class="full-width" id="userInputIteration" onkeyup="uncheckButtonsIterations()">
                 </div>
                 <div class="vismenurow">
                 <input type="button" id="submit" value="Start" onclick="clustersQuantity()" class="button button-blue full-width">
@@ -845,13 +847,6 @@ text {
   stroke-width: 1.25px;
 }
 
-.label {
-  fill: #666666;
-  font-family: 'Product Sans Regular';
-  font-weight: 400;
-  font-size: 16px;
-}
-
 .aperture {
     /* Occupy the full viewport */
     width: 100%;
@@ -943,4 +938,18 @@ text {
     color: #7f8c8d;
 }
 
+.cluster {
+  color: #666666;
+  font-family: 'Product Sans Regular';
+  font-weight: 400;
+  font-size: 16px;
+  margin-left: 8px;
+  margin-right: 8px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-left: 4px;
+  padding-right: 4px;
+  background-color: #dddddd;
+  border-radius: 3px;
+}
 </style>
