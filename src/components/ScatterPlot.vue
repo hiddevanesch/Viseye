@@ -4,7 +4,7 @@
       <section class = "vis">
         <div id ="scatterPlot">
           <div id="tooltip"></div>
-          <svg class="aperture" viewbox = "0 0 960 500" preserveAspectRatio="none">
+          <svg class="aperture" viewBox = "0 0 960 500" preserveAspectRatio="none">
             <g>
               <svg id = "scatterPlotSVG" width = "960" height = "500"></svg><!--scatterPlot-->
             </g>
@@ -54,7 +54,7 @@
               <label class="label">Opacity slider</label>
             </div>
             <div class="vismenurow bmar-tiny">
-              <input type="range" min="0" max="10" value="5" class="range full-width" id="opacityAtt">
+              <input type="range" min="0" max="10" value="5" class="range full-width" id="opacityCircle">
             </div>
             <div class="vismenurow bmar-tiny">
               <label class="label">Circle radius slider</label>
@@ -125,7 +125,7 @@
                 <input type="number" class="full-width" id="userInputIteration" v-on:change="uncheckButtonsIterations">
                 </div>
                 <div class="vismenurow">
-                <input type="button" id="submit" value="Start" onclick="clustersQuantity()" class="button button-blue full-width">
+                <input type="button" id="submit" value="Start" class="button button-blue full-width">
                 </div>
             </form>
           </div>
@@ -151,8 +151,8 @@ export default {
     ])
   },
   mounted: function() {
-    this.visualize();
     this.accordion();
+    this.visualize();
   },
   methods: {
     accordion() {
@@ -172,185 +172,67 @@ export default {
         }
     },
     visualize() {
-    // Loads the SVG in variable
-    let svg = d3.select('#scatterPlotSVG');
+    const svg = d3.select('#scatterPlotSVG');
 
-    /*
-    Useful variables for the window 
-    Width and height of the slider etc.
-    */
-    const margin = { top: 20, right: 20, bottom: 50, left: 60 };
-    const widthSlider = 50;
-    let width = +svg.attr('width');
-    let height = +svg.attr('height');
-    let innerWidth = width - margin.left - margin.right;
-    let innerHeight = height - margin.top - margin.bottom;
+    const width = +svg.attr('width');
+    const height = +svg.attr('height');
 
-
-    //Defining variables for general access
     let data;
-    let slider;
-    let sliderLabel;
-    let timelineScale;
-    let timer;
     let stimulusName;
     let allVersions = [];
     let dataSelected;
-    let currentValue;
-    let targetValue;
-    var cumulativeFilter = true;
-    var amountSlider;
-    let minTimeSlider;
-    let maxTimeSlider;
-    let timelineUpdate = false;
-    let maxvalueData;
-    let firstLoad = true;
     let resData;
-    const yAxisLabel = 'Mapped fixation point y';
-    const xAxisLabel = 'Mapped fixation point x';
+    let globalCluster;
+    let globalIterations;
 
-    /*
-    Selects the play button and the checkbox for interactions
-    If the checkbox is clicked, then the boolean filter will be flipped
-    */
-    var playButton = d3.select('#play-button');
-    var checkBox = d3.select("#checkBox_id")
-      checkBox.on('change', function(){ 
-        cumulativeFilter = cumulativeFilter ? false : true;
-      });
-    var tooltip = d3.select("#scatterPlot").append("div")
-      .attr("class", "tooltip")
-      .style("opacity", 0);
+    //Random color for Circles
+    const randomColor =  Math.floor(Math.random()*16777215).toString(16);
 
-
-    /* 
-    The timeline slider will be created here
-    1. The slider consists of three parts, the slider itself
-    2. The circle in the middle that shows the value
-    3. The amount of the slider which is  shown above the circle
-    */
-    function createTimeline(){
-
-      /*
-      define the axisTimeline for easy access to the timestamps
-      define the mintime of the slider, which is the minimal value of the dataset
-      define the maxtime of the slider, which is the maximal value of the dataset
-      the maximum value of the data  is used later for redrawing
-      the targetValue is needed to make the distribution
-      */
-      const axisTimeline = data => data.Timestamp;
-      minTimeSlider = +d3.min(data, function(d) {return d.Timestamp || Infinity; });
-      maxTimeSlider = +d3.max(data,axisTimeline);
-      maxvalueData = maxTimeSlider;
-      targetValue = maxTimeSlider - minTimeSlider;
-
-      /*
-      Make the distribution of the timeline
-      the domain is set between the minimum and maximum value of the data
-      the range is set to the width of the slider
-      */
-      timelineScale = d3.scaleLinear()     
-        .domain([minTimeSlider,maxTimeSlider])
-        .range([0,widthSlider])
-        .clamp(true);
-
-      // The slider and label are added
-      slider = d3.select("#timeSlider");
-      sliderLabel = d3.select('#timeLabel');
-
-      // The bar of the slider is initialized, and its style is corrected
-      slider
-        .attr("min", timelineScale.range()[0])
-        .attr("max", timelineScale.range()[1])
-        .attr("value", timelineScale.range()[1]);
-
-      // Add the text to the slider
-      // slider.insert("g", ".track-overlay")
-      //   .attr("class", "ticks")
-      //   .attr("transform", "translate(0," + 18 + ")")
-      //   .selectAll("text")
-      //   .data(timelineScale.ticks(10))
-      //   .enter()
-      //   .append("text")
-      //   .attr("x", timelineScale)
-      //   .attr("y", 10)
-      //   .attr("text-anchor", "middle")
-      //   .text(function(d) { d.Timestamp });
-
-
-      // Add the circle in the bar at the current value
-      // handle = slider.insert("circle", ".track-overlay")
-      //   .attr("class", "handle")
-      //   .attr("r", 9);
-
-      // The amount of the slider above the circle
-      // label = slider.append("text")  
-      //   .attr("class", "label")
-      //   .attr("text-anchor", "middle")
-      //   .text(minTimeSlider/1000)
-      //   .attr("transform", "translate("+0+","+ -13 +")")
-    }
-
+    //Create dropdown menu
     //Create select keyword with click event listener
-    d3.select("#selectMenu")
-          .on('change', function() {
-            onStimulusNameClicked(this.value);
-          });
+      d3.select("#selectMenu")
+            .on('change', function() {
+              onStimulusNameClicked(this.value);
+            });
 
-    //Store the selected option
-    const onStimulusNameClicked = option => {
-      stimulusName = option;
-      render();
-    }
+      //Store the selected option
+      const onStimulusNameClicked = option => {
+        stimulusName = option;
+        render(undefined, undefined);
+      }
 
     //plot a scatterplot
     const scatterPlot = (selection, props) => {
       const {
+        title,
         xValue,
         yValue,
-        circleRadius,
         margin,
+        clusters,
+        iterations
       } = props;
 
-      //Filter the data, first it corrects the timeline, then it filters the data
-      currentValue = maxvalueData;
-      slider.attr("value", timelineScale(currentValue));
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+      
+      const yAxisLabel = 'Mapped fixation point y';
+      const xAxisLabel = 'Mapped fixation point x';
 
-      // It selects all the values under the value of the slider
-        dataSelected = data.filter(d => (d.StimuliName == stimulusName && d.Timestamp <= currentValue));
+      let circleRadius;
 
-      // update the timeline according to the data if a chart has been selected
-      if (timelineUpdate){
-        const axisTimeline = dataSelected => dataSelected.Timestamp;
-        /* 
-        update the minimum and maximum value of the selected data
-        update the domain of the slider 
-        update the value above the slider
-        */
-        minTimeSlider = +d3.min(dataSelected, function(d) {return d.Timestamp || Infinity; });
-        maxTimeSlider = +d3.max(dataSelected,axisTimeline);
-        targetValue = maxTimeSlider - minTimeSlider;
-        timelineScale.domain([minTimeSlider,maxTimeSlider]);
-        slider.selectAll("text")
-          .data(timelineScale.ticks(10))
-          currentValue = maxTimeSlider;
-          slider.attr("value", timelineScale(currentValue));
-          sliderLabel.text(Math.round(currentValue/10/100)+ ' sec');
-          // label
-          //   .attr("x", timelineScale(currentValue))
-          //   .text(Math.round(currentValue/10)/100+' sec');
-    }
+      //Filter the data on the selected stimulus
+      dataSelected = data.filter(d => d.StimuliName == stimulusName);
 
-    //Select the image according to the selected option
+      //Select the image according to the selected map(version)
       let imageSelected = allVersions.filter(d => d == stimulusName);
 
-    //Select the image resolution according to the selected map
+      //Select the image resolution according to the selected map
       let citySelected = resData.filter(d => stimulusName.includes(d.city));
 
       let imgWidth = citySelected[0].width;
       let imgHeight = citySelected[0].height;
 
-    //Update image and set background
+      //Update image and set background
       let background = 'static/jpg/' + imageSelected;
 
       const img = selection.selectAll('image').data([null]);
@@ -366,15 +248,10 @@ export default {
             `translate(${margin.left},${margin.top})`
           );
 
-      //Transform the data values into positions
+      //Transform the image resolution into range and domain of the axes
       const xScale = d3.scaleLinear()
         .domain([0, imgWidth])
         .range([0, innerWidth])
-        .nice();
-
-      const yScale = d3.scaleLinear()
-        .domain([0, imgHeight])
-        .range([0, innerHeight])
         .nice();
 
       const yScaleAxis = d3.scaleLinear()
@@ -382,19 +259,22 @@ export default {
         .range([innerHeight, 0])
         .nice();
 
+      const yScale = d3.scaleLinear()
+      .domain([0, imgHeight])
+      .range([0, innerHeight])
+      .nice();
+
       //Create container for scatterplot
-      const g = selection.selectAll('.container').data([null]);
-        const gEnter = g
+      const g = selection.selectAll('.containerScatter').data([null]);
+      const gEnter = g
         .enter().append('g')
-        .attr('class', 'container');
-        
+          .attr('class', 'containerScatter');
       //Translating the visualisation to innerposition with the updated data
       gEnter
         .merge(g)
           .attr('transform',
             `translate(${margin.left},${margin.top})`
           );
-
 
       //Customizing the axis
       const xAxis = d3.axisBottom(xScale)
@@ -404,111 +284,503 @@ export default {
       const yAxis = d3.axisLeft(yScaleAxis)
         .tickSize(-innerWidth)
         .tickPadding(10);
-      
-      if (firstLoad) {
-        //Creating the axes
-        const yAxisG = g.select('.y-axis');
-        const yAxisGEnter = gEnter
-          .append('g')
-            .attr('class', 'y-axis');
-        // svg.append('text')
-        //     .attr('class', 'title')
-        //     .attr('y', margin.top/2)
-        //     .attr('x', margin.left)
-        //     .text(title);
-        yAxisG
-          .merge(yAxisGEnter)
-            .call(yAxis)
-            .selectAll('.domain').remove();
-          
-        const xAxisG = g.select('.x-axis')
-          .append('text')
-            .attr('class', 'axis-label')
-            .attr('y',innerHeight+margin.top)
-            .attr('x', innerWidth / 2)
-            .attr('fill', 'black')
-            .text(xAxisLabel);
-        const xAxisGEnter = gEnter
-          .append('g')
-              .attr('class', 'x-axis');
-        xAxisG
-          .merge(xAxisGEnter)
-            .attr('transform', `translate(0,${innerHeight})`)
-            .call(xAxis)
-            .selectAll('.domain').remove();
 
-        xAxisGEnter
-          .append('text')
-            .attr('class', 'axis-label')
-            .attr('y', margin.top * 4)
-            .attr('x', innerWidth / 2)
-            .text(xAxisLabel);
+      //Creating the axes
+      const yAxisG = g.select('.y-axis');
+      const yAxisGEnter = gEnter
+        .append('g')
+          .attr('class', 'y-axis');
+      yAxisG
+        .merge(yAxisGEnter)
+          .call(yAxis)
+          .selectAll('.domain').remove();
 
-        yAxisGEnter
+      //Y-axis label
+      yAxisGEnter
           .append('text')
-              .attr('class', 'axis-label')
-              .attr('y', -50)
-              .attr('x', -(innerHeight / 2))
-              .attr('transform', `rotate(-90)`)
-              .style('text-anchor', 'middle')
+          .attr('class', 'axis-label')
+          .attr('y', -60)
+          .attr('transform', `rotate(-90)`)
+          .attr('text-anchor', 'middle')
+          .merge(yAxisG.select('.axis-label'))
+              .attr('x', -innerHeight / 2)
               .text(yAxisLabel);
-          firstLoad = false;
-      }
-      
-      //Draw circles for each row of the selected data
-      const circles = g.merge(gEnter)
-        .selectAll('circle').data(dataSelected);
-      circles
-        .enter().append('circle')
+
+      const xAxisG = g.select('.x-axis');
+      const xAxisGEnter = gEnter
+        .append('g')
+            .attr('class', 'x-axis');
+      xAxisG
+        .merge(xAxisGEnter)
+          .attr('transform', `translate(0,${innerHeight})`)
+          .call(xAxis)
+          .selectAll('.domain').remove();
+
+      //X-axis label
+      xAxisGEnter
+        .append('text')
+          .attr('class', 'axis-label')
+          .attr('y', 60)
+          .attr('text-anchor', 'middle')
+        .merge(xAxisG.select('.axis-label'))
+          .attr('x', innerWidth / 2)
+          .text(xAxisLabel);
+
+      gEnter.append('text')
+        .attr('class', 'title')
+          .attr('y', -15)
+        .text(title);
+
+      //Format of tooltip
+      let tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
+        + ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
+        + '<br/>' + 'Description: ' + d['description'];
+
+      //Draw the circles using data join
+      const drawScatterPlot = (radius, opacity) => {
+        //Draw circles for each row of the selected data
+        const circles = g.merge(gEnter)
+          .selectAll('circle').data(dataSelected);
+        circles
+          .enter().append('circle')
           .merge(circles)
-            .attr('cx', innerWidth/2)
-            .attr('cy', innerHeight/2)
-            .attr('r', 0)
-            .attr('class', 'circle')
-            .on("mouseover", function(d) {
-              tooltip.transition()
-                .duration(200)
-                .style("opacity", 1)
-                .style("left", "calc(" + (d3.event.pageX + 10) + "px - 20vw)")
-                .style("top", "calc(" + (d3.event.pageY + 10) + "px - 15vh)");
-              tooltip.html("Coordinates: " + d.MappedFixationPointX + ", " + (imgHeight - d.MappedFixationPointY) + "<br/> By user: " + d.user);
+            .on('mouseover', d => {
+              d3.select('#tooltip').transition()
+                  .duration(200)
+                    .style('opacity', 1)
+                    .style("left", "calc(" + (d3.event.pageX + 90) + "px - 20vw)")
+                    .style("top", "calc(" + (d3.event.pageY + 15) + "px - 15vh)")
+                    .style('display', 'block');
+              d3.select('#tooltip').html(tooltipformat(d));
             })
-            .on("mouseout", function() {
-              tooltip.transition()
-                .duration(500)
-                .style("opacity", 0);
-              })
-          .transition().duration(2000)
-          .delay((d, i) => i)
-            .attr('r', circleRadius)
-            .attr('cx', d => xScale(xValue(d)))
-            .attr('cy', d => yScale(yValue(d)))
-            
-      circles
-        .exit()
-          .transition().duration(2000)
-            .attr('r', 0)
+            .on('mouseout', () => {
+              d3.select('#tooltip')
+                .transition().duration(400)
+                .style('opacity', 0);
+            })
+            .attr('r', radius)
             .attr('cx', innerWidth/2)
             .attr('cy', innerHeight/2)
-          .remove();
+            .style('fill', '#' + randomColor)
+            .attr('fill-opacity', opacity)
+          .transition().duration(1000)
+            .attr('cx', d => {return xScale(xValue(d))})
+            .attr('cy', d => {return yScale(yValue(d))});
+        circles
+          .exit()
+            .transition().duration(1000)
+              .attr('r', 0)
+              .attr('cx', innerWidth/2)
+              .attr('cy', innerHeight/2)
+            .remove();
+      }
+
+      //Update the plot with the selected circle radius
+      const updateRadius = (radius, opacity) => {
+        //Unclustered format of tooltip
+        let tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
+          + ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
+          + '<br/>' + 'Description: ' + d['description'];
+
+        //Draw circles for each row of the selected data
+        const circles = g.merge(gEnter)
+          .selectAll('circle').data(dataSelected);
+        circles
+          .enter().append('circle')
+          .merge(circles)
+            .on('mouseover', d => {
+              d3.select('#tooltip').transition()
+                  .duration(200)
+                    .style('opacity', 1)
+                    .style("left", "calc(" + (d3.event.pageX + 90) + "px - 20vw)")
+                    .style("top", "calc(" + (d3.event.pageY + 15) + "px - 15vh)")
+                    .style('display', 'block');
+              d3.select('#tooltip').html(tooltipformat(d));
+            })
+            .on('mouseout', () => {
+              d3.select('#tooltip')
+                .transition().duration(400)
+                .style('opacity', 0);
+            })
+            .attr('r', radius)
+            .style('fill', '#' + randomColor)
+            .attr('fill-opacity', opacity)
+          .transition().duration(1000)
+            .attr('cx', d => {return xScale(xValue(d))})
+            .attr('cy', d => {return yScale(yValue(d))});
+        circles
+          .exit()
+            .transition().duration(1000)
+              .attr('r', 0)
+              .attr('cx', innerWidth/2)
+              .attr('cy', innerHeight/2)
+            .remove();
+      }
+
+      let opacity = +document.getElementById('opacityCircle').value * 0.1;
+      circleRadius = +document.getElementById('radiusCircle').value;
+
+      if (globalCluster == undefined && (globalIterations == undefined)) {
+        drawScatterPlot(circleRadius, opacity);
+        //update circleRadius
+        d3.select('#radiusCircle').on('input', function() {
+          circleRadius = +this.value;
+          updateRadius(circleRadius, opacity);
+        });
+
+        //update circleOpacity
+        d3.select('#opacityCircle').on('input', function() {
+          opacity = +this.value * 0.1;
+          updateRadius(circleRadius, opacity);
+        });
+      }
+
+      const Cluster = (numClusters, maxIter) => {
+        //Clone the array of objects without dependencies
+        //const clone = require('rfdc')() // Returns the deep copy function
+
+        // the current iteration		
+        let iter = 1,
+          centroids = [],
+          points = [],
+          temp = [],
+          intervalTime = 50,
+          duringIteration,
+          maxTempIter = maxIter;
+
+        for (let i = 0; i < dataSelected.length; i++) {
+          points.push(Object.assign({}, dataSelected[i]));
+          temp.push(Object.assign({}, dataSelected[i]));
+        }
+
+        const colors = d3.scaleOrdinal(d3.schemeCategory10);
+
+        //Update iteration text
+        const iterationsText = svg.selectAll('.numberIterations').data([null])
+        iterationsText
+          .enter().append('g')
+          .merge(iterationsText)
+            .append('text')
+              .attr('class', 'numberIterations')
+              .attr('transform', `translate(${innerWidth + margin.left - (1/4 * innerWidth)}, ${55 + innerHeight + margin.top})`)
+              .text('');
+
+        //Return random centroid points with coloring
+        let randomCentroid = (fill) => {
+          let r = Math.floor(Math.random()*temp.length);
+          let centroid = Object.assign({}, temp[r]);
+
+          temp.splice(r, 1);
+          centroid.fill = fill;
+          return centroid;
+        }
+      
+        //Gives distinct coloring to all centroid points
+        let initializeCentroids = (num) => {
+          let allCentroids = [];
+          for (let i = 0; i < num; i++) {
+            let color = colors(i);
+            let centroid = randomCentroid(color);
+            centroid.id = 'centroid' + '-' + i + 1;
+            centroid.clusterGroup = i + 1 + ' (centroid)'
+            allCentroids.push(centroid);
+          }
+          return allCentroids;
+        }
+        
+        //Computes the euclidian distane
+        let euclidianDistance = (a, b) => {
+          let dx = b.MappedFixationPointX - a.MappedFixationPointX,
+            dy = b.MappedFixationPointY - a.MappedFixationPointY;
+          return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+        }
+
+        //Find the closest centroid to the point as argument
+        let findClosestCentroid = (point) => {
+          let closest = {i: -1, distance: Math.sqrt(Math.pow(innerWidth, 2) + Math.pow(innerHeight, 2))};
+          centroids.forEach((d, i) => {
+            let distance = euclidianDistance(d, point);
+            // Only update when the centroid is closer
+            if (distance < closest.distance) {
+              closest.i = i;
+              closest.distance = distance;
+            }
+          });
+          return (centroids[closest.i]); 
+        }
+        
+        //All points close to the centroid get the according coloring
+        const colorizePoints = () => {
+          points.forEach(d => {
+            let closest = findClosestCentroid(d);
+            d.fill = closest.fill;
+            d.clusterGroup = closest.clusterGroup.substring(0, 1);
+          });
+        }
+      
+        //Computes the center of the cluster by the coordinates
+        let computeClusterCenter = (cluster) => {
+          return [
+            d3.mean(cluster, d => { return d.MappedFixationPointX; }), 
+            d3.mean(cluster, d => { return d.MappedFixationPointY; })
+          ];
+        }
+        
+        //Move the centroids to the center of cluster
+        const moveCentroids = () => {
+          centroids.forEach(d => {
+            // Get clusters based on their coloring
+            let cluster = points.filter((points) => {
+              return points.fill === d.fill;
+            });
+            // Compute the cluster centers
+            let center = computeClusterCenter(cluster);
+            // Move the centroid
+            d.MappedFixationPointX = center[0];
+            d.MappedFixationPointY = center[1];
+          });
+        }
+      
+        //updates the plot
+        const update = (radius) => {
+          let clusterData = points.concat(centroids);
+        
+          // The data join
+          let circles = g.merge(gEnter)
+            .selectAll('circle').data(clusterData);
+
+          //Reformat of tooltip
+          tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
+            + ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
+            + '<br/>' + 'Description: ' + d['description'] + '<br/>' + 'Cluster Group: ' + d['clusterGroup'];
+
+          // Create new elements as needed
+          circles
+            .enter().append('circle')
+            .merge(circles)
+              .attr('r', radius)
+              .attr('class', d => d.id)
+              .on('mouseover', d => {
+                d3.select('#tooltip').transition()
+                    .duration(200)
+                      .style('opacity', 1)
+                      .style("left", "calc(" + (d3.event.pageX + 90) + "px - 20vw)")
+                      .style("top", "calc(" + (d3.event.pageY + 15) + "px - 15vh)")
+                      .style('display', 'block');
+                d3.select('#tooltip').html(tooltipformat(d));
+              })
+              .on('mouseout', () => {
+                d3.select('#tooltip')
+                  .transition().duration(400)
+                  .style('opacity', 0);
+              })
+            // Update old elements as needed
+              .transition().delay(intervalTime/20).duration(intervalTime/2)
+                .attr('cx', d => {return xScale(xValue(d))})
+                .attr('cy', d => {return yScale(yValue(d))})
+                .style('fill', d => { return d.fill; });
+          // Remove old nodes
+          circles
+            .exit()
+              .remove();
+        }
+
+        if (globalCluster != undefined && (globalIterations != undefined)) {
+          //update circleRadius
+          d3.select('#radiusCircle').on('input', function() {
+            circleRadius = +this.value;
+            update(circleRadius, opacity);
+            if(duringIteration) {
+              maxTempIter -= 1;
+            }
+          });
+          //update circleOpacity
+          d3.select('#opacityCircle').on('input', function() {
+            opacity = +this.value * 0.1;
+            update(circleRadius, opacity);
+            if(duringIteration) {
+              maxTempIter -= 1;
+            }
+          });
+        }
+      
+        //Update the text in the label
+        const setText = (text) => {
+          svg.selectAll('.numberIterations').text(text);
+        }
+        
+        //Executes iteration of the algorithm
+        const iterate = () => {
+          // Update label
+          setText('Iteration ' + iter + ' of ' + maxIter);
+      
+          // Colorize the points
+          colorizePoints();
+          
+          // Move the centroids
+          moveCentroids();
+
+          duringIteration = true;
+          // Update the scatter plot
+          update(circleRadius);
+          duringIteration = false;
+        }
+      
+        //Initialization of the algorithm, calls one iteration each 500 ms
+        const initialize = () => {
+          
+          // Initialize random and centroids
+          centroids = initializeCentroids(numClusters);
+
+          // initial drawing
+          update(circleRadius);
+          
+          let interval = setInterval(() => {
+            if(iter <= maxTempIter) {
+              iterate();
+              iter++;
+            } else {
+              clearInterval(interval);
+              setText('Done');
+            }
+          }, intervalTime);
+        }
+
+          // Call the main function
+          initialize();
+      }
 
 
-      const main_svg = d3.select("#scatterPlot svg.aperture").attr("class", "zoom");
-      const mini_svg = d3.select("#mini svg").append("g").attr("class", "zoom");
-      const viewbox = main_svg.attr("viewbox").split(' ').map(d => +d);
+      if (clusters != undefined && iterations != undefined) {
+        Cluster(clusters, iterations);
+      }
+    }
 
+    //Function render
+    const render = (clusters, iterations) => {
+      globalCluster = clusters;
+      globalIterations = iterations;
+
+      //Invoke function to generate the scatterplot
+      svg.call(scatterPlot, {
+        title: 'Scatterplot: Eye tracking data per city',
+        xValue: d => d.MappedFixationPointX,
+        yValue: d => d.MappedFixationPointY,
+        margin: { top: 10, right: 20, bottom: 70, left: 80 },
+        clusters: clusters,
+        iterations: iterations
+      });
+    }
+
+    //(RE-)Render the data according to the selection by filter
+    d3.csv('static/csv/resolution.csv')
+    .then(loadedData => {
+    resData = loadedData;
+
+    data = this.files;
+    data.forEach(d => {
+      d.MappedFixationPointX = +d.MappedFixationPointX;
+      d.MappedFixationPointY = +d.MappedFixationPointY;
+      if (!allVersions.includes(d.StimuliName)) {
+        allVersions.push(d.StimuliName);
+      }
+    });
+
+    resData.forEach(d => {
+      d.width = +d.width;
+      d.height = +d.height
+    });
+
+    stimulusName = d3.select("#selectMenu").node().value;
+    render(undefined, undefined);
+    });
+
+    let code;
+
+    d3.select("#submit")
+            .on('click', function() {
+              clustersQuantity();
+            });
+
+    //Add event handlers to the form of the cluster collapsible.
+    const clustersQuantity = () => {
+      const userInputForm = document.getElementById('userInputForm');
+      let preDefinedClusterQuantity;
+      for (let i = 0; i < 5; i++) {
+        if(userInputForm.elements[i].checked == true) {
+          preDefinedClusterQuantity = +userInputForm.elements[i].id;
+          break;
+        }
+      }
+      let customizedClusterQuantity = userInputForm.elements[4].value;
+      let preDefinedIterationQuantity;
+      for (let i = 5; i < 9; i++) {
+        if(userInputForm.elements[i].checked == true) {
+          preDefinedIterationQuantity = +userInputForm.elements[i].id;
+          break;
+        }
+      }
+      let customizedIterationQuantity = userInputForm.elements[9].value;
+
+      //When user input field is filled in, choose the customized values.
+      //When the radio boxes are checked, choose the pre-defined values.
+      if (customizedClusterQuantity != '' && (customizedIterationQuantity != '')) {
+        if (code != undefined) {
+          clearTimeout(code);
+          code = render(customizedClusterQuantity, customizedIterationQuantity);
+          setTimeout(code, 17000000);
+        } else {
+          code = render(customizedClusterQuantity, customizedIterationQuantity);
+          setTimeout(code, 10000000);
+        }
+      } else if (preDefinedClusterQuantity != undefined && (preDefinedIterationQuantity != undefined)) {
+        if (code != undefined) {
+          clearTimeout(code);
+          code = render(preDefinedClusterQuantity, preDefinedIterationQuantity);
+          setTimeout(code, 10000000);
+        } else {
+          code = render(preDefinedClusterQuantity, preDefinedIterationQuantity);
+          setTimeout(code, 10000000);
+        }
+      } else if (preDefinedClusterQuantity != undefined && (customizedIterationQuantity != '')) {
+        if (code != undefined) {
+          clearTimeout(code);
+          code = render(preDefinedClusterQuantity, customizedIterationQuantity);
+          setTimeout(code, 10000000);
+        } else {
+          code = render(preDefinedClusterQuantity, customizedIterationQuantity);
+          setTimeout(code, 10000000);
+        }
+      } else if (customizedClusterQuantity != '' && (preDefinedIterationQuantity != undefined)) {
+        if (code != undefined) {
+          clearTimeout(code);
+          code = render(customizedClusterQuantity, preDefinedIterationQuantity);
+          setTimeout(code, 10000000);
+        } else {
+          code = render(customizedClusterQuantity, preDefinedIterationQuantity);
+          setTimeout(code, 10000000);
+        }
+      } else {
+        alert('Please select the desired number of iterations and clusters for k-means clustering.');
+      }
+    }
+
+    const zoom = () => {      
+      const main_svg = d3.select('#scatterPlot svg.aperture').attr('class', 'zoom')
+      , mini_svg   = d3.select('#mini svg').append('g').attr('class', 'zoom')
+      , viewbox = main_svg.attr('viewBox').split(' ').map(d => +d)
       // store the image's initial viewBox
-      const extent_1 = [
+      , extent_1 = [
         [viewbox[0], viewbox[1]]
-        , [(viewbox[2] - viewbox[0]), (viewbox[3] - viewbox[1])]
+      , [(viewbox[2] - viewbox[0]), (viewbox[3] - viewbox[1])]
       ]
-      const brush  = d3.brush()
-            .extent(extent_1)
-        .on("brush", brushed)
-      const zoom = d3.zoom()
-        .scaleExtent([0.2, 1])
+      , brush  = d3.brush()
         .extent(extent_1)
-        .on("zoom", zoomed)
+        .on('brush', brushed)
+      , zoom = d3.zoom()
+        .scaleExtent([0.05, 1])
+        .extent(extent_1)
+        .on('zoom', zoomed)
       ;
 
       // Apply the brush to the minimap, and also apply the zoom behavior here
@@ -524,22 +796,22 @@ export default {
 
       function brushed() {
         // Ignore brush-via-zoom
-        if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return;
+        if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return;
         
         let sel = d3.event.selection
-          , vb = sel
+        , vb = sel
             ? [sel[0][0], sel[0][1], (sel[1][0] - sel[0][0]), (sel[1][1] - sel[0][1])]
             : viewbox
-          , k = vb[3] / viewbox[3]
-          , t = d3.zoomIdentity.translate(vb[0], vb[1]).scale(k)
+        , k = vb[3] / viewbox[3]
+        , t = d3.zoomIdentity.translate(vb[0], vb[1]).scale(k)
         ;
 
         mini_svg
-          .property("__zoom", t)
+          .property('__zoom', t)
         ;
         main_svg
-          .attr("viewBox", vb.join(' '))
-          .property("__zoom", t)
+          .attr('viewBox', vb.join(' '))
+          .property('__zoom', t)
         ;
       } // brushed()
       
@@ -550,9 +822,9 @@ export default {
         }
 
         // Disable panning on main_svg
-        if(d3.event.sourceEvent.type === "mousemove") return;
+        if(d3.event.sourceEvent.type === 'mousemove') return;
         // Ignore zoom via brush
-        if(!d3.event.sourceEvent || d3.event.sourceEvent.type === "brush") return;
+        if(!d3.event.sourceEvent || d3.event.sourceEvent.type === 'brush') return;
       
         // Process the zoom event on the main SVG
         let t = d3.event.transform;
@@ -566,144 +838,18 @@ export default {
       
         const vb = [t.x, t.y, viewbox[2] * t.k, viewbox[3] * t.k];
       
-        main_svg.attr("viewBox", vb.join(' '));
+        main_svg.attr('viewBox', vb.join(' '));
         mini_svg
-          .property("__zoom", t)
+          .property('__zoom', t)
           .call(
-              brush.move
+            brush.move
             , [[t.x, t.y], [t.x + vb[2], t.y + vb[3]]]
-            )
+          )
         ;
       } // zoomed()
-
-      // Update the data from the timeline scaler
-      function drawPlot(dataDrawPlot) {
-        const circles = g.merge(gEnter)
-          .selectAll('circle').data(dataDrawPlot);
-        circles
-          .enter().append('circle')
-            .merge(circles)
-              .attr('r', circleRadius)
-              .attr('class', 'circle')
-              .attr('cx', d => xScale(xValue(d)))
-              .attr('cy', d => yScale(yValue(d)))
-              .on("mouseover", function(d) {
-                tooltip.transition()
-                  .duration(200)
-                  .style("opacity", 1)
-                  .style("left", "calc(" + (d3.event.pageX + 10) + "px - 20vw)")
-                  .style("top", "calc(" + (d3.event.pageY + 10) + "px - 15vh)");
-                tooltip.html("Coordinates: " + d.MappedFixationPointX + ", " + (imgHeight - d.MappedFixationPointY) + "<br/> By user: " + d.user);
-              })
-              .on("mouseout", function() {
-                tooltip.transition()
-                  .duration(500)
-                  .style("opacity", 0);
-                });
-        circles
-          .exit().remove();
-        }	
-      /*
-      Play button on click
-      if the button is on pause, it will change to play
-        then the slider will stop moving
-        and the interval will be cleared
-      if the button is on play, it will change to pause
-        then the slider will start moving
-        the command step will be executed every 0.1 seconds
-      */ 
-      playButton.on("click", function() {
-        var button = d3.select(this);
-        if (button.text() == "Pause") {
-        clearInterval(timer);
-        button.text("Play");
-        } else {
-          if (currentValue >= maxTimeSlider){
-            currentValue=minTimeSlider;
-            update(currentValue);
-          }
-        timer = setInterval(step, 250);
-        button.text("Pause");
-        }
-      })
-
-      slider
-          .on("input", function() {
-            currentValue = timelineScale.invert(this.value);
-            update(currentValue); 
-            });
-
-      // Update button for the new value
-      function update(h) {
-        // update position and text of label according to slider scale
-        slider.attr("value", Math.round(timelineScale(h)));
-        sliderLabel.text(Math.round(currentValue/10/100)+ ' sec');
-
-        // filter data set and redraw plot
-            if(cumulativeFilter){
-            dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h);
-            }
-            else{
-              dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h && d.Timestamp>h-500);
-            }
-        drawPlot(dataSelected);
-      }
-
-      // Step function for the play button
-      function step() {
-        update(currentValue);
-
-        amountSlider = Math.min(data.filter(d => d.StimuliName == stimulusName).length,50);
-        // Updates the slider by the compensated amount
-        currentValue +=  targetValue/amountSlider;
-        // If the slider is finished, then don't move it anymore, clear the interval and set the value to its start
-        if (currentValue > maxTimeSlider) {
-          currentValue = minTimeSlider;
-          clearInterval(timer);
-          // timer = 0;
-          playButton.text("Play");
-        }
-      }
     }
 
-    //Function render
-    const render = () => {
-    //Invoke function dropdownMenu to generate menu  
-
-      //Invoke function to generate the scatterplot
-      svg.call(scatterPlot, {
-        xValue: d => d.MappedFixationPointX,
-        yValue: d => d.MappedFixationPointY,
-        circleRadius: 5,
-        margin: { top: 10, right: 20, bottom: 50, left: 60 },
-      })
-    }
-
-    //(RE-)Render the data according to the selection by filter
-      d3.csv('static/csv/resolution.csv')
-      .then(loadedData => {
-      resData = loadedData;
-
-      data = this.files;
-      data.forEach(d => {
-        d.MappedFixationPointX = +d.MappedFixationPointX;
-        d.MappedFixationPointY = +d.MappedFixationPointY;
-        d.Timestamp  = +d.Timestamp;
-        if (!allVersions.includes(d.StimuliName)) {
-          allVersions.push(d.StimuliName);
-        }
-      });
-
-      resData.forEach(d => {
-        d.width = +d.width;
-        d.height = +d.height
-      });
-
-      createTimeline();
-      stimulusName = d3.select("#selectMenu").node().value;
-      timelineUpdate = true;
-      render();
-      });
+    zoom();
     },
     info() {
       window.alert("In a scatterplot, the gaze points of a user are plotted. The metro map is the stimulus and can also be seen in the scatterplot. This way, important parts of the metro map can be distinguished.\n\nThere are several interactions for the scatterplot of this website. Between the different metro maps can be filtered. The timestamp slider accommodates the user to filter over time. Pressing the play button results in an animated visualization which plots the gaze points in the correct order in time which shows the general path of the users. When selecting the cumulative filter (which is turned on by default), all gaze points from the time before the time stamp is shown. Hovering over a point in the scatterplot is followed by the appearance of a tooltip which shows the coordinates. It is also possible to find clusters with k-means clustering by defining the number of clusters and the number of iterations. Other interactions include changing the opacity and circle radius of the points using the two sliders as to make it easier to understand the data.");
@@ -758,25 +904,18 @@ export default {
 </script>
 
 <style>
-.circle {
-  fill: #498fff;
-  opacity: 0.75;
-}
-
-div.tooltip {
+#tooltip {
+  opacity: 0;
   position: absolute;
-  text-align: center;
-  color: #ffffff;
-  /*width: 150px;*/
   padding: 5px;
-  background: #498fff;
-  border: 0px;
-  border-radius: 3px;
   pointer-events: none;
+  color: white;
   font-family: 'Product Sans Light';
   font-weight: 400;
-  font-size: 16px;
+  font-size: 14px;
   box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.25);
+  background-color: #498fff;
+  border-radius: 3px;
 }
 
 text {
