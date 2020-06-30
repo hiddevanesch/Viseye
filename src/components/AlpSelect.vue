@@ -269,10 +269,11 @@ export default {
             d3.select(this).remove();
             possibleAoiNames.push(SquareArray[i].numberBox);
             data.forEach(function(d) {
-              if (d.MappedFixationPointX > SquareArray[i].DatasetStartX &&
-                d.MappedFixationPointX < SquareArray[i].DatasetEndX &&
-                d.MappedFixationPointY > SquareArray[i].DatasetStartY &&
-                d.MappedFixationPointY < SquareArray[i].DatasetEndY) {
+              if (d.MappedFixationPointX > SquareArray[i].DatasetStartX && 
+                    d.MappedFixationPointX < SquareArray[i].DatasetEndX   &&
+                    d.MappedFixationPointY > SquareArray[i].DatasetStartY && 
+                    d.MappedFixationPointY < SquareArray[i].DatasetEndY  && 
+                    d.StimuliName == stimulusName) {
                 delete d.AOIName;
                 delete d.AOIcolor;
                 delete d.AOI_order;
@@ -304,10 +305,11 @@ export default {
         AOIlist = ["AOI1", "AOI2", "AOI3", "AOI4", "AOI5", "AOI6", "AOI7", "AOI8", "AOI9", "AOI10"];
         AOIcolorlist = ["#e129b8", "#0166cc", "#f4a8a1", "#a652ec", "#3a1b12", "#49464e", "#72b36a", "#d693bf", "#f4fe76", "#2713ca"];
         data.forEach(function(d) {
-          if (d.MappedFixationPointX > RectangleBox.DatasetStartX &&
-            d.MappedFixationPointX < RectangleBox.DatasetEndX &&
-            d.MappedFixationPointY > RectangleBox.DatasetStartY &&
-            d.MappedFixationPointY < RectangleBox.DatasetEndY) {
+          if (d.MappedFixationPointX > RectangleBox.DatasetStartX && 
+            d.MappedFixationPointX < RectangleBox.DatasetEndX   &&
+            d.MappedFixationPointY > RectangleBox.DatasetStartY && 
+            d.MappedFixationPointY < RectangleBox.DatasetEndY   && 
+            d.StimuliName == stimulusName) { 
             // above if statements checks if a point is in the created AOI for all points
             // add columns to the data containing the aoi info.
             // x1,y1 is left lower corner, x2,y2 is right upper corner
@@ -414,6 +416,11 @@ export default {
         for (let k = 0; k < maxAmountOfAOI; k++) {
           possibleAoiNames.push(k);
         }
+        data.forEach(function(d) {
+            delete d.AOIName;
+            delete d.AOIcolor;
+            delete d.AOI_order;
+        });
       }
 
       

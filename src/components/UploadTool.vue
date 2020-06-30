@@ -67,7 +67,45 @@ export default {
                 .replace("Gýteborg", "Göteborg").replace("Dýsseldorf", "Düsseldorf").replace("Zýrich", "Zürich");
               }
             }
-            vm.addFiles(jsonData);
+            //Function to remove outliers
+            function cleanData(d) {
+              const xMin = d.MappedFixationPointX >= 0;
+              var xMax;
+              if (d.StimuliName.includes("Antwerpen") || d.StimuliName.includes("Hamburg")) {
+                xMax = d.MappedFixationPointX <= 1651;
+              } else if (d.StimuliName.includes("Riga") || d.StimuliName.includes("Bologne") 
+              || d.StimuliName.includes("Brüssel") || d.StimuliName.includes("Göteborg")
+              || d.StimuliName.includes("Paris") || d.StimuliName.includes("Venedig")
+              || d.StimuliName.includes("Warschau")) {
+                xMax = d.MappedFixationPointX <= 1650;
+              } else if (d.StimuliName.includes("Berlin") || d.StimuliName.includes("Moskau")
+              || d.StimuliName.includes("Hong") || d.StimuliName.includes("Antwerpen")) {
+                xMax = d.MappedFixationPointX <= 1648;
+              } else if (d.StimuliName.includes("Krakau") || d.StimuliName.includes("New")
+              || d.StimuliName.includes("Zürich")) {
+                xMax = d.MappedFixationPointX <= 1649;
+              } else if (d.StimuliName.includes("Bordeaux")) {
+                xMax = d.MappedFixationPointX <= 1692;
+              } else if (d.StimuliName.includes("Köln")) {
+                xMax = d.MappedFixationPointX <= 1894;
+              } else if (d.StimuliName.includes("Frankfurt")) {
+                xMax = d.MappedFixationPointX <= 1892;
+              } else if (d.StimuliName.includes("Tokyo")) {
+                xMax = d.MappedFixationPointX <= 1630;
+              } else if (d.StimuliName.includes("Barcelona") || d.StimuliName.includes("Ljub")) {
+                xMax = d.MappedFixationPointX <= 1652;
+              } else if (d.StimuliName.includes("Budapest")) {
+                xMax = d.MappedFixationPointX <= 1645;
+              } else if (d.StimuliName.includes("Düsseldorf")) {
+                xMax = d.MappedFixationPointX <= 872;
+              } else if (d.StimuliName.includes("Pisa")) {
+                xMax = d.MappedFixationPointX <= 871;
+              }
+              const yMin = d.MappedFixationPointY >= 0;
+              const yMax = d.MappedFixationPointY <= 1200;
+              return xMin && xMax && yMin && yMax;
+            }
+            vm.addFiles(jsonData.filter(cleanData));
           };
           reader.onloadend = function(){
             //Go to visualization page

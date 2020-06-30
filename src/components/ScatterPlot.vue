@@ -21,7 +21,7 @@
               <label class="label">Minimap</label>
             </div>
             <div class="vismenurow bmar-tiny">
-              <div id="mini">
+              <div id="scatterMini">
                 <svg viewBox="0 0 960 500">
                   <use xlink:href="#scatterPlotSVG" />
                 </svg><!--miniMap-->
@@ -184,6 +184,27 @@ export default {
     let resData;
     let globalCluster;
     let globalIterations;
+    let done = true;
+
+    //Initialize variables for slider
+    const widthSlider = 50;
+    let currentValue;
+    let targetValue;
+    var cumulativeFilter = true;
+    var amountSlider;
+    let minTimeSlider;
+    let maxTimeSlider;
+    let timelineUpdate = false;
+    let timelineScale;
+    let maxvalueData;
+    let slider;
+    let timer;
+    let sliderLabel;
+    var playButton = d3.select('#play-button');
+    var checkBox = d3.select("#checkBox_id")
+      checkBox.on('change', function(){ 
+        cumulativeFilter = cumulativeFilter ? false : true;
+      });
 
     //Random color for Circles
     const randomColor =  Math.floor(Math.random()*16777215).toString(16);
@@ -201,6 +222,42 @@ export default {
         render(undefined, undefined);
       }
 
+    function createTimeline(){
+
+      /*
+      define the axisTimeline for easy access to the timestamps
+      define the mintime of the slider, which is the minimal value of the dataset
+      define the maxtime of the slider, which is the maximal value of the dataset
+      the maximum value of the data  is used later for redrawing
+      the targetValue is needed to make the distribution
+      */
+      const axisTimeline = data => data.Timestamp;
+      minTimeSlider = +d3.min(data, function(d) {return d.Timestamp || Infinity; });
+      maxTimeSlider = +d3.max(data,axisTimeline);
+      maxvalueData = maxTimeSlider;
+      targetValue = maxTimeSlider - minTimeSlider;
+
+      /*
+      Make the distribution of the timeline
+      the domain is set between the minimum and maximum value of the data
+      the range is set to the width of the slider
+      */
+      timelineScale = d3.scaleLinear()     
+        .domain([minTimeSlider,maxTimeSlider])
+        .range([0,widthSlider])
+        .clamp(true);
+
+      // The slider and label are added
+      slider = d3.select("#timeSlider");
+      sliderLabel = d3.select('#timeLabel');
+
+      // The bar of the slider is initialized, and its style is corrected
+      slider
+        .attr("min", timelineScale.range()[0])
+        .attr("max", timelineScale.range()[1])
+        .attr("value", timelineScale.range()[1]);
+    }
+    
     //plot a scatterplot
     const scatterPlot = (selection, props) => {
       const {
@@ -211,6 +268,35 @@ export default {
         clusters,
         iterations
       } = props;
+
+      //Filter the data, first it corrects the timeline, then it filters the data
+      currentValue = maxvalueData;
+      slider.attr("value", timelineScale(currentValue));
+
+      // It selects all the values under the value of the slider
+      dataSelected = data.filter(d => (d.StimuliName == stimulusName && d.Timestamp <= currentValue));
+
+      // update the timeline according to the data if a chart has been selected
+      if (timelineUpdate) {
+        const axisTimeline = dataSelected => dataSelected.Timestamp;
+        /* 
+        update the minimum and maximum value of the selected data
+        update the domain of the slider 
+        update the value above the slider
+        */
+        minTimeSlider = +d3.min(dataSelected, function(d) {return d.Timestamp || Infinity; });
+        maxTimeSlider = +d3.max(dataSelected,axisTimeline);
+        targetValue = maxTimeSlider - minTimeSlider;
+        timelineScale.domain([minTimeSlider,maxTimeSlider]);
+        slider.selectAll("text")
+          .data(timelineScale.ticks(10))
+          currentValue = maxTimeSlider;
+          slider.attr("value", timelineScale(currentValue));
+          sliderLabel.text(Math.round(currentValue/10/100)+ ' sec');
+          // label
+          //   .attr("x", timelineScale(currentValue))
+          //   .text(Math.round(currentValue/10)/100+' sec');
+      }
 
       const innerWidth = width - margin.left - margin.right;
       const innerHeight = height - margin.top - margin.bottom;
@@ -332,9 +418,8 @@ export default {
         .text(title);
 
       //Format of tooltip
-      let tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
-        + ', ' + (imgHeight - d['MappedFixationPointY']) + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
-        + '<br/>' + 'Description: ' + d['description'];
+      let tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + Math.round(d['MappedFixationPointX'])
+        + ', ' + Math.round((imgHeight - d['MappedFixationPointY'])) + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration'];
 
       //Draw the circles using data join
       const drawScatterPlot = (radius, opacity) => {
@@ -378,9 +463,8 @@ export default {
       //Update the plot with the selected circle radius
       const updateRadius = (radius, opacity) => {
         //Unclustered format of tooltip
-        let tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
-          + ', ' + (imgHeight - d['MappedFixationPointY']) + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
-          + '<br/>' + 'Description: ' + d['description'];
+        let tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + Math.round(d['MappedFixationPointX'])
+          + ', ' + Math.round((imgHeight - d['MappedFixationPointY'])) + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration'];
 
         //Draw circles for each row of the selected data
         const circles = g.merge(gEnter)
@@ -435,9 +519,115 @@ export default {
         });
       }
 
+      // Update the data from the timeline scaler
+      function drawPlot(dataDrawPlot, radius, opacity) {
+        let tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + Math.round(d['MappedFixationPointX'])
+          + ', ' + Math.round((imgHeight - d['MappedFixationPointY'])) + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration'];
+
+        const circles = g.merge(gEnter)
+          .selectAll('circle').data(dataDrawPlot);
+        circles
+          .enter().append('circle')
+            .merge(circles)
+              .attr('r', radius)
+              .style('fill', '#' + randomColor)
+              .attr('fill-opacity', opacity)
+              .attr('class', 'circle')
+              .attr('cx', d => xScale(xValue(d)))
+              .attr('cy', d => yScale(yValue(d)))
+              .on('mouseover', d => {
+              d3.select('#tooltip').transition()
+                  .duration(200)
+                    .style('opacity', 1)
+                    .style("left", "calc(" + (d3.event.pageX + 90) + "px - 20vw)")
+                    .style("top", "calc(" + (d3.event.pageY + 15) + "px - 15vh)")
+                    .style('display', 'block');
+                d3.select('#tooltip').html(tooltipformat(d));
+              })
+              .on('mouseout', () => {
+                d3.select('#tooltip')
+                  .transition().duration(400)
+                  .style('opacity', 0);
+              })
+        circles
+          .exit().remove();
+      }	
+      /*
+      Play button on click
+      if the button is on pause, it will change to play
+        then the slider will stop moving
+        and the interval will be cleared
+      if the button is on play, it will change to pause
+        then the slider will start moving
+        the command step will be executed every 0.1 seconds
+      */ 
+      playButton.on("click", function() {
+        var button = d3.select(this);
+        if (button.text() == "Pause") {
+        clearInterval(timer);
+        button.text("Play");
+        } else {
+          if (currentValue >= maxTimeSlider){
+            currentValue = minTimeSlider;
+            updateSlider(currentValue);
+          }
+        timer = setInterval(step, 250);
+        button.text("Pause");
+        }
+      })
+
+      slider
+          .on("input", function() {
+            currentValue = timelineScale.invert(this.value);
+            updateSlider(currentValue);
+          });
+
+      // Update button for the new value
+      function updateSlider(h) {
+        // update position and text of label according to slider scale
+        slider.attr("value", Math.round(timelineScale(h)));
+        sliderLabel.text(Math.round(currentValue/10/100)+ ' sec');
+
+        // filter data set and redraw plot
+            if(cumulativeFilter){
+            dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h);
+            }
+            else{
+              dataSelected = data.filter(d => d.StimuliName == stimulusName && d.Timestamp < h && d.Timestamp>h-500);
+            }
+        drawPlot(dataSelected, circleRadius, opacity);
+
+        //update circleRadius
+        d3.select('#radiusCircle').on('input', function() {
+            circleRadius = +this.value;
+            drawPlot(dataSelected, circleRadius, opacity);
+        });
+
+        //update circleOpacity
+        d3.select('#opacityCircle').on('input', function() {
+            opacity = +this.value * 0.1;
+            drawPlot(dataSelected, circleRadius, opacity);
+        });
+      }
+
+      // Step function for the play button
+      function step() {
+        updateSlider(currentValue);
+
+        amountSlider = Math.min(data.filter(d => d.StimuliName == stimulusName).length,50);
+        // Updates the slider by the compensated amount
+        currentValue +=  targetValue/amountSlider;
+        // If the slider is finished, then don't move it anymore, clear the interval and set the value to its start
+        if (currentValue > maxTimeSlider) {
+          currentValue = minTimeSlider;
+          clearInterval(timer);
+          // timer = 0;
+          playButton.text("Play");
+        }
+      }
+
       const Cluster = (numClusters, maxIter) => {
-        //Clone the array of objects without dependencies
-        //const clone = require('rfdc')() // Returns the deep copy function
+        done = false;
 
         // the current iteration		
         let iter = 1,
@@ -462,7 +652,7 @@ export default {
           .merge(iterationsText)
             .append('text')
               .attr('class', 'numberIterations')
-              .attr('transform', `translate(${innerWidth + margin.left - (1/4 * innerWidth)}, ${55 + innerHeight + margin.top})`)
+              .attr('transform', `translate(${innerWidth + margin.left - (1/4 * innerWidth) + 100}, ${60 + innerHeight + margin.top})`)
               .text('');
 
         //Return random centroid points with coloring
@@ -497,7 +687,7 @@ export default {
 
         //Find the closest centroid to the point as argument
         let findClosestCentroid = (point) => {
-          let closest = {i: -1, distance: Math.sqrt(Math.pow(innerWidth, 2) + Math.pow(innerHeight, 2))};
+          let closest = {i: -1, distance: Math.sqrt(Math.pow(imgWidth, 2) + Math.pow(imgHeight, 2))};
           centroids.forEach((d, i) => {
             let distance = euclidianDistance(d, point);
             // Only update when the centroid is closer
@@ -506,6 +696,7 @@ export default {
               closest.distance = distance;
             }
           });
+          console.log(closest.i);
           return (centroids[closest.i]); 
         }
         
@@ -542,7 +733,7 @@ export default {
         }
       
         //updates the plot
-        const update = (radius) => {
+        const update = (radius, opacity) => {
           let clusterData = points.concat(centroids);
         
           // The data join
@@ -550,9 +741,9 @@ export default {
             .selectAll('circle').data(clusterData);
 
           //Reformat of tooltip
-          tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
-            + ', ' + (imgHeight - d['MappedFixationPointY']) + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
-            + '<br/>' + 'Description: ' + d['description'] + '<br/>' + 'Cluster Group: ' + d['clusterGroup'];
+          tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + Math.round(d['MappedFixationPointX'])
+            + ', ' + Math.round((imgHeight - d['MappedFixationPointY'])) + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration'] 
+            + '<br/>' + 'Cluster Group: ' + d['clusterGroup'];
 
           // Create new elements as needed
           circles
@@ -614,16 +805,16 @@ export default {
         const iterate = () => {
           // Update label
           setText('Iteration ' + iter + ' of ' + maxIter);
-      
+
           // Colorize the points
           colorizePoints();
-          
+
           // Move the centroids
           moveCentroids();
 
           duringIteration = true;
           // Update the scatter plot
-          update(circleRadius);
+          update(circleRadius, opacity);
           duringIteration = false;
         }
       
@@ -634,7 +825,7 @@ export default {
           centroids = initializeCentroids(numClusters);
 
           // initial drawing
-          update(circleRadius);
+          update(circleRadius, opacity);
           
           let interval = setInterval(() => {
             if(iter <= maxTempIter) {
@@ -643,6 +834,7 @@ export default {
             } else {
               clearInterval(interval);
               setText('Done');
+              done = true;
             }
           }, intervalTime);
         }
@@ -682,6 +874,7 @@ export default {
     data.forEach(d => {
       d.MappedFixationPointX = +d.MappedFixationPointX;
       d.MappedFixationPointY = +d.MappedFixationPointY;
+      d.Timestamp = +d.Timestamp;
       if (!allVersions.includes(d.StimuliName)) {
         allVersions.push(d.StimuliName);
       }
@@ -692,11 +885,11 @@ export default {
       d.height = +d.height
     });
 
+    createTimeline();
     stimulusName = d3.select("#selectMenu").node().value;
+    timelineUpdate = true;
     render(undefined, undefined);
     });
-
-    let code;
 
     d3.select("#submit")
             .on('click', function() {
@@ -705,70 +898,46 @@ export default {
 
     //Add event handlers to the form of the cluster collapsible.
     const clustersQuantity = () => {
-      const userInputForm = document.getElementById('userInputForm');
-      let preDefinedClusterQuantity;
-      for (let i = 0; i < 5; i++) {
-        if(userInputForm.elements[i].checked == true) {
-          preDefinedClusterQuantity = +userInputForm.elements[i].id;
-          break;
-        }
-      }
-      let customizedClusterQuantity = userInputForm.elements[4].value;
-      let preDefinedIterationQuantity;
-      for (let i = 5; i < 9; i++) {
-        if(userInputForm.elements[i].checked == true) {
-          preDefinedIterationQuantity = +userInputForm.elements[i].id;
-          break;
-        }
-      }
-      let customizedIterationQuantity = userInputForm.elements[9].value;
+        if (done) {
+            const userInputForm = document.getElementById('userInputForm');
+            let preDefinedClusterQuantity;
+            for (let i = 0; i < 5; i++) {
+                if(userInputForm.elements[i].checked == true) {
+                    preDefinedClusterQuantity = +userInputForm.elements[i].id;
+                    break;
+                }
+            }
+            let customizedClusterQuantity = userInputForm.elements[4].value;
+            let preDefinedIterationQuantity;
+            for (let i = 5; i < 9; i++) {
+                if(userInputForm.elements[i].checked == true) {
+                    preDefinedIterationQuantity = +userInputForm.elements[i].id;
+                    break;
+                }
+            }
+            let customizedIterationQuantity = userInputForm.elements[9].value;
 
-      //When user input field is filled in, choose the customized values.
-      //When the radio boxes are checked, choose the pre-defined values.
-      if (customizedClusterQuantity != '' && (customizedIterationQuantity != '')) {
-        if (code != undefined) {
-          clearTimeout(code);
-          code = render(customizedClusterQuantity, customizedIterationQuantity);
-          setTimeout(code, 17000000);
+            //When user input field is filled in, choose the customized values.
+            //When the radio boxes are checked, choose the pre-defined values.
+            if (customizedClusterQuantity != '' && (customizedIterationQuantity != '')) {
+                render(customizedClusterQuantity, customizedIterationQuantity);
+            } else if (preDefinedClusterQuantity != undefined && (preDefinedIterationQuantity != undefined)) {
+                render(preDefinedClusterQuantity, preDefinedIterationQuantity);
+            } else if (preDefinedClusterQuantity != undefined && (customizedIterationQuantity != '')) {
+                render(preDefinedClusterQuantity, customizedIterationQuantity);
+            } else if (customizedClusterQuantity != '' && (preDefinedIterationQuantity != undefined)) {
+                render(customizedClusterQuantity, preDefinedIterationQuantity);
+            } else {
+                alert('Please select the desired number of iterations and clusters for k-means clustering.');
+            }
         } else {
-          code = render(customizedClusterQuantity, customizedIterationQuantity);
-          setTimeout(code, 10000000);
+            alert('Please wait for completion of current clustering before clustering again.')
         }
-      } else if (preDefinedClusterQuantity != undefined && (preDefinedIterationQuantity != undefined)) {
-        if (code != undefined) {
-          clearTimeout(code);
-          code = render(preDefinedClusterQuantity, preDefinedIterationQuantity);
-          setTimeout(code, 10000000);
-        } else {
-          code = render(preDefinedClusterQuantity, preDefinedIterationQuantity);
-          setTimeout(code, 10000000);
-        }
-      } else if (preDefinedClusterQuantity != undefined && (customizedIterationQuantity != '')) {
-        if (code != undefined) {
-          clearTimeout(code);
-          code = render(preDefinedClusterQuantity, customizedIterationQuantity);
-          setTimeout(code, 10000000);
-        } else {
-          code = render(preDefinedClusterQuantity, customizedIterationQuantity);
-          setTimeout(code, 10000000);
-        }
-      } else if (customizedClusterQuantity != '' && (preDefinedIterationQuantity != undefined)) {
-        if (code != undefined) {
-          clearTimeout(code);
-          code = render(customizedClusterQuantity, preDefinedIterationQuantity);
-          setTimeout(code, 10000000);
-        } else {
-          code = render(customizedClusterQuantity, preDefinedIterationQuantity);
-          setTimeout(code, 10000000);
-        }
-      } else {
-        alert('Please select the desired number of iterations and clusters for k-means clustering.');
-      }
     }
 
     const zoom = () => {      
       const main_svg = d3.select('#scatterPlot svg.aperture').attr('class', 'zoom')
-      , mini_svg   = d3.select('#mini svg').append('g').attr('class', 'zoom')
+      , mini_svg   = d3.select('#scatterMini svg').append('g').attr('class', 'zoom')
       , viewbox = main_svg.attr('viewBox').split(' ').map(d => +d)
       // store the image's initial viewBox
       , extent_1 = [
@@ -1141,5 +1310,12 @@ text {
 [class*='centroid'] {
   stroke: #000;
   stroke-width: 2px;
+}
+
+.numberIterations {
+  font-family: 'Product Sans Regular';
+  font-size: 16px;
+  font-weight: 400;
+  fill: #635F5D;
 }
 </style>
