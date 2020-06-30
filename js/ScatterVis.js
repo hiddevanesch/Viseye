@@ -99,9 +99,9 @@ const scatterPlot = (selection, props) => {
 		.nice();
 
 	const yScale = d3.scaleLinear()
-	.domain([0, imgHeight])
-	.range([0, innerHeight])
-	.nice();
+		.domain([0, imgHeight])
+		.range([0, innerHeight])
+		.nice();
 
 	//Create container for scatterplot
 	const g = selection.selectAll('.containerScatter').data([null]);
@@ -172,7 +172,7 @@ const scatterPlot = (selection, props) => {
 
 	//Format of tooltip
 	let tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
-		+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
+		+ ', ' + yScale(d['MappedFixationPointY']) + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
 		+ '<br/>' + 'Description: ' + d['description'];
 
 	//Draw the circles using data join
@@ -218,7 +218,7 @@ const scatterPlot = (selection, props) => {
 	const updateRadius = (radius, opacity) => {
 		//Unclustered format of tooltip
 		let tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
-			+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
+			+ ', ' + yScale(d['MappedFixationPointY']) + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
 			+ '<br/>' + 'Description: ' + d['description'];
 
 		//Draw circles for each row of the selected data
@@ -390,7 +390,7 @@ const scatterPlot = (selection, props) => {
 
 			//Reformat of tooltip
 			tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
-				+ ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
+				+ ', ' + yScale(d['MappedFixationPointY']) + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
 				+ '<br/>' + 'Description: ' + d['description'] + '<br/>' + 'Cluster Group: ' + d['clusterGroup'];
 
 			// Create new elements as needed
@@ -399,6 +399,7 @@ const scatterPlot = (selection, props) => {
 				.merge(circles)
 					.attr('r', radius)
 					.attr('class', d => d.id)
+					.attr('fill-opacity', opacity)
 					.on('mouseover', d => {
 						d3.select('#tooltip').transition()
 								.duration(200)
@@ -435,7 +436,8 @@ const scatterPlot = (selection, props) => {
 			});
 			//update circleOpacity
 			d3.select('#opacityCircle').on('input', function() {
-				circleRadius = +this.value;
+				opacity = +this.value * 0.1;
+				console.log('fck');
 				update(circleRadius, opacity);
 				if(duringIteration) {
 					maxTempIter -= 1;
@@ -696,6 +698,7 @@ const collapsible = () => {
 
 collapsible();
 
+//zoom function, the design of zooming and panning and the logic behind it taken over from https://bl.ocks.org/seemantk/80613e25e9804934608ac42440562168
 const zoom = () => {
 	const main_svg = d3.select('#scatterPlot svg.aperture').attr('class', 'zoom')
 	, mini_svg   = d3.select('#mini svg').append('g').attr('class', 'zoom')

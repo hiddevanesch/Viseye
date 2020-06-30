@@ -371,23 +371,26 @@ const sliderBubble = () => {
 
 sliderBubble();
 
-const main_svg = d3.select('#attentionMap svg.aperture').attr('class', 'zoom')
-		, mini_svg   = d3.select('#mini svg').append('g').attr('class', 'zoom')
-		, viewbox = main_svg.attr('viewBox').split(' ').map(d => +d)
-		// store the image's initial viewBox
-		, extent_1 = [
-			[viewbox[0], viewbox[1]]
-		  , [(viewbox[2] - viewbox[0]), (viewbox[3] - viewbox[1])]
-		]
-		, brush  = d3.brush()
-			.extent(extent_1)
-			.on('brush', brushed)
-		, zoom = d3.zoom()
-			.scaleExtent([0.2, 1])
-			.extent(extent_1)
-			.on('zoom', zoomed)
+
+//zoom function, the design of zooming and panning and the logic behind it taken over from https://bl.ocks.org/seemantk/80613e25e9804934608ac42440562168
+const zoom = () => {
+	const main_svg = d3.select('#scatterPlot svg.aperture').attr('class', 'zoom')
+	, mini_svg   = d3.select('#mini svg').append('g').attr('class', 'zoom')
+	, viewbox = main_svg.attr('viewBox').split(' ').map(d => +d)
+	// store the image's initial viewBox
+	, extent_1 = [
+		[viewbox[0], viewbox[1]]
+	, [(viewbox[2] - viewbox[0]), (viewbox[3] - viewbox[1])]
+	]
+	, brush  = d3.brush()
+		.extent(extent_1)
+		.on('brush', brushed)
+	, zoom = d3.zoom()
+		.scaleExtent([0.05, 1])
+		.extent(extent_1)
+		.on('zoom', zoomed)
 	;
-	
+
 	// Apply the brush to the minimap, and also apply the zoom behavior here
 	mini_svg
 		.call(brush)
@@ -404,11 +407,11 @@ const main_svg = d3.select('#attentionMap svg.aperture').attr('class', 'zoom')
 		if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return;
 		
 		let sel = d3.event.selection
-			, vb = sel
+		, vb = sel
 				? [sel[0][0], sel[0][1], (sel[1][0] - sel[0][0]), (sel[1][1] - sel[0][1])]
 				: viewbox
-			, k = vb[3] / viewbox[3]
-			, t = d3.zoomIdentity.translate(vb[0], vb[1]).scale(k)
+		, k = vb[3] / viewbox[3]
+		, t = d3.zoomIdentity.translate(vb[0], vb[1]).scale(k)
 		;
 
 		mini_svg
@@ -448,7 +451,10 @@ const main_svg = d3.select('#attentionMap svg.aperture').attr('class', 'zoom')
 			.property('__zoom', t)
 			.call(
 				brush.move
-			, [[t.x, t.y], [t.x + vb[2], t.y + vb[3]]]
+				, [[t.x, t.y], [t.x + vb[2], t.y + vb[3]]]
 			)
 		;
 	} // zoomed()
+}
+
+zoom();
