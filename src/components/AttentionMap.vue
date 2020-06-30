@@ -294,7 +294,7 @@ export default {
         
         const axisLeg = d3.axisRight(legScale);
 
-        const titleLeg = 'Level of Density'
+        const titleLeg = 'Density'
         
         //Draw axis
         legend
@@ -311,7 +311,7 @@ export default {
           .append('text')
             .attr('class', 'titleLeg')
             .attr('transform',
-                  `translate(${width - margin.right + 5},${margin.top - 10})`
+                  `translate(${width - margin.right + 55},${margin.top + 10})`
                 )
             .text(titleLeg);
       }
@@ -472,5 +472,12 @@ text {
 .zoom {
   width: 100%;
   height: 100%;
+}
+
+.titleLeg {
+  font-family: 'Product Sans Bold';
+  font-size: 16px;
+  font-weight: 400;
+  fill: #635F5D;
 }
 </style>

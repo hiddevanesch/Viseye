@@ -333,7 +333,7 @@ export default {
 
       //Format of tooltip
       let tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
-        + ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
+        + ', ' + (imgHeight - d['MappedFixationPointY']) + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
         + '<br/>' + 'Description: ' + d['description'];
 
       //Draw the circles using data join
@@ -379,7 +379,7 @@ export default {
       const updateRadius = (radius, opacity) => {
         //Unclustered format of tooltip
         let tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
-          + ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
+          + ', ' + (imgHeight - d['MappedFixationPointY']) + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
           + '<br/>' + 'Description: ' + d['description'];
 
         //Draw circles for each row of the selected data
@@ -551,7 +551,7 @@ export default {
 
           //Reformat of tooltip
           tooltipformat = d => 'User: ' + d['user'] + '<br/>' + 'Coordinates: (' + d['MappedFixationPointX']
-            + ', ' + d['MappedFixationPointY'] + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
+            + ', ' + (imgHeight - d['MappedFixationPointY']) + ')' + '<br/>' + 'Fixation duration: ' + d['FixationDuration']
             + '<br/>' + 'Description: ' + d['description'] + '<br/>' + 'Cluster Group: ' + d['clusterGroup'];
 
           // Create new elements as needed
@@ -560,6 +560,7 @@ export default {
             .merge(circles)
               .attr('r', radius)
               .attr('class', d => d.id)
+              .attr('fill-opacity', opacity)
               .on('mouseover', d => {
                 d3.select('#tooltip').transition()
                     .duration(200)
@@ -1135,5 +1136,10 @@ text {
   padding-right: 4px;
   background-color: #dddddd;
   border-radius: 3px;
+}
+
+[class*='centroid'] {
+  stroke: #000;
+  stroke-width: 2px;
 }
 </style>
