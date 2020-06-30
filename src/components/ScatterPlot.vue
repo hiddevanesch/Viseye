@@ -696,7 +696,6 @@ export default {
               closest.distance = distance;
             }
           });
-          console.log(closest.i);
           return (centroids[closest.i]); 
         }
         
