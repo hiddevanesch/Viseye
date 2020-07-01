@@ -4,7 +4,7 @@
 ```
 npm install
 ```
-##iconv-lite setup
+## iconv-lite setup
 ```
 npm install iconv-lite
 ```
