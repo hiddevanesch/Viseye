@@ -26,7 +26,8 @@ export default {
   },
   data() {
     return {
-      data: []
+      data: [],
+      amountAOI: 0
     }
   },
   mounted: function() {
@@ -248,6 +249,7 @@ export default {
               SquareArray.push(nextBox);
               selectionRect.focus();
             }
+            vm.amountAOI = SquareArray.length;
             // Adds the color to the rectangle
           } else {
             // single point selected
@@ -445,9 +447,13 @@ export default {
       });
     },
     toAlpPlot() {
-      let vm = this;
-      vm.addFilesAOI(vm.data);
-      vm.$emit('to-alp-plot');
+      const vm = this;
+      if (vm.amountAOI >= 1) {
+        vm.addFilesAOI(vm.data);
+        vm.$emit('to-alp-plot');
+      } else {
+        window.alert("Select at least one AOI to be able to look at the Alpscarf.")
+      }
     },
     info() {
       window.alert("To use the Alpscarf, you have to define AOI’s first. This can be done with the AOI selector by drawing rectangles with your mouse. You are able to define up to 10 different AOI’s. To remove an AOI simple double click the AOI rectangle. After the AOI’s are defined you are able to go to the Alpscarf itself.");

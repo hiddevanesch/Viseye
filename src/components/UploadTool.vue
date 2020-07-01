@@ -58,6 +58,7 @@ export default {
           var csvData = "";
           var jsonData;
           var iconv = require('iconv-lite');
+          iconv.skipDecodeWarning = true;
           reader.onload = function(){
             csvData = iconv.decode(reader.result, 'latin1');
             jsonData = vm.tsvJSON(csvData);

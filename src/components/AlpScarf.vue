@@ -1,7 +1,7 @@
 <template>
   <div>
     <alp-select v-if="state === 'alpselect'" @to-alp-plot="toAlpPlot"/>
-    <alp-plot v-if="state === 'alpplot'" />
+    <alp-plot v-if="state === 'alpplot'" @to-alp-select="onLoad"/>
   </div>
 </template>
 

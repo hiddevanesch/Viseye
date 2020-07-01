@@ -4,6 +4,10 @@
 ```
 npm install
 ```
+##iconv-lite setup
+```
+npm install iconv-lite
+```
 
 ### Compiles and hot-reloads for development
 ```

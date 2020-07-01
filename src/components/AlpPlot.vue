@@ -74,6 +74,14 @@ export default {
         })
       );
 
+      //Create select keyword with click event listener
+      //to go back to alpselector when stimuli changes
+      const vm = this;
+      d3.select("#selectMenu")
+            .on('change', function() {
+              vm.$emit('to-alp-select');
+            });
+
       // create the group for alpscarf and legend respecrtively
       // legend doesn't need to be zoomable
       const legendG = svg
@@ -86,8 +94,6 @@ export default {
       let data;
       let palette;
       let pNameList;
-
-      const vm = this;
 
       let loadedData = loadAndProcessData();
       const AOIValue = d => d.AOI;
